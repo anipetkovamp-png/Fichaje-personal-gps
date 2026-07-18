@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Fichaje Pro V18.7 GPS-Ready</title>
+
+<!-- ENLACES PARA QUE SEA INSTALABLE (PWA) -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#007d7a">
+<link rel="apple-touch-icon" href="icon-192x192.png">
+
 <style>
 /* CONTROL ESTRICTO DE MEDIDAS */
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -292,7 +298,6 @@ function renderizarCalendario(autoScroll = true, comportamiento = 'smooth') {
       }
     }
 
-    // APLICACIÓN DE LA NUEVA ALINEACIÓN CON .texto-horas
     fila.innerHTML = `<div class="label-dia" onclick="desplazarADia(${i}, 'smooth', 'center')">${textoDiaSemana} ${i}</div><div class="bloques-inputs">${inputsHTML}<select class="selector-estado" id="est-${i}" onchange="cambiarEstado(${i})"><option value="defecto" ${data.est==='defecto'?'selected':''}>- Tipo -</option><option value="trabajo" ${data.est==='trabajo'?'selected':''}>TRABAJO</option><option value="vacaciones" ${data.est==='vacaciones'?'selected':''}>VACAC.</option><option value="libre" ${data.est==='libre'?'selected':''}>LIBRE</option><option value="baja" ${data.est==='baja'?'selected':''}>BAJA M.</option></select></div><div class="total-horas" id="t-${i}">${gpsIconoHTML}${htmlAlarma}<span class="texto-horas">${data.t}</span></div><button class="${claseNota}" id="icononota-${i}" onclick="abrirModalNota(${i})">${iconoNota}</button>`;
     lista.appendChild(fila);
   }
@@ -374,7 +379,6 @@ function calc(id) {
     }
   }
 
-  // APLICACIÓN DE LA NUEVA ALINEACIÓN CON .texto-horas AL ACTUALIZAR EL INPUT
   elTot.innerHTML = `${gpsIconoHTML}${htmlAlarma}<span class="texto-horas">${mTotales > 0 ? minsATexto(mTotales) : "00:00"}</span>`;
   guardarFila(id); calcularTotalesGenerales();
 }
@@ -610,6 +614,20 @@ function calcularTotalesGenerales() {
   }
 }
 function minsATexto(minutos) { let hrs = String(Math.floor(minutos / 60)).padStart(2, '0'); let mins = String(minutos % 60).padStart(2, '0'); return `${hrs}:${mins}`; }
+
+// ACTIVAR SERVICE WORKER PARA QUE SEA INSTALABLE
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js')
+      .then(registration => {
+        console.log('ServiceWorker registrado con éxito');
+      })
+      .catch(err => {
+        console.log('Error al registrar el ServiceWorker: ', err);
+      });
+  });
+}
 </script>
 </body>
 </html>
+
