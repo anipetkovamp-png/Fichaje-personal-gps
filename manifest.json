@@ -1,16 +1,10 @@
+
+
 {
   "name": "Fichaje Pro",
   "short_name": "Fichaje",
   "start_url": "index.html",
   "display": "standalone",
   "background_color": "#f7f6dd",
-  "theme_color": "#007d7a",
-  "icons": [
-    {
-      "src": "https://cdn-icons-png.flaticon.com/512/2921/2921222.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    }
-  ]
+  "theme_color": "#007d7a"
 }
-
