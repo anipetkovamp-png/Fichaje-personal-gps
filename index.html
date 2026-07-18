@@ -4,15 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Fichaje Pro V18.7 GPS-Ready</title>
-
-<!-- CONEXIÓN PWA (Para que sea instalable) -->
-<link rel="manifest" href="manifest.json">
-<script>
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js');
-    }
-</script>
-
 <style>
 /* CONTROL ESTRICTO DE MEDIDAS */
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -56,11 +47,15 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 .caja-input { width: 42px; height: 26px; background-color: var(--box-empty); border: 1px solid #777; border-radius: 4px; text-align: center; font-size: 0.75rem; font-weight: bold; }
 .selector-estado { width: 78px; height: 28px; border: 1px solid #777; border-radius: 4px; font-size: 0.75rem; font-weight: bold; background-color: #eae7c9; }
 
-/* AJUSTE ALINEACIÓN Y VISIBILIDAD ALARMA / GPS */
-.total-horas { width: 75px; display: flex; align-items: center; justify-content: flex-end; font-size: 0.78rem; color: #333; font-weight: bold; flex-shrink: 0; gap: 3px; }
+/* --- AJUSTE ALINEACIÓN Y VISIBILIDAD ALARMA / GPS --- */
+.total-horas { width: 85px; display: flex; align-items: center; justify-content: flex-end; font-size: 0.78rem; color: #333; font-weight: bold; flex-shrink: 0; gap: 3px; }
+.texto-horas { width: 42px; text-align: right; font-family: monospace; font-size: 0.85rem; display: inline-block; } /* CLASE NUEVA PARA ALINEACIÓN PERFECTA */
 .icono-alarma { font-size: 0.8rem; }
 .btn-gps-mapa { text-decoration: none; font-size: 0.85rem; cursor: pointer; display: inline-flex; transition: transform 0.1s; align-items: center; }
 .btn-gps-mapa:active { transform: scale(1.3); }
+
+/* --- NUEVO CONTENEDOR DE ANUNCIOS --- */
+.ad-container { width: 100%; min-height: 50px; background-color: #f0ebd8; border-radius: 6px; display: flex; justify-content: center; align-items: center; border: 1px dashed #ccc; color: #888; font-size: 0.75rem; }
 
 .btn-nota-trigger { font-size: 1.05rem; cursor: pointer; padding: 2px; background: none; border: none; filter: grayscale(1); transition: transform 0.1s; flex-shrink: 0; }
 .btn-nota-trigger.con-nota { filter: grayscale(0); position: relative; }
@@ -70,7 +65,7 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 .vista-partido .bloques-inputs { gap: 2px; }
 .vista-partido .caja-input { width: 33px; height: 25px; font-size: 0.68rem; }
 .vista-partido .selector-estado { width: 60px; font-size: 0.65rem; }
-.vista-partido .total-horas { width: 68px; }
+.vista-partido .total-horas { width: 75px; }
 .fila-dia.tipo-trabajo { background-color: var(--color-trabajo) !important; }
 .fila-dia.tipo-vacaciones { background-color: var(--color-vacaciones) !important; }
 .fila-dia.tipo-libre { background-color: var(--color-libre) !important; }
@@ -122,7 +117,14 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 <span id="v-ano" onclick="cambiarVista('ano')">AÑO</span>
 </div>
 <div class="calendario-lista" id="lista-dias"></div>
+
+<!-- CONTENEDOR DE ANUNCIOS -->
+<div id="ad-banner" class="ad-container">
+  Espacio para anuncio AdMob
 </div>
+
+</div>
+
 <div class="menu-lateral-overlay" id="menu-overlay" onclick="toggleMenu(false)"></div>
 <div class="menu-lateral" id="menu-lateral">
 <div class="menu-titulo">Ajustes de Fichaje</div>
@@ -273,11 +275,9 @@ function renderizarCalendario(autoScroll = true, comportamiento = 'smooth') {
     let claseNota = (data.nota && data.nota.trim() !== "") ? "btn-nota-trigger con-nota" : "btn-nota-trigger";
     let iconoNota = (data.nota && data.nota.trim() !== "") ? "📝" : "💬";
     
-    // Alarma si origen es MANUAL y hay algún dato
     let hayContenido = (valE1 !== '' || valS1 !== '' || valE2 !== '' || valS2 !== '');
     let htmlAlarma = (data.origen === 'MANUAL' && hayContenido) ? '<span class="icono-alarma" title="Modificado manualmente">⚠️</span>' : '';
 
-    // Lógica e icono GPS
     let gpsIconoHTML = '';
     if (data.gps) {
       let tramosGps = [];
@@ -292,7 +292,8 @@ function renderizarCalendario(autoScroll = true, comportamiento = 'smooth') {
       }
     }
 
-    fila.innerHTML = `<div class="label-dia" onclick="desplazarADia(${i}, 'smooth', 'center')">${textoDiaSemana} ${i}</div><div class="bloques-inputs">${inputsHTML}<select class="selector-estado" id="est-${i}" onchange="cambiarEstado(${i})"><option value="defecto" ${data.est==='defecto'?'selected':''}>- Tipo -</option><option value="trabajo" ${data.est==='trabajo'?'selected':''}>TRABAJO</option><option value="vacaciones" ${data.est==='vacaciones'?'selected':''}>VACAC.</option><option value="libre" ${data.est==='libre'?'selected':''}>LIBRE</option><option value="baja" ${data.est==='baja'?'selected':''}>BAJA M.</option></select></div><div class="total-horas" id="t-${i}">${gpsIconoHTML}${htmlAlarma}${data.t}</div><button class="${claseNota}" id="icononota-${i}" onclick="abrirModalNota(${i})">${iconoNota}</button>`;
+    // APLICACIÓN DE LA NUEVA ALINEACIÓN CON .texto-horas
+    fila.innerHTML = `<div class="label-dia" onclick="desplazarADia(${i}, 'smooth', 'center')">${textoDiaSemana} ${i}</div><div class="bloques-inputs">${inputsHTML}<select class="selector-estado" id="est-${i}" onchange="cambiarEstado(${i})"><option value="defecto" ${data.est==='defecto'?'selected':''}>- Tipo -</option><option value="trabajo" ${data.est==='trabajo'?'selected':''}>TRABAJO</option><option value="vacaciones" ${data.est==='vacaciones'?'selected':''}>VACAC.</option><option value="libre" ${data.est==='libre'?'selected':''}>LIBRE</option><option value="baja" ${data.est==='baja'?'selected':''}>BAJA M.</option></select></div><div class="total-horas" id="t-${i}">${gpsIconoHTML}${htmlAlarma}<span class="texto-horas">${data.t}</span></div><button class="${claseNota}" id="icononota-${i}" onclick="abrirModalNota(${i})">${iconoNota}</button>`;
     lista.appendChild(fila);
   }
   calcularTotalesGenerales();
@@ -355,7 +356,6 @@ function calc(id) {
   }
   mTotales += calcularTramo(e2, s2);
   
-  // Re-inyectar iconos
   let dataActual = JSON.parse(localStorage.getItem(`fichaje-${fechaActual.getFullYear()}-${fechaActual.getMonth()}-${id}`)) || {};
   let hayContenido = (e1 !== '' || s1 !== '' || e2 !== '' || s2 !== '');
   let htmlAlarma = (dataActual.origen === 'MANUAL' && hayContenido) ? '<span class="icono-alarma" title="Modificado manualmente">⚠️</span>' : '';
@@ -374,7 +374,8 @@ function calc(id) {
     }
   }
 
-  elTot.innerHTML = `${gpsIconoHTML}${htmlAlarma}${mTotales > 0 ? minsATexto(mTotales) : "00:00"}`;
+  // APLICACIÓN DE LA NUEVA ALINEACIÓN CON .texto-horas AL ACTUALIZAR EL INPUT
+  elTot.innerHTML = `${gpsIconoHTML}${htmlAlarma}<span class="texto-horas">${mTotales > 0 ? minsATexto(mTotales) : "00:00"}</span>`;
   guardarFila(id); calcularTotalesGenerales();
 }
 function cambiarEstado(id) {
@@ -396,7 +397,7 @@ function guardarFila(id) {
     t: elTot ? elTot.textContent.replace('⚠️', '').replace('📍', '').trim() : '00:00', 
     nota: dataAnterior.nota || '', 
     origen: 'MANUAL',
-    gps: dataAnterior.gps || {} // Mantenemos a salvo la ubicación
+    gps: dataAnterior.gps || {} 
   };
   localStorage.setItem(claveId, JSON.stringify(datos));
 }
@@ -429,7 +430,6 @@ function ficharSecuencial(modo) {
 
   if (!data.gps) data.gps = {};
 
-  // Intentar geolocalización asíncrona rápida
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -439,7 +439,6 @@ function ficharSecuencial(modo) {
       },
       (error) => {
         console.warn("GPS no disponible:", error.message);
-        // Continuamos sin coordenadas en caso de fallo o denegación
         guardarYProcesarFichaje(claveId, data, hoy);
       },
       { enableHighAccuracy: true, timeout: 6000 }
@@ -560,7 +559,6 @@ let dniUsuario = localStorage.getItem('config-dni') || ''; document.getElementBy
 inicializarColores(); registrarUbicacionInicial(); dibujarBotonesFicharSuperiores(); renderizarCalendario(true, 'instant');
 
 function registrarUbicacionInicial() {
-  // Solo se utiliza para preparar permisos al iniciar si el navegador/WebView lo solicita
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(()=>{}, ()=>{}, {timeout: 1000});
   }
@@ -615,4 +613,3 @@ function minsATexto(minutos) { let hrs = String(Math.floor(minutos / 60)).padSta
 </script>
 </body>
 </html>
-
