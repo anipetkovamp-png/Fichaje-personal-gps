@@ -1,6 +1,7 @@
+
 {
-  "name": "Fichaje Pro",
-  "short_name": "Fichaje",
+  "name": "Fichaje Pro V18.7 GPS-Ready",
+  "short_name": "Fichaje Pro",
   "start_url": "index.html",
   "display": "standalone",
   "background_color": "#f7f6dd",
