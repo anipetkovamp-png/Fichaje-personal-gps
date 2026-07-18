@@ -4,7 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Fichaje Pro V18.7 GPS-Ready</title>
-<link rel="manifest" href="/manifest.json">
+
+<!-- CONEXIÓN PWA (Para que sea instalable) -->
+<link rel="manifest" href="manifest.json">
+<script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js');
+    }
+</script>
+
 <style>
 /* CONTROL ESTRICTO DE MEDIDAS */
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -88,6 +96,7 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 .btn-modal { padding: 8px 14px; border: none; border-radius: 4px; font-weight: bold; font-size: 0.85rem; cursor: pointer; }
 .btn-modal.guardar { background: var(--teal-header); color: white; }
 .btn-modal.cancelar { background: #bbb; color: #333; }
+</style>
 </head>
 <body>
 <div class="container" id="app-container">
@@ -606,3 +615,4 @@ function minsATexto(minutos) { let hrs = String(Math.floor(minutos / 60)).padSta
 </script>
 </body>
 </html>
+
