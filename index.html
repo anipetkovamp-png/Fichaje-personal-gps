@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Fichaje Pro V18.7 GPS-Ready</title>
+<link rel="manifest" href="/manifest.json">
+<style>
+/* CONTROL ESTRICTO DE MEDIDAS */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+--bg-app: #f7f6dd;
+--teal-header: #007d7a;
+--box-empty: #eae7c9;
+--color-trabajo: #d4edda;
+--color-vacaciones: #cce5ff;
+--color-libre: #fff3cd;
+--color-baja: #f8d7da;
+}
+body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6px; overflow-x: hidden; width: 100%; }
+.container { max-width: 450px; width: 100%; margin: 0 auto; display: flex; flex-direction: column; gap: 8px; position: relative; }
+.header-barra { display: flex; align-items: center; justify-content: center; background-color: var(--teal-header); color: white; border-radius: 6px; padding: 4px 6px; width: 100%; position: relative; min-height: 38px; }
+.btn-menu-tres { position: absolute; left: 6px; background: none; border: none; color: white; font-size: 1.3rem; cursor: pointer; padding: 4px 8px; }
+.contenedor-control-mes { display: flex; align-items: center; justify-content: center; gap: 25px; }
+.titulo-mes-central { font-size: 0.95rem; font-weight: bold; text-transform: uppercase; letter-spacing: 0.3px; text-align: center; white-space: nowrap; }
+.btn-Cambio-mes { background: rgba(255,255,255,0.15); border: none; color: white; padding: 4px 10px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 0.85rem; flex-shrink: 0; }
+.panel-totales { display: flex; justify-content: space-between; background: white; padding: 8px 10px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); font-size: 0.85rem; font-weight: bold; color: #333; width: 100%; }
+.panel-totales span { color: var(--teal-header); font-size: 0.95rem; }
+.zona-accion-superior { display: flex; background: white; padding: 6px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); gap: 6px; align-items: center; width: 100%; }
+.bloque-semanas-mini { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; flex: 1; }
+.btn-semana-mini { background: #eef0f2; border: 1px solid #ccc; border-radius: 4px; font-size: 0.65rem; font-weight: bold; padding: 4px 2px; text-align: center; cursor: pointer; transition: all 0.2s; }
+.btn-semana-mini span { display: block; color: var(--teal-header); font-size: 0.7rem; font-weight: bold; margin-top: 1px; }
+.btn-semana-mini.activo { background-color: #ccefe2; border-color: var(--teal-header); box-shadow: inset 0 1px 3px rgba(0,0,0,0.15); }
+.bloque-fichar-superior { display: flex; flex-direction: column; gap: 4px; width: 110px; justify-content: center; flex-shrink: 0; }
+.btn-fichar-principal { background-color: #ffaa3b; border: 1px solid #333; border-radius: 4px; padding: 6px 2px; font-size: 0.72rem; font-weight: bold; text-align: center; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+.btn-fichar-principal:active { background-color: #e59530; }
+.btn-fichar-principal.tarde { background-color: #a372eb; color: white; }
+.btn-fichar-principal.tarde:active { background-color: #8956d6; }
+.vistas-sub { display: flex; justify-content: space-around; background: rgba(0,0,0,0.04); padding: 4px; border-radius: 4px; font-size: 0.85rem; width: 100%; }
+.vistas-sub span { padding: 4px 12px; border-radius: 4px; color: #555; cursor: pointer; }
+.vistas-sub span.activo { background: var(--teal-header); color: white; font-weight: bold; }
+.calendario-lista { background: white; border-radius: 6px; padding: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); max-height: 380px; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; scroll-behavior: smooth; width: 100%; }
+.fila-dia { display: flex; align-items: center; justify-content: space-between; padding: 5px 4px; border-bottom: 1px solid #eef0f2; border-radius: 6px; background: #fafafa; gap: 4px; width: 100%; }
+.fila-mes-ano { display: flex; justify-content: space-between; padding: 11px 14px; border-bottom: 1px solid #eef0f2; border-radius: 6px; cursor: pointer; transition: background 0.1s; }
+.fila-mes-ano:active { background-color: #e2f3ee !important; }
+.label-dia { width: 50px; font-size: 0.78rem; font-weight: bold; color: #444; text-transform: capitalize; flex-shrink: 0; }
+.bloques-inputs { display: flex; gap: 3px; flex: 1; justify-content: center; align-items: center; }
+.caja-input { width: 42px; height: 26px; background-color: var(--box-empty); border: 1px solid #777; border-radius: 4px; text-align: center; font-size: 0.75rem; font-weight: bold; }
+.selector-estado { width: 78px; height: 28px; border: 1px solid #777; border-radius: 4px; font-size: 0.75rem; font-weight: bold; background-color: #eae7c9; }
+
+/* AJUSTE ALINEACIÓN Y VISIBILIDAD ALARMA / GPS */
+.total-horas { width: 75px; display: flex; align-items: center; justify-content: flex-end; font-size: 0.78rem; color: #333; font-weight: bold; flex-shrink: 0; gap: 3px; }
+.icono-alarma { font-size: 0.8rem; }
+.btn-gps-mapa { text-decoration: none; font-size: 0.85rem; cursor: pointer; display: inline-flex; transition: transform 0.1s; align-items: center; }
+.btn-gps-mapa:active { transform: scale(1.3); }
+
+.btn-nota-trigger { font-size: 1.05rem; cursor: pointer; padding: 2px; background: none; border: none; filter: grayscale(1); transition: transform 0.1s; flex-shrink: 0; }
+.btn-nota-trigger.con-nota { filter: grayscale(0); position: relative; }
+.btn-nota-trigger.con-nota::after { content: ''; position: absolute; top: 0; right: 0; width: 5px; height: 5px; background: red; border-radius: 50%; }
+.vista-partido .fila-dia { gap: 2px; padding: 4px 2px; }
+.vista-partido .label-dia { width: 40px; font-size: 0.72rem; }
+.vista-partido .bloques-inputs { gap: 2px; }
+.vista-partido .caja-input { width: 33px; height: 25px; font-size: 0.68rem; }
+.vista-partido .selector-estado { width: 60px; font-size: 0.65rem; }
+.vista-partido .total-horas { width: 68px; }
+.fila-dia.tipo-trabajo { background-color: var(--color-trabajo) !important; }
+.fila-dia.tipo-vacaciones { background-color: var(--color-vacaciones) !important; }
+.fila-dia.tipo-libre { background-color: var(--color-libre) !important; }
+.fila-dia.tipo-baja { background-color: var(--color-baja) !important; }
+.menu-lateral-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; z-index: 1000; }
+.menu-lateral { position: fixed; top: 0; left: 0; width: 290px; height: 100%; background: white; box-shadow: 2px 0 10px rgba(0,0,0,0.3); display: none; flex-direction: column; padding: 16px; z-index: 1011; overflow-y: auto; }
+.menu-titulo { font-size: 1.1rem; font-weight: bold; color: var(--teal-header); border-bottom: 2px solid var(--teal-header); padding-bottom: 6px; margin-bottom: 12px; }
+.menu-seccion { font-size: 0.85rem; color: #777; font-weight: bold; margin-top: 10px; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+.menu-opcion { display: flex; align-items: center; justify-content: space-between; padding: 10px 6px; font-weight: bold; color: #444; border-bottom: 1px solid #eee; font-size: 0.85rem; cursor: pointer; }
+.menu-opcion select { padding: 4px; font-weight: bold; border-radius: 4px; border: 1px solid #999; }
+.menu-opcion-input { display: flex; align-items: center; gap: 6px; padding: 8px 6px; border-bottom: 1px solid #eee; width: 100%; }
+.menu-opcion-input span { font-size: 0.85rem; font-weight: bold; color: #444; flex: 0 0 85px; white-space: nowrap; }
+.menu-opcion-input input { flex: 1; padding: 5px; font-weight: bold; border-radius: 4px; border: 1px solid #999; font-size: 0.82rem; }
+.contenedor-ajuste-colores { display: none; grid-template-columns: 1fr 1fr; gap: 6px; padding: 8px 6px; background-color: #fafafa; border-bottom: 1px solid #eee; }
+.bloque-color-picker { display: flex; align-items: center; justify-content: space-between; background: #eef0f2; padding: 5px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; }
+.bloque-color-picker input[type="color"] { border: none; width: 24px; height: 24px; border-radius: 50%; cursor: pointer; background: none; padding: 0; }
+.btn-cerrar-menu { background: #555; color: white; border: none; padding: 10px; border-radius: 4px; margin-top: 16px; font-weight: bold; cursor: pointer; }
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 2000; padding: 10px; }
+.modal-content { background: white; border-radius: 8px; padding: 16px; width: 100%; max-width: 350px; box-shadow: 0 4px 10px rgba(0,0,0,0.25); display: flex; flex-direction: column; gap: 12px; }
+.modal-titulo { font-size: 1rem; font-weight: bold; color: #333; }
+.modal-textarea { width: 100%; height: 80px; padding: 8px; font-size: 0.9rem; border: 1px solid #bbb; border-radius: 4px; resize: none; font-family: sans-serif; }
+.modal-botones { display: flex; gap: 8px; justify-content: flex-end; }
+.btn-modal { padding: 8px 14px; border: none; border-radius: 4px; font-weight: bold; font-size: 0.85rem; cursor: pointer; }
+.btn-modal.guardar { background: var(--teal-header); color: white; }
+.btn-modal.cancelar { background: #bbb; color: #333; }
+</style>
+</head>
+<body>
+<div class="container" id="app-container">
+<div class="header-barra">
+<button class="btn-menu-tres" onclick="toggleMenu(true)">☰</button>
+<div class="contenedor-control-mes">
+<button class="btn-Cambio-mes" onclick="cambiarMes(-1)">-</button>
+<div class="titulo-mes-central" id="mes-titulo">...</div>
+<button class="btn-Cambio-mes" onclick="cambiarMes(1)">+</button>
+</div>
+</div>
+<div class="panel-totales">
+<div>Horas Semana: <span id="total-semana">00:00</span></div>
+<div>Total Mes: <span id="total-mes">00:00</span></div>
+</div>
+<div class="zona-accion-superior">
+<div class="bloque-semanas-mini" id="desglose-semanas"></div>
+<div class="bloque-fichar-superior" id="contenedor-botones-fichar"></div>
+</div>
+<div class="vistas-sub">
+<span id="v-semana" onclick="cambiarVista('semana')">SEMANA</span>
+<span id="v-mes" class="activo" onclick="cambiarVista('mes')">MES</span>
+<span id="v-ano" onclick="cambiarVista('ano')">AÑO</span>
+</div>
+<div class="calendario-lista" id="lista-dias"></div>
+</div>
+<div class="menu-lateral-overlay" id="menu-overlay" onclick="toggleMenu(false)"></div>
+<div class="menu-lateral" id="menu-lateral">
+<div class="menu-titulo">Ajustes de Fichaje</div>
+<div class="menu-seccion">Configuración</div>
+<div class="menu-opcion-input">
+<span>👤 Nombre:</span>
+<input type="text" id="input-nombre-global" oninput="guardarNombre(this.value)" placeholder="Nombre y Apellidos">
+</div>
+<div class="menu-opcion-input">
+<span>🪪 DNI / NIE:</span>
+<input type="text" id="input-dni-global" oninput="guardarDni(this.value)" placeholder="Documento ID">
+</div>
+<div class="menu-opcion">
+<span>⚙️ Tipo de Turno:</span>
+<select id="selector-turno-global" onchange="ajustarTipoTurno(this.value)">
+<option value="continuo">Continuo</option>
+<option value="partido">Partido</option>
+</select>
+</div>
+<div class="menu-opcion" onclick="verificarPermisoGPS()">
+<span>🛰️ Estado del GPS:</span>
+<span id="estado-gps-lbl" style="color: #666; font-size: 0.8rem; font-weight: bold;">Verificar...</span>
+</div>
+<div class="menu-opcion" onclick="toggleSeccionColores()">
+<span>🎨 Personalizar Colores</span>
+<span id="flecha-colores-menu">▼</span>
+</div>
+<div class="contenedor-ajuste-colores" id="desplegable-colores">
+<div class="bloque-color-picker">
+<span>Trabajo</span>
+<input type="color" id="picker-trabajo" onchange="guardarColorPersonalizado('trabajo', this.value)">
+</div>
+<div class="bloque-color-picker">
+<span>Vacac.</span>
+<input type="color" id="picker-vacaciones" onchange="guardarColorPersonalizado('vacaciones', this.value)">
+</div>
+<div class="bloque-color-picker">
+<span>Libre</span>
+<input type="color" id="picker-libre" onchange="guardarColorPersonalizado('libre', this.value)">
+</div>
+<div class="bloque-color-picker">
+<span>Baja M.</span>
+<input type="color" id="picker-baja" onchange="guardarColorPersonalizado('baja', this.value)">
+</div>
+</div>
+<div class="menu-seccion">Compartir Datos del Mes</div>
+<div class="menu-opcion" onclick="compartirPorWhatsApp()">🟢 Compartir por WhatsApp</div>
+<div class="menu-opcion" onclick="compartirPorCorreo()">✉️ Compartir por Correo</div>
+<div class="menu-seccion">Seguridad Anual</div>
+<div class="menu-opcion" onclick="descargarCopiaSeguridad()">💾 Guardar Copia (.json)</div>
+<div class="menu-opcion" onclick="document.getElementById('input-importar').click()">📂 Restaurar Copia (.json)</div>
+<button class="btn-cerrar-menu" onclick="toggleMenu(false)">Cerrar Menú</button>
+</div>
+<input type="file" id="input-importar" style="display:none;" accept=".json" onchange="cargarCopiaSeguridad(event)">
+<div class="modal-overlay" id="modal-nota-overlay">
+<div class="modal-content">
+<div class="modal-titulo" id="modal-nota-titulo">Nota del día</div>
+<textarea class="modal-textarea" id="modal-nota-texto" placeholder="Escribe aquí anotaciones importantes..."></textarea>
+<div class="modal-botones">
+<button class="btn-modal cancelar" onclick="cerrarModalNota()">Cancelar</button>
+<button class="btn-modal guardar" onclick="guardarNotaModal()">Guardar</button>
+</div>
+</div>
+</div>
+<script>
+const mesesNombres = ["ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO", "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"];
+const diasSemanaNombres = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+let fechaActual = new Date();
+let vistaActual = 'mes';
+let configuracionTurno = localStorage.getItem('config-turno') || 'continuo';
+let diaNotaSeleccionado = null;
+const coloresDefecto = { trabajo: '#d4edda', vacaciones: '#cce5ff', libre: '#fff3cd', baja: '#f8d7da' };
+function inicializarColores() {
+  ['trabajo', 'vacaciones', 'libre', 'baja'].forEach(tipo => {
+    let col = localStorage.getItem(`color-custom-${tipo}`) || coloresDefecto[tipo];
+    document.documentElement.style.setProperty(`--color-${tipo}`, col);
+    document.getElementById(`picker-${tipo}`).value = col;
+  });
+}
+function toggleSeccionColores() {
+  const contenedor = document.getElementById('desplegable-colores');
+  const flecha = document.getElementById('flecha-colores-menu');
+  if (contenedor.style.display === 'grid') { contenedor.style.display = 'none'; flecha.textContent = '▼'; }
+  else { contenedor.style.display = 'grid'; flecha.textContent = '▲'; }
+}
+function guardarColorPersonalizado(tipo, valor) {
+  localStorage.setItem(`color-custom-${tipo}`, valor);
+  document.documentElement.style.setProperty(`--color-${tipo}`, valor);
+}
+function guardarNombre(valor) { localStorage.setItem('config-nombre', valor); }
+function guardarDni(valor) { localStorage.setItem('config-dni', valor); }
+function toggleMenu(abrir) {
+  document.getElementById('menu-overlay').style.display = abrir ? 'block' : 'none';
+  document.getElementById('menu-lateral').style.display = abrir ? 'flex' : 'none';
+  if (!abrir) { document.getElementById('desplegable-colores').style.display = 'none'; document.getElementById('flecha-colores-menu').textContent = '▼'; }
+  else { verificarPermisoGPS(true); }
+}
+function ajustarTipoTurno(valor) {
+  configuracionTurno = valor; localStorage.setItem('config-turno', valor);
+  const container = document.getElementById('app-container');
+  if(valor === 'partido') container.classList.add('vista-partido'); else container.classList.remove('vista-partido');
+  dibujarBotonesFicharSuperiores(); renderizarCalendario(false);
+}
+function dibujarBotonesFicharSuperiores() {
+  const contenedor = document.getElementById('contenedor-botones-fichar');
+  contenedor.innerHTML = '';
+  if(configuracionTurno === 'continuo') contenedor.innerHTML = `<button class="btn-fichar-principal" onclick="ficharSecuencial('continuo')">🕒 FICHAR</button>`;
+  else contenedor.innerHTML = `<button class="btn-fichar-principal" onclick="ficharSecuencial('m')">☀️ MAÑANA</button> <button class="btn-fichar-principal tarde" onclick="ficharSecuencial('t')">🌙 TARDE</button>`;
+}
+function irAlMesSeleccionado(indiceMes) { fechaActual.setMonth(indiceMes); cambiarVista('mes'); }
+function renderizarCalendario(autoScroll = true, comportamiento = 'smooth') {
+  const anio = fechaActual.getFullYear(); const mes = fechaActual.getMonth();
+  const lista = document.getElementById('lista-dias'); lista.innerHTML = '';
+  let totalDiasMes = new Date(anio, mes + 1, 0).getDate();
+  if(vistaActual === 'ano') {
+    document.getElementById('mes-titulo').textContent = `AÑO ${anio}`;
+    for(let m = 0; m < 12; m++) {
+      let minsMes = 0; let diasEnMes = new Date(anio, m + 1, 0).getDate();
+      for(let d = 1; d <= diasEnMes; d++) {
+        const claveId = `fichaje-${anio}-${m}-${d}`;
+        let data = JSON.parse(localStorage.getItem(claveId));
+        if(data && data.t && data.t !== '00:00') {
+          let partes = data.t.split(':'); minsMes += (parseInt(partes[0]||0) * 60) + parseInt(partes[1]||0);
+        }
+      }
+      let filaMes = document.createElement('div'); filaMes.className = 'fila-mes-ano'; filaMes.style.background = (m === mes) ? '#fff3cd' : '#fafafa';
+      filaMes.setAttribute('onclick', `irAlMesSeleccionado(${m})`);
+      filaMes.innerHTML = `<span style="font-weight:bold; color:#333;">📅 ${mesesNombres[m]}</span><span style="color:#007d7a; font-weight:bold;">${minsATexto(minsMes)} hrs ➜</span>`;
+      lista.appendChild(filaMes);
+    }
+    calcularTotalesGenerales(); return;
+  }
+  document.getElementById('mes-titulo').textContent = `${mesesNombres[mes]} ${anio}`;
+  let diaInicio = 1, diaFin = totalDiasMes;
+  if(vistaActual === 'semana') {
+    let targetDay = fechaActual.getDate(); let targetObj = new Date(anio, mes, targetDay);
+    let currentDayOfWeek = targetObj.getDay(); let diffToMonday = currentDayOfWeek === 0 ? 6 : currentDayOfWeek - 1;
+    let diffToSunday = currentDayOfWeek === 0 ? 0 : 7 - currentDayOfWeek;
+    diaInicio = Math.max(1, targetDay - diffToMonday); diaFin = Math.min(totalDiasMes, targetDay + diffToSunday);
+  }
+  for(let i = diaInicio; i <= diaFin; i++) {
+    const claveId = `fichaje-${anio}-${mes}-${i}`;
+    let data = JSON.parse(localStorage.getItem(claveId)) || { e1:'', s1:'', e2:'', s2:'', est:'defecto', t:'00:00', nota:'', origen: 'MANUAL', gps: {} };
+    let valE1 = data.e1 || ''; let valS1 = data.s1 || ''; let valE2 = data.e2 || ''; let valS2 = data.s2 || '';
+    const objetoFecha = new Date(anio, mes, i); const textoDiaSemana = diasSemanaNombres[objetoFecha.getDay()];
+    const fila = document.createElement('div'); fila.className = `fila-dia tipo-${data.est}`; fila.id = `fila-${i}`;
+    let inputsHTML = (configuracionTurno === 'continuo') ? `<input type="text" class="caja-input" id="e1-${i}" placeholder="Ent" value="${valE1}" oninput="calc(${i})"><input type="text" class="caja-input" id="s1-${i}" placeholder="Sal" value="${valS1}" oninput="calc(${i})">` : `<input type="text" class="caja-input" id="e1-${i}" placeholder="M.E" value="${valE1}" oninput="calc(${i})"><input type="text" class="caja-input" id="s1-${i}" placeholder="M.S" value="${valS1}" oninput="calc(${i})"><input type="text" class="caja-input" id="e2-${i}" placeholder="T.E" value="${valE2}" oninput="calc(${i})"><input type="text" class="caja-input" id="s2-${i}" placeholder="T.S" value="${valS2}" oninput="calc(${i})">`;
+    let claseNota = (data.nota && data.nota.trim() !== "") ? "btn-nota-trigger con-nota" : "btn-nota-trigger";
+    let iconoNota = (data.nota && data.nota.trim() !== "") ? "📝" : "💬";
+    
+    // Alarma si origen es MANUAL y hay algún dato
+    let hayContenido = (valE1 !== '' || valS1 !== '' || valE2 !== '' || valS2 !== '');
+    let htmlAlarma = (data.origen === 'MANUAL' && hayContenido) ? '<span class="icono-alarma" title="Modificado manualmente">⚠️</span>' : '';
+
+    // Lógica e icono GPS
+    let gpsIconoHTML = '';
+    if (data.gps) {
+      let tramosGps = [];
+      if (data.gps.e1) tramosGps.push(`Entrada 1: ${data.gps.e1}`);
+      if (data.gps.s1) tramosGps.push(`Salida 1: ${data.gps.s1}`);
+      if (data.gps.e2) tramosGps.push(`Entrada 2: ${data.gps.e2}`);
+      if (data.gps.s2) tramosGps.push(`Salida 2: ${data.gps.s2}`);
+      
+      if (tramosGps.length > 0) {
+        let primeraCoord = data.gps.e1 || data.gps.s1 || data.gps.e2 || data.gps.s2;
+        gpsIconoHTML = `<a href="https://www.google.com/maps?q=${primeraCoord}" target="_blank" class="btn-gps-mapa" title="Ubicación registrada:\n${tramosGps.join('\n')}">📍</a>`;
+      }
+    }
+
+    fila.innerHTML = `<div class="label-dia" onclick="desplazarADia(${i}, 'smooth', 'center')">${textoDiaSemana} ${i}</div><div class="bloques-inputs">${inputsHTML}<select class="selector-estado" id="est-${i}" onchange="cambiarEstado(${i})"><option value="defecto" ${data.est==='defecto'?'selected':''}>- Tipo -</option><option value="trabajo" ${data.est==='trabajo'?'selected':''}>TRABAJO</option><option value="vacaciones" ${data.est==='vacaciones'?'selected':''}>VACAC.</option><option value="libre" ${data.est==='libre'?'selected':''}>LIBRE</option><option value="baja" ${data.est==='baja'?'selected':''}>BAJA M.</option></select></div><div class="total-horas" id="t-${i}">${gpsIconoHTML}${htmlAlarma}${data.t}</div><button class="${claseNota}" id="icononota-${i}" onclick="abrirModalNota(${i})">${iconoNota}</button>`;
+    lista.appendChild(fila);
+  }
+  calcularTotalesGenerales();
+  if(autoScroll && vistaActual === 'mes') {
+    const hoy = new Date(); let diaDestino = 1; let alineacion = 'start';
+    if (anio === hoy.getFullYear() && mes === hoy.getMonth()) {
+      let currentDayOfWeek = hoy.getDay(); let diffToMonday = currentDayOfWeek === 0 ? 6 : currentDayOfWeek - 1;
+      let lunesTarget = hoy.getDate() - diffToMonday; diaDestino = Math.max(1, lunesTarget); alineacion = 'start';
+    } else {
+      alineacion = 'center';
+      for(let i = totalDiasMes; i >= 1; i--) {
+        const claveId = `fichaje-${anio}-${mes}-${i}`; let data = JSON.parse(localStorage.getItem(claveId));
+        if(data && (data.e1 || data.s1 || data.e2 || data.s2 || data.est !== 'defecto' || (data.nota && data.nota.trim() !== ''))) { diaDestino = i; break; }
+      }
+    }
+    setTimeout(() => desplazarADia(diaDestino, comportamiento, alineacion), 80);
+  }
+}
+function abrirModalNota(dia) {
+  diaNotaSeleccionado = dia; const anio = fechaActual.getFullYear(); const mes = fechaActual.getMonth();
+  const claveId = `fichaje-${anio}-${mes}-${dia}`; let data = JSON.parse(localStorage.getItem(claveId)) || { nota: '' };
+  document.getElementById('modal-nota-titulo').textContent = `Nota del ${diasSemanaNombres[new Date(anio,mes,dia).getDay()]} ${dia} de ${mesesNombres[mes]}`;
+  document.getElementById('modal-nota-texto').value = data.nota || '';
+  document.getElementById('modal-nota-overlay').style.display = 'flex';
+}
+function cerrarModalNota() { document.getElementById('modal-nota-overlay').style.display = 'none'; diaNotaSeleccionado = null; }
+function guardarNotaModal() {
+  if(diaNotaSeleccionado === null) return;
+  const anio = fechaActual.getFullYear(); const mes = fechaActual.getMonth();
+  const claveId = `fichaje-${anio}-${mes}-${diaNotaSeleccionado}`;
+  let data = JSON.parse(localStorage.getItem(claveId)) || { e1:'', s1:'', e2:'', s2:'', est:'defecto', t:'00:00', nota:'', origen: 'MANUAL', gps: {} };
+  let textoNota = document.getElementById('modal-nota-texto').value; data.nota = textoNota; data.origen = 'MANUAL';
+  localStorage.setItem(claveId, JSON.stringify(data));
+  let btnIcono = document.getElementById(`icononota-${diaNotaSeleccionado}`);
+  if(btnIcono) {
+    if(textoNota.trim() !== "") { btnIcono.className = "btn-nota-trigger con-nota"; btnIcono.textContent = "📝"; }
+    else { btnIcono.className = "btn-nota-trigger"; btnIcono.textContent = "💬"; }
+  }
+  cerrarModalNota(); renderizarCalendario(false);
+}
+function calc(id) {
+  let iE1 = document.getElementById(`e1-${id}`); let iS1 = document.getElementById(`s1-${id}`); let iE2 = document.getElementById(`e2-${id}`); let iS2 = document.getElementById(`s2-${id}`); let elTot = document.getElementById(`t-${id}`);
+  if(!elTot) return;
+  let mTotales = 0;
+  function calcularTramo(ent, sal) {
+    if(ent && sal && ent.includes(':') && sal.includes(':')) {
+      let e = ent.split(':'), s = sal.split(':');
+      let diff = (parseInt(s[0]||0)*60 + parseInt(s[1]||0)) - (parseInt(e[0]||0)*60 + parseInt(e[1]||0));
+      return diff > 0 ? diff : 0;
+    }
+    return 0;
+  }
+  let e1 = iE1 ? iE1.value.trim().replace('.', ':') : ''; let s1 = iS1 ? iS1.value.trim().replace('.', ':') : ''; mTotales += calcularTramo(e1, s1);
+  let e2 = '', s2 = '';
+  if (configuracionTurno === 'partido') { e2 = iE2 ? iE2.value.trim().replace('.', ':') : ''; s2 = iS2 ? iS2.value.trim().replace('.', ':') : ''; }
+  else {
+    const anio = fechaActual.getFullYear(); const mes = fechaActual.getMonth();
+    const claveId = `fichaje-${anio}-${mes}-${id}`; let dataAnterior = JSON.parse(localStorage.getItem(claveId));
+    if (dataAnterior) { e2 = dataAnterior.e2 || ''; s2 = dataAnterior.s2 || ''; }
+  }
+  mTotales += calcularTramo(e2, s2);
+  
+  // Re-inyectar iconos
+  let dataActual = JSON.parse(localStorage.getItem(`fichaje-${fechaActual.getFullYear()}-${fechaActual.getMonth()}-${id}`)) || {};
+  let hayContenido = (e1 !== '' || s1 !== '' || e2 !== '' || s2 !== '');
+  let htmlAlarma = (dataActual.origen === 'MANUAL' && hayContenido) ? '<span class="icono-alarma" title="Modificado manualmente">⚠️</span>' : '';
+  
+  let gpsIconoHTML = '';
+  if (dataActual.gps) {
+    let tramosGps = [];
+    if (dataActual.gps.e1) tramosGps.push(`Entrada 1: ${dataActual.gps.e1}`);
+    if (dataActual.gps.s1) tramosGps.push(`Salida 1: ${dataActual.gps.s1}`);
+    if (dataActual.gps.e2) tramosGps.push(`Entrada 2: ${dataActual.gps.e2}`);
+    if (dataActual.gps.s2) tramosGps.push(`Salida 2: ${dataActual.gps.s2}`);
+    
+    if (tramosGps.length > 0) {
+      let primeraCoord = dataActual.gps.e1 || dataActual.gps.s1 || dataActual.gps.e2 || dataActual.gps.s2;
+      gpsIconoHTML = `<a href="https://www.google.com/maps?q=${primeraCoord}" target="_blank" class="btn-gps-mapa" title="Ubicación registrada:\n${tramosGps.join('\n')}">📍</a>`;
+    }
+  }
+
+  elTot.innerHTML = `${gpsIconoHTML}${htmlAlarma}${mTotales > 0 ? minsATexto(mTotales) : "00:00"}`;
+  guardarFila(id); calcularTotalesGenerales();
+}
+function cambiarEstado(id) {
+  const elEst = document.getElementById(`est-${id}`); const fila = document.getElementById(`fila-${id}`);
+  if(elEst && fila) fila.className = `fila-dia tipo-${elEst.value}`;
+  guardarFila(id); renderizarCalendario(false);
+}
+function guardarFila(id) {
+  const anio = fechaActual.getFullYear(); const mes = fechaActual.getMonth();
+  const claveId = `fichaje-${anio}-${mes}-${id}`;
+  const elE1 = document.getElementById('e1-' + id); const elS1 = document.getElementById('s1-' + id); const elE2 = document.getElementById('e2-' + id); const elS2 = document.getElementById('s2-' + id); const elEst = document.getElementById('est-' + id); const elTot = document.getElementById('t-' + id);
+  let dataAnterior = JSON.parse(localStorage.getItem(claveId)) || { e1:'', s1:'', e2:'', s2:'', est:'defecto', t:'00:00', nota:'', origen: 'MANUAL', gps: {} };
+  const datos = { 
+    e1: elE1 ? elE1.value : (dataAnterior.e1 || ''), 
+    e2: elE2 ? elE2.value : (dataAnterior.e2 || ''), 
+    s1: elS1 ? elS1.value : (dataAnterior.s1 || ''), 
+    s2: elS2 ? elS2.value : (dataAnterior.s2 || ''), 
+    est: elEst ? elEst.value : 'defecto', 
+    t: elTot ? elTot.textContent.replace('⚠️', '').replace('📍', '').trim() : '00:00', 
+    nota: dataAnterior.nota || '', 
+    origen: 'MANUAL',
+    gps: dataAnterior.gps || {} // Mantenemos a salvo la ubicación
+  };
+  localStorage.setItem(claveId, JSON.stringify(datos));
+}
+function ficharSecuencial(modo) {
+  const hoy = new Date(); const realAnio = hoy.getFullYear(); const realMes = hoy.getMonth(); const realDia = hoy.getDate();
+  if(fechaActual.getFullYear() !== realAnio || fechaActual.getMonth() !== realMes) { alert("⚠️ Cambia al mes actual para usar el botón de fichar."); return; }
+  if(vistaActual === 'ano') { alert("⚠️ Pasa a la vista de MES."); return; }
+  
+  fechaActual = new Date();
+  const horaMarcada = hoy.toTimeString().substring(0, 5);
+  const claveId = `fichaje-${realAnio}-${realMes}-${realDia}`;
+  let data = JSON.parse(localStorage.getItem(claveId)) || { e1:'', s1:'', e2:'', s2:'', est:'defecto', t:'00:00', nota:'', origen: 'AUTOMATICO', gps: {} };
+  
+  let campoFichado = '';
+  if(modo === 'continuo') { 
+    if(data.e1 === "") { data.e1 = horaMarcada; data.est = 'trabajo'; campoFichado = 'e1'; } 
+    else if(data.s1 === "") { data.s1 = horaMarcada; campoFichado = 's1'; } 
+    else { alert("📝 Hoy ya está completo."); return; } 
+  }
+  else if(modo === 'm') { 
+    if(data.e1 === "") { data.e1 = horaMarcada; data.est = 'trabajo'; campoFichado = 'e1'; } 
+    else if(data.s1 === "") { data.s1 = horaMarcada; campoFichado = 's1'; } 
+    else { alert("📝 Mañana completa."); return; } 
+  }
+  else if(modo === 't') { 
+    if(data.e2 === "") { data.e2 = horaMarcada; data.est = 'trabajo'; campoFichado = 'e2'; } 
+    else if(data.s2 === "") { data.s2 = horaMarcada; campoFichado = 's2'; } 
+    else { alert("📝 Tarde completa."); return; } 
+  }
+
+  if (!data.gps) data.gps = {};
+
+  // Intentar geolocalización asíncrona rápida
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const coords = `${position.coords.latitude.toFixed(6)},${position.coords.longitude.toFixed(6)}`;
+        data.gps[campoFichado] = coords;
+        guardarYProcesarFichaje(claveId, data, hoy);
+      },
+      (error) => {
+        console.warn("GPS no disponible:", error.message);
+        // Continuamos sin coordenadas en caso de fallo o denegación
+        guardarYProcesarFichaje(claveId, data, hoy);
+      },
+      { enableHighAccuracy: true, timeout: 6000 }
+    );
+  } else {
+    guardarYProcesarFichaje(claveId, data, hoy);
+  }
+}
+function guardarYProcesarFichaje(claveId, data, hoy) {
+  function calcularTramoInterno(ent, sal) {
+    if(ent && sal && ent.includes(':') && sal.includes(':')) {
+      let e = ent.split(':'), s = sal.split(':');
+      let diff = (parseInt(s[0]||0)*60 + parseInt(s[1]||0)) - (parseInt(e[0]||0)*60 + parseInt(e[1]||0));
+      return diff > 0 ? diff : 0;
+    }
+    return 0;
+  }
+  let mTotales = calcularTramoInterno(data.e1, data.s1) + calcularTramoInterno(data.e2, data.s2);
+  data.t = mTotales > 0 ? minsATexto(mTotales) : "00:00"; 
+  data.origen = 'AUTOMATICO';
+  localStorage.setItem(claveId, JSON.stringify(data)); 
+  renderizarCalendario(false);
+  let currentDayOfWeek = hoy.getDay(); let diffToMonday = currentDayOfWeek === 0 ? 6 : currentDayOfWeek - 1;
+  let lunesTarget = hoy.getDate() - diffToMonday; let diaScroll = Math.max(1, lunesTarget); desplazarADia(diaScroll, 'smooth', 'start');
+}
+function desplazarADia(dia, comportamiento = 'smooth', alineacion = 'center') {
+  if(vistaActual === 'mes') { const el = document.getElementById(`fila-${dia}`); if(el) el.scrollIntoView({ behavior: comportamiento, block: alineacion }); }
+}
+function seleccionarSemana(dia) { fechaActual.setDate(dia); if(vistaActual === 'semana') renderizarCalendario(false); else { desplazarADia(dia, 'smooth', 'start'); calcularTotalesGenerales(); } }
+function cambiarMes(dir) { if(vistaActual === 'ano') fechaActual.setFullYear(fechaActual.getFullYear() + dir); else fechaActual.setMonth(fechaActual.getMonth() + dir); renderizarCalendario(true, 'smooth'); }
+function cambiarVista(vista) {
+  vistaActual = vista; document.getElementById('v-semana').classList.remove('activo'); document.getElementById('v-mes').classList.remove('activo'); document.getElementById('v-ano').classList.remove('activo');
+  document.getElementById(`v-${vista}`).classList.add('activo'); renderizarCalendario(true, 'instant');
+}
+function construirTextoMes() {
+  let mesSel = fechaActual.getMonth(); let anioSel = fechaActual.getFullYear();
+  let totalDias = new Date(anioSel, mesSel + 1, 0).getDate();
+  let nombreSel = localStorage.getItem('config-nombre') || ''; let dniSel = localStorage.getItem('config-dni') || '';
+  let textoNombre = nombreSel ? ` DE ${nombreSel.toUpperCase()}` : ''; let textoDni = dniSel ? ` (DNI/NIE: ${dniSel.toUpperCase()})` : '';
+  let mensaje = `📋 FICHADO${textoNombre}${textoDni} - ${mesesNombres[mesSel]} ${anioSel}\n\n`;
+  let totalMinutosMes = 0;
+  for(let i = 1; i <= totalDias; i++) {
+    const claveId = `fichaje-${anioSel}-${mesSel}-${i}`; let data = JSON.parse(localStorage.getItem(claveId));
+    if(data) {
+      let txtHoras = '';
+      if(data.e1 || data.s1) txtHoras += `M: ${data.e1||'--:--'} a ${data.s1||'--:--'}`;
+      if(data.e2 || data.s2) txtHoras += ` | T: ${data.e2||'--:--'} a ${data.s2||'--:--'}`;
+      if(txtHoras !== '' || (data.t && data.t !== '00:00')) {
+        let tipo = data.est !== 'defecto' ? ` [${data.est.toUpperCase()}]` : '';
+        let anotacion = data.nota ? ` -> Nota: ${data.nota}` : '';
+        let manualTag = (data.origen === 'MANUAL') ? '⚠️ ' : '';
+        
+        let gpsTag = '';
+        if (data.gps && (data.gps.e1 || data.gps.s1 || data.gps.e2 || data.gps.s2)) {
+          let tramos = [];
+          if (data.gps.e1) tramos.push(`E1: ${data.gps.e1}`);
+          if (data.gps.s1) tramos.push(`S1: ${data.gps.s1}`);
+          if (data.gps.e2) tramos.push(`E2: ${data.gps.e2}`);
+          if (data.gps.s2) tramos.push(`S2: ${data.gps.s2}`);
+          gpsTag = ` 📍 GPS (${tramos.join(', ')})`;
+        }
+
+        mensaje += `Día ${i}: ${manualTag}${data.t || '00:00'} (${txtHoras})${tipo}${gpsTag}${anotacion}\n`;
+      }
+      if(data.t && data.t !== '00:00') {
+        let partes = data.t.split(':'); totalMinutosMes += (parseInt(partes[0]||0) * 60) + parseInt(partes[1]||0);
+      }
+    }
+  }
+  mensaje += `\nTOTAL HORAS MENSUALES: ${minsATexto(totalMinutosMes)}`;
+  return mensaje;
+}
+function compartirPorWhatsApp() {
+  let texto = construirTextoMes(); toggleMenu(false);
+  if (navigator.share) { navigator.share({ title: 'Resumen Fichaje', text: texto }).catch(() => fallbackCopiar(texto)); }
+  else { fallbackCopiar(texto); }
+}
+function compartirPorCorreo() {
+  let texto = construirTextoMes(); toggleMenu(false);
+  let asunto = encodeURIComponent(`Resumen Fichaje - ${mesesNombres[fechaActual.getMonth()]} ${fechaActual.getFullYear()}`);
+  let cuerpo = encodeURIComponent(texto); window.location.href = `mailto:?subject=${asunto}&body=${cuerpo}`;
+}
+function fallbackCopiar(texto) {
+  const tArea = document.createElement("textarea"); tArea.value = texto; document.body.appendChild(tArea); tArea.select();
+  try { document.execCommand('copy'); alert("📋 Copiado al portapapeles. ¡Pégalo directamente en WhatsApp!"); } catch (err) { alert("⚠️ No se pudo compartir automáticamente."); }
+  document.body.removeChild(tArea);
+}
+function verificarPermisoGPS(silencioso = false) {
+  const lbl = document.getElementById('estado-gps-lbl');
+  if (!navigator.geolocation) {
+    lbl.textContent = "No compatible";
+    lbl.style.color = "red";
+    return;
+  }
+  if (!silencioso) lbl.textContent = "Solicitando...";
+  
+  navigator.geolocation.getCurrentPosition(
+    () => {
+      lbl.textContent = "Permitido ✓";
+      lbl.style.color = "green";
+    },
+    (error) => {
+      if (error.code === error.PERMISSION_DENIED) {
+        lbl.textContent = "Bloqueado ✗";
+        lbl.style.color = "red";
+      } else {
+        lbl.textContent = "Inactivo/Sin señal";
+        lbl.style.color = "orange";
+      }
+    },
+    { timeout: 3000 }
+  );
+}
+document.getElementById('selector-turno-global').value = configuracionTurno;
+if(configuracionTurno === 'partido') document.getElementById('app-container').classList.add('vista-partido');
+let nombreUsuario = localStorage.getItem('config-nombre') || ''; document.getElementById('input-nombre-global').value = nombreUsuario;
+let dniUsuario = localStorage.getItem('config-dni') || ''; document.getElementById('input-dni-global').value = dniUsuario;
+inicializarColores(); registrarUbicacionInicial(); dibujarBotonesFicharSuperiores(); renderizarCalendario(true, 'instant');
+
+function registrarUbicacionInicial() {
+  // Solo se utiliza para preparar permisos al iniciar si el navegador/WebView lo solicita
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(()=>{}, ()=>{}, {timeout: 1000});
+  }
+}
+function descargarCopiaSeguridad() {
+  let copiaDato = {};
+  for (let i = 0; i < localStorage.length; i++) { let cl = localStorage.key(i); if (cl.startsWith('fichaje-')) copiaDato[cl] = localStorage.getItem(cl); }
+  let blob = new Blob([JSON.stringify(copiaDato, null, 2)], {type: "application/json"});
+  let url = URL.createObjectURL(blob); let a = document.createElement('a'); a.href = url; a.setAttribute("download", `copia_fichajes_${fechaActual.getFullYear()}.json`); a.click(); toggleMenu(false);
+}
+function cargarCopiaSeguridad(event) {
+  const f = event.target.files[0]; if (!f) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const datos = JSON.parse(e.target.result);
+      for (let cl in datos) { if (cl.startsWith('fichaje-')) localStorage.setItem(cl, datos[cl]); }
+      renderizarCalendario(true, 'instant'); alert("✅ Copia restaurada.");
+    } catch (err) { alert("Archivo incorrecto."); }
+  };
+  reader.readAsText(f);
+}
+function calcularTotalesGenerales() {
+  const anio = fechaActual.getFullYear(); const mes = fechaActual.getMonth();
+  let totalMinutosMes = 0; let totalDias = new Date(anio, mes + 1, 0).getDate();
+  let semanasHTML = ''; let minsSemanaMismoMes = 0; let contadorSemana = 1; let diaInicioW = 1; let minsSemanaActualFocus = 0;
+  for(let i = 1; i <= totalDias; i++) {
+    const claveId = `fichaje-${anio}-${mes}-${i}`; let data = JSON.parse(localStorage.getItem(claveId));
+    let minsDia = 0;
+    if(data && data.t && data.t !== '00:00') {
+      let partes = data.t.split(':'); minsDia = (parseInt(partes[0]||0) * 60) + parseInt(partes[1]||0);
+      totalMinutosMes += minsDia;
+    }
+    minsSemanaMismoMes += minsDia;
+    let objF = new Date(anio, mes, i);
+    if(objF.getDay() === 0 || i === totalDias) {
+      let claseActiva = '';
+      if (fechaActual.getDate() >= diaInicioW && fechaActual.getDate() <= i) { minsSemanaActualFocus = minsSemanaMismoMes; claseActiva = ' activo'; }
+      semanasHTML += `<div class="btn-semana-mini${claseActiva}" onclick="seleccionarSemana(${diaInicioW})">Sem. ${contadorSemana}<span>${minsATexto(minsSemanaMismoMes)}</span></div>`;
+      minsSemanaMismoMes = 0; contadorSemana++; diaInicioW = i + 1;
+    }
+  }
+  if(document.getElementById('total-mes')) document.getElementById('total-mes').textContent = minsATexto(totalMinutosMes);
+  if(document.getElementById('total-semana')) document.getElementById('total-semana').textContent = minsATexto(minsSemanaActualFocus);
+  const elDesglose = document.getElementById('desglose-semanas');
+  if(elDesglose) {
+    if(vistaActual === 'mes' || vistaActual === 'semana') { elDesglose.style.gridTemplateColumns = `repeat(${contadorSemana-1}, 1fr)`; elDesglose.innerHTML = semanasHTML; }
+    else { elDesglose.innerHTML = ''; }
+  }
+}
+function minsATexto(minutos) { let hrs = String(Math.floor(minutos / 60)).padStart(2, '0'); let mins = String(minutos % 60).padStart(2, '0'); return `${hrs}:${mins}`; }
+</script>
+</body>
+</html>
