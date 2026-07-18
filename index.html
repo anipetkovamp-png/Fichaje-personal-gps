@@ -88,11 +88,6 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 .btn-modal { padding: 8px 14px; border: none; border-radius: 4px; font-weight: bold; font-size: 0.85rem; cursor: pointer; }
 .btn-modal.guardar { background: var(--teal-header); color: white; }
 .btn-modal.cancelar { background: #bbb; color: #333; }
-<script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js');
-  }
-</script>
 </head>
 <body>
 <div class="container" id="app-container">
