@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -241,6 +240,7 @@ function dibujarBotonesFicharSuperiores() {
   else contenedor.innerHTML = `<button class="btn-fichar-principal" onclick="ficharSecuencial('m')">☀️ MAÑANA</button> <button class="btn-fichar-principal tarde" onclick="ficharSecuencial('t')">🌙 TARDE</button>`;
 }
 function irAlMesSeleccionado(indiceMes) { fechaActual.setMonth(indiceMes); cambiarVista('mes'); }
+
 function renderizarCalendario(autoScroll = true, comportamiento = 'smooth') {
   const anio = fechaActual.getFullYear(); const mes = fechaActual.getMonth();
   const lista = document.getElementById('lista-dias'); lista.innerHTML = '';
@@ -273,7 +273,7 @@ function renderizarCalendario(autoScroll = true, comportamiento = 'smooth') {
   }
   for(let i = diaInicio; i <= diaFin; i++) {
     const claveId = `fichaje-${anio}-${mes}-${i}`;
-    let data = JSON.parse(localStorage.getItem(claveId)) || { e1:'', s1:'', e2:'', s2:'', est:'defecto', t:'00:00', nota:'', origen: 'MANUAL', gps: {} };
+    let data = JSON.parse(localStorage.getItem(claveId)) || { e1:'', s1:'', e2:'', s2:'', est:'defecto', t:'00:00', nota:'', origen: {}, gps: {} };
     let valE1 = data.e1 || ''; let valS1 = data.s1 || ''; let valE2 = data.e2 || ''; let valS2 = data.s2 || '';
     const objetoFecha = new Date(anio, mes, i); const textoDiaSemana = diasSemanaNombres[objetoFecha.getDay()];
     const fila = document.createElement('div'); fila.className = `fila-dia tipo-${data.est}`; fila.id = `fila-${i}`;
@@ -282,7 +282,16 @@ function renderizarCalendario(autoScroll = true, comportamiento = 'smooth') {
     let iconoNota = (data.nota && data.nota.trim() !== "") ? "📝" : "💬";
     
     let hayContenido = (valE1 !== '' || valS1 !== '' || valE2 !== '' || valS2 !== '');
-    let htmlAlarma = (data.origen === 'MANUAL' && hayContenido) ? '<span class="icono-alarma" title="Modificado manualmente">⚠️</span>' : '';
+    
+    let tieneManual = false;
+    if (data.origen) {
+      if (typeof data.origen === 'object') {
+        tieneManual = Object.keys(data.origen).some(k => data.origen[k] === 'MANUAL' && data[k]);
+      } else {
+        tieneManual = (data.origen === 'MANUAL');
+      }
+    }
+    let htmlAlarma = (tieneManual && hayContenido) ? '<span class="icono-alarma" title="Modificado manualmente">⚠️</span>' : '';
 
     let gpsIconoHTML = '';
     if (data.gps) {
@@ -325,12 +334,16 @@ function abrirModalNota(dia) {
   document.getElementById('modal-nota-overlay').style.display = 'flex';
 }
 function cerrarModalNota() { document.getElementById('modal-nota-overlay').style.display = 'none'; diaNotaSeleccionado = null; }
+
 function guardarNotaModal() {
   if(diaNotaSeleccionado === null) return;
   const anio = fechaActual.getFullYear(); const mes = fechaActual.getMonth();
   const claveId = `fichaje-${anio}-${mes}-${diaNotaSeleccionado}`;
-  let data = JSON.parse(localStorage.getItem(claveId)) || { e1:'', s1:'', e2:'', s2:'', est:'defecto', t:'00:00', nota:'', origen: 'MANUAL', gps: {} };
-  let textoNota = document.getElementById('modal-nota-texto').value; data.nota = textoNota; data.origen = 'MANUAL';
+  let data = JSON.parse(localStorage.getItem(claveId)) || { e1:'', s1:'', e2:'', s2:'', est:'defecto', t:'00:00', nota:'', origen: {}, gps: {} };
+  let textoNota = document.getElementById('modal-nota-texto').value; data.nota = textoNota;
+  if (!data.origen || typeof data.origen !== 'object') {
+    data.origen = data.origen === 'MANUAL' ? { e1:'MANUAL', s1:'MANUAL', e2:'MANUAL', s2:'MANUAL' } : {};
+  }
   localStorage.setItem(claveId, JSON.stringify(data));
   let btnIcono = document.getElementById(`icononota-${diaNotaSeleccionado}`);
   if(btnIcono) {
@@ -339,9 +352,9 @@ function guardarNotaModal() {
   }
   cerrarModalNota(); renderizarCalendario(false);
 }
+
 function calc(id) {
-  let iE1 = document.getElementById(`e1-${id}`); let iS1 = document.getElementById(`s1-${id}`); let iE2 = document.getElementById(`e2-${id}`); let iS2 = document.getElementById(`s2-${id}`); let elTot = document.getElementById(`t-${id}`);
-  if(!elTot) return;
+  let iE1 = document.getElementById(`e1-${id}`); let iS1 = document.getElementById(`s1-${id}`); let iE2 = document.getElementById(`e2-${id}`); let iS2 = document.getElementById(`s2-${id}`);
   let mTotales = 0;
   function calcularTramo(ent, sal) {
     if(ent && sal && ent.includes(':') && sal.includes(':')) {
@@ -361,50 +374,131 @@ function calc(id) {
   }
   mTotales += calcularTramo(e2, s2);
   
-  let dataActual = JSON.parse(localStorage.getItem(`fichaje-${fechaActual.getFullYear()}-${fechaActual.getMonth()}-${id}`)) || {};
-  let hayContenido = (e1 !== '' || s1 !== '' || e2 !== '' || s2 !== '');
-  let htmlAlarma = (dataActual.origen === 'MANUAL' && hayContenido) ? '<span class="icono-alarma" title="Modificado manualmente">⚠️</span>' : '';
+  guardarFila(id);
   
-  let gpsIconoHTML = '';
-  if (dataActual.gps) {
-    let tramosGps = [];
-    if (dataActual.gps.e1) tramosGps.push(`Entrada 1: ${dataActual.gps.e1}`);
-    if (dataActual.gps.s1) tramosGps.push(`Salida 1: ${dataActual.gps.s1}`);
-    if (dataActual.gps.e2) tramosGps.push(`Entrada 2: ${dataActual.gps.e2}`);
-    if (dataActual.gps.s2) tramosGps.push(`Salida 2: ${dataActual.gps.s2}`);
-    
-    if (tramosGps.length > 0) {
-      let primeraCoord = dataActual.gps.e1 || dataActual.gps.s1 || dataActual.gps.e2 || dataActual.gps.s2;
-      gpsIconoHTML = `<a href="https://www.google.com/maps?q=${primeraCoord}" target="_blank" class="btn-gps-mapa" title="Ubicación registrada:\n${tramosGps.join('\n')}">📍</a>`;
-    }
-  }
-
-  elTot.innerHTML = `${gpsIconoHTML}${htmlAlarma}<span class="texto-horas">${mTotales > 0 ? minsATexto(mTotales) : "00:00"}</span>`;
-  guardarFila(id); calcularTotalesGenerales();
+  const claveId = `fichaje-${fechaActual.getFullYear()}-${fechaActual.getMonth()}-${id}`;
+  let dataActual = JSON.parse(localStorage.getItem(claveId)) || {};
+  actualizarFilaUI(id, dataActual);
+  
+  calcularTotalesGenerales();
 }
+
 function cambiarEstado(id) {
   const elEst = document.getElementById(`est-${id}`); const fila = document.getElementById(`fila-${id}`);
   if(elEst && fila) fila.className = `fila-dia tipo-${elEst.value}`;
   guardarFila(id); renderizarCalendario(false);
 }
+
 function guardarFila(id) {
   const anio = fechaActual.getFullYear(); const mes = fechaActual.getMonth();
   const claveId = `fichaje-${anio}-${mes}-${id}`;
   const elE1 = document.getElementById('e1-' + id); const elS1 = document.getElementById('s1-' + id); const elE2 = document.getElementById('e2-' + id); const elS2 = document.getElementById('s2-' + id); const elEst = document.getElementById('est-' + id); const elTot = document.getElementById('t-' + id);
-  let dataAnterior = JSON.parse(localStorage.getItem(claveId)) || { e1:'', s1:'', e2:'', s2:'', est:'defecto', t:'00:00', nota:'', origen: 'MANUAL', gps: {} };
+  let dataAnterior = JSON.parse(localStorage.getItem(claveId)) || { e1:'', s1:'', e2:'', s2:'', est:'defecto', t:'00:00', nota:'', origen: {}, gps: {} };
+  
+  let origenObj = {};
+  if (dataAnterior.origen && typeof dataAnterior.origen === 'object') {
+    origenObj = { ...dataAnterior.origen };
+  } else if (dataAnterior.origen === 'MANUAL') {
+    origenObj = { e1: 'MANUAL', s1: 'MANUAL', e2: 'MANUAL', s2: 'MANUAL' };
+  }
+
+  const valE1 = elE1 ? elE1.value.trim().replace('.', ':') : '';
+  const valS1 = elS1 ? elS1.value.trim().replace('.', ':') : '';
+  const valE2 = elE2 ? elE2.value.trim().replace('.', ':') : '';
+  const valS2 = elS2 ? elS2.value.trim().replace('.', ':') : '';
+
+  if (elE1 && valE1 !== dataAnterior.e1) origenObj.e1 = valE1 ? 'MANUAL' : '';
+  if (elS1 && valS1 !== dataAnterior.s1) origenObj.s1 = valS1 ? 'MANUAL' : '';
+  if (elE2 && valE2 !== dataAnterior.e2) origenObj.e2 = valE2 ? 'MANUAL' : '';
+  if (elS2 && valS2 !== dataAnterior.s2) origenObj.s2 = valS2 ? 'MANUAL' : '';
+
+  if (!valE1) { delete origenObj.e1; if(dataAnterior.gps) delete dataAnterior.gps.e1; }
+  if (!valS1) { delete origenObj.s1; if(dataAnterior.gps) delete dataAnterior.gps.s1; }
+  if (!valE2) { delete origenObj.e2; if(dataAnterior.gps) delete dataAnterior.gps.e2; }
+  if (!valS2) { delete origenObj.s2; if(dataAnterior.gps) delete dataAnterior.gps.s2; }
+
   const datos = { 
-    e1: elE1 ? elE1.value : (dataAnterior.e1 || ''), 
-    e2: elE2 ? elE2.value : (dataAnterior.e2 || ''), 
-    s1: elS1 ? elS1.value : (dataAnterior.s1 || ''), 
-    s2: elS2 ? elS2.value : (dataAnterior.s2 || ''), 
+    e1: valE1, 
+    e2: valE2, 
+    s1: valS1, 
+    s2: valS2, 
     est: elEst ? elEst.value : 'defecto', 
     t: elTot ? elTot.textContent.replace('⚠️', '').replace('📍', '').trim() : '00:00', 
     nota: dataAnterior.nota || '', 
-    origen: 'MANUAL',
+    origen: origenObj,
     gps: dataAnterior.gps || {} 
   };
   localStorage.setItem(claveId, JSON.stringify(datos));
+  solicitarGpsManualSiProcede(claveId, datos, id);
 }
+
+function solicitarGpsManualSiProcede(claveId, datos, id) {
+  if (!navigator.geolocation) return;
+  let campos = ['e1', 's1', 'e2', 's2'];
+  let necesitaGps = false;
+  
+  campos.forEach(c => {
+    if (datos.origen && datos.origen[c] === 'MANUAL' && datos[c] && datos[c].length === 5 && (!datos.gps || !datos.gps[c])) {
+      necesitaGps = true;
+    }
+  });
+  
+  if (!necesitaGps) return;
+  
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      let dataFresh = JSON.parse(localStorage.getItem(claveId));
+      if (!dataFresh) return;
+      if (!dataFresh.gps) dataFresh.gps = {};
+      
+      let seAnadioGps = false;
+      campos.forEach(c => {
+        if (dataFresh.origen && dataFresh.origen[c] === 'MANUAL' && dataFresh[c] && dataFresh[c].length === 5 && !dataFresh.gps[c]) {
+          dataFresh.gps[c] = `${position.coords.latitude.toFixed(6)},${position.coords.longitude.toFixed(6)}`;
+          seAnadioGps = true;
+        }
+      });
+      
+      if (seAnadioGps) {
+        localStorage.setItem(claveId, JSON.stringify(dataFresh));
+        actualizarFilaUI(id, dataFresh);
+      }
+    },
+    (error) => { console.warn("Ubicación manual no obtenida:", error.message); },
+    { enableHighAccuracy: true, timeout: 5000 }
+  );
+}
+
+function actualizarFilaUI(id, data) {
+  let elTot = document.getElementById(`t-${id}`);
+  if (!elTot) return;
+  let hayContenido = ((data.e1 && data.e1 !== '') || (data.s1 && data.s1 !== '') || (data.e2 && data.e2 !== '') || (data.s2 && data.s2 !== ''));
+  let tieneManual = false;
+  if (data.origen) {
+    if (typeof data.origen === 'object') {
+      tieneManual = Object.keys(data.origen).some(k => data.origen[k] === 'MANUAL' && data[k]);
+    } else {
+      tieneManual = (data.origen === 'MANUAL');
+    }
+  }
+  let htmlAlarma = (tieneManual && hayContenido) ? '<span class="icono-alarma" title="Modificado manualmente">⚠️</span>' : '';
+  
+  let gpsIconoHTML = '';
+  if (data.gps) {
+    let tramosGps = [];
+    if (data.gps.e1) tramosGps.push(`Entrada 1: ${data.gps.e1}`);
+    if (data.gps.s1) tramosGps.push(`Salida 1: ${data.gps.s1}`);
+    if (data.gps.e2) tramosGps.push(`Entrada 2: ${data.gps.e2}`);
+    if (data.gps.s2) tramosGps.push(`Salida 2: ${data.gps.s2}`);
+    
+    if (tramosGps.length > 0) {
+      let primeraCoord = data.gps.e1 || data.gps.s1 || data.gps.e2 || data.gps.s2;
+      gpsIconoHTML = `<a href="https://www.google.com/maps?q=${primeraCoord}" target="_blank" class="btn-gps-mapa" title="Ubicación registrada:\n${tramosGps.join('\n')}">📍</a>`;
+    }
+  }
+  elTot.innerHTML = `${gpsIconoHTML}${htmlAlarma}<span class="texto-horas">${data.t || '00:00'}</span>`;
+}
+
 function ficharSecuencial(modo) {
   const hoy = new Date(); const realAnio = hoy.getFullYear(); const realMes = hoy.getMonth(); const realDia = hoy.getDate();
   if(fechaActual.getFullYear() !== realAnio || fechaActual.getMonth() !== realMes) { alert("⚠️ Cambia al mes actual para usar el botón de fichar."); return; }
@@ -413,7 +507,7 @@ function ficharSecuencial(modo) {
   fechaActual = new Date();
   const horaMarcada = hoy.toTimeString().substring(0, 5);
   const claveId = `fichaje-${realAnio}-${realMes}-${realDia}`;
-  let data = JSON.parse(localStorage.getItem(claveId)) || { e1:'', s1:'', e2:'', s2:'', est:'defecto', t:'00:00', nota:'', origen: 'AUTOMATICO', gps: {} };
+  let data = JSON.parse(localStorage.getItem(claveId)) || { e1:'', s1:'', e2:'', s2:'', est:'defecto', t:'00:00', nota:'', origen: {}, gps: {} };
   
   let campoFichado = '';
   if(modo === 'continuo') { 
@@ -439,19 +533,20 @@ function ficharSecuencial(modo) {
       (position) => {
         const coords = `${position.coords.latitude.toFixed(6)},${position.coords.longitude.toFixed(6)}`;
         data.gps[campoFichado] = coords;
-        guardarYProcesarFichaje(claveId, data, hoy);
+        guardarYProcesarFichaje(claveId, data, hoy, campoFichado);
       },
       (error) => {
         console.warn("GPS no disponible:", error.message);
-        guardarYProcesarFichaje(claveId, data, hoy);
+        guardarYProcesarFichaje(claveId, data, hoy, campoFichado);
       },
       { enableHighAccuracy: true, timeout: 6000 }
     );
   } else {
-    guardarYProcesarFichaje(claveId, data, hoy);
+    guardarYProcesarFichaje(claveId, data, hoy, campoFichado);
   }
 }
-function guardarYProcesarFichaje(claveId, data, hoy) {
+
+function guardarYProcesarFichaje(claveId, data, hoy, campoFichado) {
   function calcularTramoInterno(ent, sal) {
     if(ent && sal && ent.includes(':') && sal.includes(':')) {
       let e = ent.split(':'), s = sal.split(':');
@@ -462,12 +557,20 @@ function guardarYProcesarFichaje(claveId, data, hoy) {
   }
   let mTotales = calcularTramoInterno(data.e1, data.s1) + calcularTramoInterno(data.e2, data.s2);
   data.t = mTotales > 0 ? minsATexto(mTotales) : "00:00"; 
-  data.origen = 'AUTOMATICO';
+  
+  if (!data.origen || typeof data.origen !== 'object') {
+    data.origen = data.origen === 'MANUAL' ? { e1:'MANUAL', s1:'MANUAL', e2:'MANUAL', s2:'MANUAL' } : {};
+  }
+  if (campoFichado) {
+    data.origen[campoFichado] = 'AUTOMATICO';
+  }
+
   localStorage.setItem(claveId, JSON.stringify(data)); 
   renderizarCalendario(false);
   let currentDayOfWeek = hoy.getDay(); let diffToMonday = currentDayOfWeek === 0 ? 6 : currentDayOfWeek - 1;
   let lunesTarget = hoy.getDate() - diffToMonday; let diaScroll = Math.max(1, lunesTarget); desplazarADia(diaScroll, 'smooth', 'start');
 }
+
 function desplazarADia(dia, comportamiento = 'smooth', alineacion = 'center') {
   if(vistaActual === 'mes') { const el = document.getElementById(`fila-${dia}`); if(el) el.scrollIntoView({ behavior: comportamiento, block: alineacion }); }
 }
@@ -477,6 +580,7 @@ function cambiarVista(vista) {
   vistaActual = vista; document.getElementById('v-semana').classList.remove('activo'); document.getElementById('v-mes').classList.remove('activo'); document.getElementById('v-ano').classList.remove('activo');
   document.getElementById(`v-${vista}`).classList.add('activo'); renderizarCalendario(true, 'instant');
 }
+
 function construirTextoMes() {
   let mesSel = fechaActual.getMonth(); let anioSel = fechaActual.getFullYear();
   let totalDias = new Date(anioSel, mesSel + 1, 0).getDate();
@@ -493,7 +597,16 @@ function construirTextoMes() {
       if(txtHoras !== '' || (data.t && data.t !== '00:00')) {
         let tipo = data.est !== 'defecto' ? ` [${data.est.toUpperCase()}]` : '';
         let anotacion = data.nota ? ` -> Nota: ${data.nota}` : '';
-        let manualTag = (data.origen === 'MANUAL') ? '⚠️ ' : '';
+        
+        let tieneManual = false;
+        if (data.origen) {
+          if (typeof data.origen === 'object') {
+            tieneManual = Object.keys(data.origen).some(k => data.origen[k] === 'MANUAL' && data[k]);
+          } else {
+            tieneManual = (data.origen === 'MANUAL');
+          }
+        }
+        let manualTag = (tieneManual) ? '⚠️ ' : '';
         
         let gpsTag = '';
         if (data.gps && (data.gps.e1 || data.gps.s1 || data.gps.e2 || data.gps.s2)) {
@@ -515,6 +628,7 @@ function construirTextoMes() {
   mensaje += `\nTOTAL HORAS MENSUALES: ${minsATexto(totalMinutosMes)}`;
   return mensaje;
 }
+
 function compartirPorWhatsApp() {
   let texto = construirTextoMes(); toggleMenu(false);
   if (navigator.share) { navigator.share({ title: 'Resumen Fichaje', text: texto }).catch(() => fallbackCopiar(texto)); }
@@ -630,4 +744,5 @@ if ('serviceWorker' in navigator) {
 </script>
 </body>
 </html>
+
 
