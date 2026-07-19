@@ -201,7 +201,7 @@ let fechaActual = new Date();
 let vistaActual = 'mes';
 let configuracionTurno = localStorage.getItem('config-turno') || 'continuo';
 let diaNotaSeleccionado = null;
-const coloresDefecto = { trabajo: '#d4edda', vacaciones: '#cce5ff', libre: '#fff3cd', baja: '#f8d7da' };
+const coloresDefecto = { trabajo: '#d4edda', vacations: '#cce5ff', libre: '#fff3cd', baja: '#f8d7da' };
 function inicializarColores() {
   ['trabajo', 'vacaciones', 'libre', 'baja'].forEach(tipo => {
     let col = localStorage.getItem(`color-custom-${tipo}`) || coloresDefecto[tipo];
@@ -374,7 +374,8 @@ function calc(id) {
   }
   mTotales += calcularTramo(e2, s2);
   
-  guardarFila(id);
+  let tTexto = mTotales > 0 ? minsATexto(mTotales) : "00:00";
+  guardarFila(id, tTexto);
   
   const claveId = `fichaje-${fechaActual.getFullYear()}-${fechaActual.getMonth()}-${id}`;
   let dataActual = JSON.parse(localStorage.getItem(claveId)) || {};
@@ -389,10 +390,10 @@ function cambiarEstado(id) {
   guardarFila(id); renderizarCalendario(false);
 }
 
-function guardarFila(id) {
+function guardarFila(id, tTexto) {
   const anio = fechaActual.getFullYear(); const mes = fechaActual.getMonth();
   const claveId = `fichaje-${anio}-${mes}-${id}`;
-  const elE1 = document.getElementById('e1-' + id); const elS1 = document.getElementById('s1-' + id); const elE2 = document.getElementById('e2-' + id); const elS2 = document.getElementById('s2-' + id); const elEst = document.getElementById('est-' + id); const elTot = document.getElementById('t-' + id);
+  const elE1 = document.getElementById('e1-' + id); const elS1 = document.getElementById('s1-' + id); const elE2 = document.getElementById('e2-' + id); const elS2 = document.getElementById('s2-' + id); const elEst = document.getElementById('est-' + id);
   let dataAnterior = JSON.parse(localStorage.getItem(claveId)) || { e1:'', s1:'', e2:'', s2:'', est:'defecto', t:'00:00', nota:'', origen: {}, gps: {} };
   
   let origenObj = {};
@@ -407,23 +408,25 @@ function guardarFila(id) {
   const valE2 = elE2 ? elE2.value.trim().replace('.', ':') : '';
   const valS2 = elS2 ? elS2.value.trim().replace('.', ':') : '';
 
-  if (elE1 && valE1 !== dataAnterior.e1) origenObj.e1 = valE1 ? 'MANUAL' : '';
-  if (elS1 && valS1 !== dataAnterior.s1) origenObj.s1 = valS1 ? 'MANUAL' : '';
-  if (elE2 && valE2 !== dataAnterior.e2) origenObj.e2 = valE2 ? 'MANUAL' : '';
-  if (elS2 && valS2 !== dataAnterior.s2) origenObj.s2 = valS2 ? 'MANUAL' : '';
+  if (elE1 && valE1 !== dataAnterior.e1) { if(valE1) origenObj.e1 = 'MANUAL'; else delete origenObj.e1; }
+  if (elS1 && valS1 !== dataAnterior.s1) { if(valS1) origenObj.s1 = 'MANUAL'; else delete origenObj.s1; }
+  if (elE2 && valE2 !== dataAnterior.e2) { if(valE2) origenObj.e2 = 'MANUAL'; else delete origenObj.e2; }
+  if (elS2 && valS2 !== dataAnterior.s2) { if(valS2) origenObj.s2 = 'MANUAL'; else delete origenObj.s2; }
 
   if (!valE1) { delete origenObj.e1; if(dataAnterior.gps) delete dataAnterior.gps.e1; }
   if (!valS1) { delete origenObj.s1; if(dataAnterior.gps) delete dataAnterior.gps.s1; }
   if (!valE2) { delete origenObj.e2; if(dataAnterior.gps) delete dataAnterior.gps.e2; }
   if (!valS2) { delete origenObj.s2; if(dataAnterior.gps) delete dataAnterior.gps.s2; }
 
+  let tFinal = tTexto || dataAnterior.t || '00:00';
+
   const datos = { 
     e1: valE1, 
-    e2: valE2, 
     s1: valS1, 
+    e2: valE2, 
     s2: valS2, 
     est: elEst ? elEst.value : 'defecto', 
-    t: elTot ? elTot.textContent.replace('⚠️', '').replace('📍', '').trim() : '00:00', 
+    t: tFinal, 
     nota: dataAnterior.nota || '', 
     origen: origenObj,
     gps: dataAnterior.gps || {} 
@@ -432,13 +435,17 @@ function guardarFila(id) {
   solicitarGpsManualSiProcede(claveId, datos, id);
 }
 
+function esHoraValida(txt) {
+  return /^\d{1,2}:\d{2}$/.test(txt);
+}
+
 function solicitarGpsManualSiProcede(claveId, datos, id) {
   if (!navigator.geolocation) return;
   let campos = ['e1', 's1', 'e2', 's2'];
   let necesitaGps = false;
   
   campos.forEach(c => {
-    if (datos.origen && datos.origen[c] === 'MANUAL' && datos[c] && datos[c].length === 5 && (!datos.gps || !datos.gps[c])) {
+    if (datos.origen && datos.origen[c] === 'MANUAL' && datos[c] && esHoraValida(datos[c]) && (!datos.gps || !datos.gps[c])) {
       necesitaGps = true;
     }
   });
@@ -453,7 +460,7 @@ function solicitarGpsManualSiProcede(claveId, datos, id) {
       
       let seAnadioGps = false;
       campos.forEach(c => {
-        if (dataFresh.origen && dataFresh.origen[c] === 'MANUAL' && dataFresh[c] && dataFresh[c].length === 5 && !dataFresh.gps[c]) {
+        if (dataFresh.origen && dataFresh.origen[c] === 'MANUAL' && dataFresh[c] && esHoraValida(dataFresh[c]) && !dataFresh.gps[c]) {
           dataFresh.gps[c] = `${position.coords.latitude.toFixed(6)},${position.coords.longitude.toFixed(6)}`;
           seAnadioGps = true;
         }
@@ -465,7 +472,7 @@ function solicitarGpsManualSiProcede(claveId, datos, id) {
       }
     },
     (error) => { console.warn("Ubicación manual no obtenida:", error.message); },
-    { enableHighAccuracy: true, timeout: 5000 }
+    { enableHighAccuracy: false, timeout: 6000 }
   );
 }
 
@@ -539,7 +546,7 @@ function ficharSecuencial(modo) {
         console.warn("GPS no disponible:", error.message);
         guardarYProcesarFichaje(claveId, data, hoy, campoFichado);
       },
-      { enableHighAccuracy: true, timeout: 6000 }
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
   } else {
     guardarYProcesarFichaje(claveId, data, hoy, campoFichado);
@@ -611,10 +618,10 @@ function construirTextoMes() {
         let gpsTag = '';
         if (data.gps && (data.gps.e1 || data.gps.s1 || data.gps.e2 || data.gps.s2)) {
           let tramos = [];
-          if (data.gps.e1) tramos.push(`E1: ${data.gps.e1}`);
-          if (data.gps.s1) tramos.push(`S1: ${data.gps.s1}`);
-          if (data.gps.e2) tramos.push(`E2: ${data.gps.e2}`);
-          if (data.gps.s2) tramos.push(`S2: ${data.gps.s2}`);
+          if (data.gps.e1) tramos.push("E1");
+          if (data.gps.s1) tramos.push("S1");
+          if (data.gps.e2) tramos.push("E2");
+          if (data.gps.s2) tramos.push("S2");
           gpsTag = ` 📍 GPS (${tramos.join(', ')})`;
         }
 
@@ -744,5 +751,6 @@ if ('serviceWorker' in navigator) {
 </script>
 </body>
 </html>
+
 
 
