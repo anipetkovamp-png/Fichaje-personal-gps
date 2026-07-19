@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Fichaje Pro V18.7 GPS-Ready</title>
+<title>Fichaje Pro V18.8 Audit-Ready</title>
 
 <!-- ENLACES PARA QUE SEA INSTALABLE (PWA) -->
 <link rel="manifest" href="manifest.json">
@@ -58,11 +59,8 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 .caja-input { width: 42px; height: 26px; background-color: var(--box-empty); border: 1px solid #777; border-radius: 4px; text-align: center; font-size: 0.75rem; font-weight: bold; }
 .selector-estado { width: 78px; height: 28px; border: 1px solid #777; border-radius: 4px; font-size: 0.75rem; font-weight: bold; background-color: #eae7c9; }
 
-.total-horas { width: 85px; display: flex; align-items: center; justify-content: flex-end; font-size: 0.78rem; color: #333; font-weight: bold; flex-shrink: 0; gap: 3px; }
+.total-horas { width: 85px; display: flex; align-items: center; justify-content: flex-end; font-size: 0.78rem; color: #333; font-weight: bold; flex-shrink: 0; gap: 2px; cursor: pointer; padding: 2px 0; }
 .texto-horas { width: 42px; text-align: right; font-family: monospace; font-size: 0.85rem; display: inline-block; }
-.icono-alarma { font-size: 0.8rem; }
-.btn-gps-mapa { text-decoration: none; font-size: 0.85rem; cursor: pointer; display: inline-flex; transition: transform 0.1s; align-items: center; }
-.btn-gps-mapa:active { transform: scale(1.3); }
 
 .ad-container { width: 100%; min-height: 50px; background-color: #f0ebd8; border-radius: 6px; display: flex; justify-content: center; align-items: center; border: 1px dashed #ccc; color: #888; font-size: 0.75rem; flex-shrink: 0; }
 
@@ -93,14 +91,19 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 .bloque-color-picker { display: flex; align-items: center; justify-content: space-between; background: #eef0f2; padding: 5px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; }
 .bloque-color-picker input[type="color"] { border: none; width: 24px; height: 24px; border-radius: 50%; cursor: pointer; background: none; padding: 0; }
 .btn-cerrar-menu { background: #555; color: white; border: none; padding: 10px; border-radius: 4px; margin-top: 16px; font-weight: bold; cursor: pointer; }
+
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 2000; padding: 10px; }
 .modal-content { background: white; border-radius: 8px; padding: 16px; width: 100%; max-width: 350px; box-shadow: 0 4px 10px rgba(0,0,0,0.25); display: flex; flex-direction: column; gap: 12px; }
-.modal-titulo { font-size: 1rem; font-weight: bold; color: #333; }
+.modal-titulo { font-size: 1rem; font-weight: bold; color: #333; border-bottom: 1px solid #eee; padding-bottom: 4px; }
 .modal-textarea { width: 100%; height: 80px; padding: 8px; font-size: 0.9rem; border: 1px solid #bbb; border-radius: 4px; resize: none; font-family: sans-serif; }
 .modal-botones { display: flex; gap: 8px; justify-content: flex-end; }
 .btn-modal { padding: 8px 14px; border: none; border-radius: 4px; font-weight: bold; font-size: 0.85rem; cursor: pointer; }
 .btn-modal.guardar { background: var(--teal-header); color: white; }
 .btn-modal.cancelar { background: #bbb; color: #333; }
+
+.linea-audit { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f1f1f1; padding: 6px 0; gap: 8px; font-size: 0.82rem; }
+.badge-audit { padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; color: white; min-width: 72px; text-align: center; }
+.btn-mapa-audit { text-decoration: none; background: var(--teal-header); color: white; padding: 3px 7px; border-radius: 4px; font-size: 0.72rem; font-weight: bold; display: inline-flex; align-items: center; }
 </style>
 </head>
 <body>
@@ -130,6 +133,7 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 <div id="ad-banner" class="ad-container">Espacio para anuncio AdMob</div>
 </div>
 
+<!-- MENU LATERAL -->
 <div class="menu-lateral-overlay" id="menu-overlay" onclick="toggleMenu(false)"></div>
 <div class="menu-lateral" id="menu-lateral">
 <div class="menu-titulo">Ajustes de Fichaje</div>
@@ -184,6 +188,8 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 <button class="btn-cerrar-menu" onclick="toggleMenu(false)">Cerrar Menú</button>
 </div>
 <input type="file" id="input-importar" style="display:none;" accept=".json" onchange="cargarCopiaSeguridad(event)">
+
+<!-- MODAL NOTAS -->
 <div class="modal-overlay" id="modal-nota-overlay">
 <div class="modal-content">
 <div class="modal-titulo" id="modal-nota-titulo">Nota del día</div>
@@ -194,6 +200,18 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 </div>
 </div>
 </div>
+
+<!-- NUEVO MODAL DESPLEGABLE DE AUDITORÍA GPS / TRABAJO MANUAL -->
+<div class="modal-overlay" id="modal-audit-overlay" onclick="cerrarModalAudit()">
+<div class="modal-content" onclick="event.stopPropagation()">
+<div class="modal-titulo" id="modal-audit-titulo">Detalles del Fichaje</div>
+<div id="modal-audit-cuerpo" style="display: flex; flex-direction: column; gap: 4px;"></div>
+<div class="modal-botones" style="margin-top: 6px;">
+<button class="btn-modal cancelar" onclick="cerrarModalAudit()">Cerrar</button>
+</div>
+</div>
+</div>
+
 <script>
 const mesesNombres = ["ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO", "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"];
 const diasSemanaNombres = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
@@ -201,7 +219,8 @@ let fechaActual = new Date();
 let vistaActual = 'mes';
 let configuracionTurno = localStorage.getItem('config-turno') || 'continuo';
 let diaNotaSeleccionado = null;
-const coloresDefecto = { trabajo: '#d4edda', vacations: '#cce5ff', libre: '#fff3cd', baja: '#f8d7da' };
+const coloresDefecto = { trabajo: '#d4edda', vacaciones: '#cce5ff', libre: '#fff3cd', baja: '#f8d7da' };
+
 function inicializarColores() {
   ['trabajo', 'vacaciones', 'libre', 'baja'].forEach(tipo => {
     let col = localStorage.getItem(`color-custom-${tipo}`) || coloresDefecto[tipo];
@@ -253,7 +272,7 @@ function renderizarCalendario(autoScroll = true, comportamiento = 'smooth') {
         const claveId = `fichaje-${anio}-${m}-${d}`;
         let data = JSON.parse(localStorage.getItem(claveId));
         if(data && data.t && data.t !== '00:00') {
-          let partes = data.t.split(':'); minsMes += (parseInt(partes[0]||0) * 60) + parseInt(partes[1]||0);
+          let partes = data.t.split(':'); minsMes += (parseInt(partes[0]||0, 10) * 60) + parseInt(partes[1]||0, 10);
         }
       }
       let filaMes = document.createElement('div'); filaMes.className = 'fila-mes-ano'; filaMes.style.background = (m === mes) ? '#fff3cd' : '#fafafa';
@@ -282,32 +301,15 @@ function renderizarCalendario(autoScroll = true, comportamiento = 'smooth') {
     let iconoNota = (data.nota && data.nota.trim() !== "") ? "📝" : "💬";
     
     let hayContenido = (valE1 !== '' || valS1 !== '' || valE2 !== '' || valS2 !== '');
-    
     let tieneManual = false;
     if (data.origen) {
-      if (typeof data.origen === 'object') {
-        tieneManual = Object.keys(data.origen).some(k => data.origen[k] === 'MANUAL' && data[k]);
-      } else {
-        tieneManual = (data.origen === 'MANUAL');
-      }
+      if (typeof data.origen === 'object') { tieneManual = Object.keys(data.origen).some(k => data.origen[k] === 'MANUAL' && data[k]); }
+      else { tieneManual = (data.origen === 'MANUAL'); }
     }
-    let htmlAlarma = (tieneManual && hayContenido) ? '<span class="icono-alarma" title="Modificado manualmente">⚠️</span>' : '';
+    let tieneGps = data.gps && Object.keys(data.gps).some(k => data.gps[k] && data[k]);
+    let smartIcono = (hayContenido && (tieneManual || tieneGps)) ? `<span style="font-size:0.75rem; color:var(--teal-header); font-weight:bold; margin-right:1px;">ℹ️</span>` : '';
 
-    let gpsIconoHTML = '';
-    if (data.gps) {
-      let tramosGps = [];
-      if (data.gps.e1) tramosGps.push(`Entrada 1: ${data.gps.e1}`);
-      if (data.gps.s1) tramosGps.push(`Salida 1: ${data.gps.s1}`);
-      if (data.gps.e2) tramosGps.push(`Entrada 2: ${data.gps.e2}`);
-      if (data.gps.s2) tramosGps.push(`Salida 2: ${data.gps.s2}`);
-      
-      if (tramosGps.length > 0) {
-        let primeraCoord = data.gps.e1 || data.gps.s1 || data.gps.e2 || data.gps.s2;
-        gpsIconoHTML = `<a href="https://www.google.com/maps?q=${primeraCoord}" target="_blank" class="btn-gps-mapa" title="Ubicación registrada:\n${tramosGps.join('\n')}">📍</a>`;
-      }
-    }
-
-    fila.innerHTML = `<div class="label-dia" onclick="desplazarADia(${i}, 'smooth', 'center')">${textoDiaSemana} ${i}</div><div class="bloques-inputs">${inputsHTML}<select class="selector-estado" id="est-${i}" onchange="cambiarEstado(${i})"><option value="defecto" ${data.est==='defecto'?'selected':''}>- Tipo -</option><option value="trabajo" ${data.est==='trabajo'?'selected':''}>TRABAJO</option><option value="vacaciones" ${data.est==='vacaciones'?'selected':''}>VACAC.</option><option value="libre" ${data.est==='libre'?'selected':''}>LIBRE</option><option value="baja" ${data.est==='baja'?'selected':''}>BAJA M.</option></select></div><div class="total-horas" id="t-${i}">${gpsIconoHTML}${htmlAlarma}<span class="texto-horas">${data.t}</span></div><button class="${claseNota}" id="icononota-${i}" onclick="abrirModalNota(${i})">${iconoNota}</button>`;
+    fila.innerHTML = `<div class="label-dia" onclick="desplazarADia(${i}, 'smooth', 'center')">${textoDiaSemana} ${i}</div><div class="bloques-inputs">${inputsHTML}<select class="selector-estado" id="est-${i}" onchange="cambiarEstado(${i})"><option value="defecto" ${data.est==='defecto'?'selected':''}>- Tipo -</option><option value="trabajo" ${data.est==='trabajo'?'selected':''}>TRABAJO</option><option value="vacaciones" ${data.est==='vacaciones'?'selected':''}>VACAC.</option><option value="libre" ${data.est==='libre'?'selected':''}>LIBRE</option><option value="baja" ${data.est==='baja'?'selected':''}>BAJA M.</option></select></div><div class="total-horas" id="t-${i}" onclick="abrirModalAudit(${i})">${smartIcono}<span class="texto-horas">${data.t}</span></div><button class="${claseNota}" id="icononota-${i}" onclick="abrirModalNota(${i})">${iconoNota}</button>`;
     lista.appendChild(fila);
   }
   calcularTotalesGenerales();
@@ -326,6 +328,7 @@ function renderizarCalendario(autoScroll = true, comportamiento = 'smooth') {
     setTimeout(() => desplazarADia(diaDestino, comportamiento, alineacion), 80);
   }
 }
+
 function abrirModalNota(dia) {
   diaNotaSeleccionado = dia; const anio = fechaActual.getFullYear(); const mes = fechaActual.getMonth();
   const claveId = `fichaje-${anio}-${mes}-${dia}`; let data = JSON.parse(localStorage.getItem(claveId)) || { nota: '' };
@@ -353,13 +356,80 @@ function guardarNotaModal() {
   cerrarModalNota(); renderizarCalendario(false);
 }
 
+/* NUEVA LÓGICA DE AUDITORÍA: DESPLEGABLE EN PANTALLA PARA METADATOS Y GEOLOCALIZACIÓN */
+function abrirModalAudit(dia) {
+  const anio = fechaActual.getFullYear(); const mes = fechaActual.getMonth();
+  const claveId = `fichaje-${anio}-${mes}-${dia}`;
+  let data = JSON.parse(localStorage.getItem(claveId)) || { e1:'', s1:'', e2:'', s2:'', est:'defecto', t:'00:00', nota:'', origen: {}, gps: {} };
+  
+  document.getElementById('modal-audit-titulo').textContent = `Fichaje e Info: ${dia} de ${mesesNombres[mes]}`;
+  const cuerpo = document.getElementById('modal-audit-cuerpo');
+  cuerpo.innerHTML = '';
+  
+  let bloquesInfo = [
+    { id: 'e1', label: configuracionTurno === 'partido' ? '☀️ Entrada (Mañana)' : '🕒 Entrada' },
+    { id: 's1', label: configuracionTurno === 'partido' ? '☀️ Salida (Mañana)' : '🕒 Salida' },
+    { id: 'e2', label: '🌙 Entrada (Tarde)', opcional: configuracionTurno !== 'partido' },
+    { id: 's2', label: '🌙 Salida (Tarde)', opcional: configuracionTurno !== 'partido' }
+  ];
+  
+  let htmlContenido = '';
+  let tieneAlmenosUno = false;
+  
+  bloquesInfo.forEach(b => {
+    if (b.opcional) return;
+    let horaValor = data[b.id] || '';
+    if (!horaValor) return; 
+    tieneAlmenosUno = true;
+    
+    let esManual = false;
+    if (data.origen) {
+      if (typeof data.origen === 'object') { esManual = (data.origen[b.id] === 'MANUAL'); }
+      else { esManual = (data.origen === 'MANUAL'); }
+    }
+    
+    let tipoTexto = esManual ? '⚠️ MANUAL' : '✅ AUTO';
+    let colorFondo = esManual ? '#dc3545' : '#28a745';
+    
+    let botonMapaHTML = '';
+    if (data.gps && data.gps[b.id]) {
+      botonMapaHTML = `<a href="https://www.google.com/maps?q=${data.gps[b.id]}" target="_blank" class="btn-mapa-audit">📍 Ver Mapa</a>`;
+    } else {
+      botonMapaHTML = `<span style="font-size:0.75rem; color:#888; font-style:italic;">Sin GPS</span>`;
+    }
+    
+    htmlContenido += `
+      <div class="linea-audit">
+        <span style="font-weight:bold; color:#444; width:115px; white-space:nowrap;">${b.label}:</span>
+        <span style="font-family:monospace; font-size:0.9rem; font-weight:bold; color:#111;">${horaValor}</span>
+        <span class="badge-audit" style="background-color:${colorFondo};">${tipoTexto}</span>
+        <div style="margin-left:auto; display:flex; align-items:center;">${botonMapaHTML}</div>
+      </div>
+    `;
+  });
+  
+  if (!tieneAlmenosUno) {
+    htmlContenido = `<div style="text-align:center; padding:12px; font-size:0.85rem; color:#666; font-style:italic;">No hay horas ni datos registrados para este día.</div>`;
+  } else {
+    htmlContenido += `
+      <div style="margin-top:10px; padding-top:6px; border-top:1px dashed #ccc; text-align:right; font-size:0.88rem; font-weight:bold; color:var(--teal-header);">
+        Total Calculado: ${data.t || '00:00'} hrs
+      </div>
+    `;
+  }
+  
+  cuerpo.innerHTML = htmlContenido;
+  document.getElementById('modal-audit-overlay').style.display = 'flex';
+}
+function cerrarModalAudit() { document.getElementById('modal-audit-overlay').style.display = 'none'; }
+
 function calc(id) {
   let iE1 = document.getElementById(`e1-${id}`); let iS1 = document.getElementById(`s1-${id}`); let iE2 = document.getElementById(`e2-${id}`); let iS2 = document.getElementById(`s2-${id}`);
   let mTotales = 0;
   function calcularTramo(ent, sal) {
     if(ent && sal && ent.includes(':') && sal.includes(':')) {
       let e = ent.split(':'), s = sal.split(':');
-      let diff = (parseInt(s[0]||0)*60 + parseInt(s[1]||0)) - (parseInt(e[0]||0)*60 + parseInt(e[1]||0));
+      let diff = (parseInt(s[0]||0, 10)*60 + parseInt(s[1]||0, 10)) - (parseInt(e[0]||0, 10)*60 + parseInt(e[1]||0, 10));
       return diff > 0 ? diff : 0;
     }
     return 0;
@@ -397,11 +467,8 @@ function guardarFila(id, tTexto) {
   let dataAnterior = JSON.parse(localStorage.getItem(claveId)) || { e1:'', s1:'', e2:'', s2:'', est:'defecto', t:'00:00', nota:'', origen: {}, gps: {} };
   
   let origenObj = {};
-  if (dataAnterior.origen && typeof dataAnterior.origen === 'object') {
-    origenObj = { ...dataAnterior.origen };
-  } else if (dataAnterior.origen === 'MANUAL') {
-    origenObj = { e1: 'MANUAL', s1: 'MANUAL', e2: 'MANUAL', s2: 'MANUAL' };
-  }
+  if (dataAnterior.origen && typeof dataAnterior.origen === 'object') { origenObj = { ...dataAnterior.origen }; } 
+  else if (dataAnterior.origen === 'MANUAL') { origenObj = { e1: 'MANUAL', s1: 'MANUAL', e2: 'MANUAL', s2: 'MANUAL' }; }
 
   const valE1 = elE1 ? elE1.value.trim().replace('.', ':') : '';
   const valS1 = elS1 ? elS1.value.trim().replace('.', ':') : '';
@@ -420,24 +487,12 @@ function guardarFila(id, tTexto) {
 
   let tFinal = tTexto || dataAnterior.t || '00:00';
 
-  const datos = { 
-    e1: valE1, 
-    s1: valS1, 
-    e2: valE2, 
-    s2: valS2, 
-    est: elEst ? elEst.value : 'defecto', 
-    t: tFinal, 
-    nota: dataAnterior.nota || '', 
-    origen: origenObj,
-    gps: dataAnterior.gps || {} 
-  };
+  const datos = { e1: valE1, s1: valS1, e2: valE2, s2: valS2, est: elEst ? elEst.value : 'defecto', t: tFinal, nota: dataAnterior.nota || '', origen: origenObj, gps: dataAnterior.gps || {} };
   localStorage.setItem(claveId, JSON.stringify(datos));
   solicitarGpsManualSiProcede(claveId, datos, id);
 }
 
-function esHoraValida(txt) {
-  return /^\d{1,2}:\d{2}$/.test(txt);
-}
+function esHoraValida(txt) { return /^\d{1,2}:\d{2}$/.test(txt); }
 
 function solicitarGpsManualSiProcede(claveId, datos, id) {
   if (!navigator.geolocation) return;
@@ -445,11 +500,8 @@ function solicitarGpsManualSiProcede(claveId, datos, id) {
   let necesitaGps = false;
   
   campos.forEach(c => {
-    if (datos.origen && datos.origen[c] === 'MANUAL' && datos[c] && esHoraValida(datos[c]) && (!datos.gps || !datos.gps[c])) {
-      necesitaGps = true;
-    }
+    if (datos.origen && datos.origen[c] === 'MANUAL' && datos[c] && esHoraValida(datos[c]) && (!datos.gps || !datos.gps[c])) { necesitaGps = true; }
   });
-  
   if (!necesitaGps) return;
   
   navigator.geolocation.getCurrentPosition(
@@ -465,11 +517,7 @@ function solicitarGpsManualSiProcede(claveId, datos, id) {
           seAnadioGps = true;
         }
       });
-      
-      if (seAnadioGps) {
-        localStorage.setItem(claveId, JSON.stringify(dataFresh));
-        actualizarFilaUI(id, dataFresh);
-      }
+      if (seAnadioGps) { localStorage.setItem(claveId, JSON.stringify(dataFresh)); actualizarFilaUI(id, dataFresh); }
     },
     (error) => { console.warn("Ubicación manual no obtenida:", error.message); },
     { enableHighAccuracy: false, timeout: 6000 }
@@ -481,29 +529,11 @@ function actualizarFilaUI(id, data) {
   if (!elTot) return;
   let hayContenido = ((data.e1 && data.e1 !== '') || (data.s1 && data.s1 !== '') || (data.e2 && data.e2 !== '') || (data.s2 && data.s2 !== ''));
   let tieneManual = false;
-  if (data.origen) {
-    if (typeof data.origen === 'object') {
-      tieneManual = Object.keys(data.origen).some(k => data.origen[k] === 'MANUAL' && data[k]);
-    } else {
-      tieneManual = (data.origen === 'MANUAL');
-    }
-  }
-  let htmlAlarma = (tieneManual && hayContenido) ? '<span class="icono-alarma" title="Modificado manualmente">⚠️</span>' : '';
+  if (data.origen && typeof data.origen === 'object') { tieneManual = Object.keys(data.origen).some(k => data.origen[k] === 'MANUAL' && data[k]); }
+  let tieneGps = data.gps && Object.keys(data.gps).some(k => data.gps[k] && data[k]);
   
-  let gpsIconoHTML = '';
-  if (data.gps) {
-    let tramosGps = [];
-    if (data.gps.e1) tramosGps.push(`Entrada 1: ${data.gps.e1}`);
-    if (data.gps.s1) tramosGps.push(`Salida 1: ${data.gps.s1}`);
-    if (data.gps.e2) tramosGps.push(`Entrada 2: ${data.gps.e2}`);
-    if (data.gps.s2) tramosGps.push(`Salida 2: ${data.gps.s2}`);
-    
-    if (tramosGps.length > 0) {
-      let primeraCoord = data.gps.e1 || data.gps.s1 || data.gps.e2 || data.gps.s2;
-      gpsIconoHTML = `<a href="https://www.google.com/maps?q=${primeraCoord}" target="_blank" class="btn-gps-mapa" title="Ubicación registrada:\n${tramosGps.join('\n')}">📍</a>`;
-    }
-  }
-  elTot.innerHTML = `${gpsIconoHTML}${htmlAlarma}<span class="texto-horas">${data.t || '00:00'}</span>`;
+  let smartIcono = (hayContenido && (tieneManual || tieneGps)) ? `<span style="font-size:0.75rem; color:var(--teal-header); font-weight:bold; margin-right:1px;">ℹ️</span>` : '';
+  elTot.innerHTML = `${smartIcono}<span class="texto-horas">${data.t || '00:00'}</span>`;
 }
 
 function ficharSecuencial(modo) {
@@ -542,22 +572,17 @@ function ficharSecuencial(modo) {
         data.gps[campoFichado] = coords;
         guardarYProcesarFichaje(claveId, data, hoy, campoFichado);
       },
-      (error) => {
-        console.warn("GPS no disponible:", error.message);
-        guardarYProcesarFichaje(claveId, data, hoy, campoFichado);
-      },
+      (error) => { console.warn("GPS no disponible:", error.message); guardarYProcesarFichaje(claveId, data, hoy, campoFichado); },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
-  } else {
-    guardarYProcesarFichaje(claveId, data, hoy, campoFichado);
-  }
+  } else { guardarYProcesarFichaje(claveId, data, hoy, campoFichado); }
 }
 
 function guardarYProcesarFichaje(claveId, data, hoy, campoFichado) {
   function calcularTramoInterno(ent, sal) {
     if(ent && sal && ent.includes(':') && sal.includes(':')) {
       let e = ent.split(':'), s = sal.split(':');
-      let diff = (parseInt(s[0]||0)*60 + parseInt(s[1]||0)) - (parseInt(e[0]||0)*60 + parseInt(e[1]||0));
+      let diff = (parseInt(s[0]||0, 10)*60 + parseInt(s[1]||0, 10)) - (parseInt(e[0]||0, 10)*60 + parseInt(e[1]||0, 10));
       return diff > 0 ? diff : 0;
     }
     return 0;
@@ -568,9 +593,7 @@ function guardarYProcesarFichaje(claveId, data, hoy, campoFichado) {
   if (!data.origen || typeof data.origen !== 'object') {
     data.origen = data.origen === 'MANUAL' ? { e1:'MANUAL', s1:'MANUAL', e2:'MANUAL', s2:'MANUAL' } : {};
   }
-  if (campoFichado) {
-    data.origen[campoFichado] = 'AUTOMATICO';
-  }
+  if (campoFichado) { data.origen[campoFichado] = 'AUTOMATICO'; }
 
   localStorage.setItem(claveId, JSON.stringify(data)); 
   renderizarCalendario(false);
@@ -604,31 +627,22 @@ function construirTextoMes() {
       if(txtHoras !== '' || (data.t && data.t !== '00:00')) {
         let tipo = data.est !== 'defecto' ? ` [${data.est.toUpperCase()}]` : '';
         let anotacion = data.nota ? ` -> Nota: ${data.nota}` : '';
-        
         let tieneManual = false;
         if (data.origen) {
-          if (typeof data.origen === 'object') {
-            tieneManual = Object.keys(data.origen).some(k => data.origen[k] === 'MANUAL' && data[k]);
-          } else {
-            tieneManual = (data.origen === 'MANUAL');
-          }
+          if (typeof data.origen === 'object') { tieneManual = Object.keys(data.origen).some(k => data.origen[k] === 'MANUAL' && data[k]); }
+          else { tieneManual = (data.origen === 'MANUAL'); }
         }
         let manualTag = (tieneManual) ? '⚠️ ' : '';
-        
         let gpsTag = '';
         if (data.gps && (data.gps.e1 || data.gps.s1 || data.gps.e2 || data.gps.s2)) {
           let tramos = [];
-          if (data.gps.e1) tramos.push("E1");
-          if (data.gps.s1) tramos.push("S1");
-          if (data.gps.e2) tramos.push("E2");
-          if (data.gps.s2) tramos.push("S2");
+          if (data.gps.e1) tramos.push("E1"); if (data.gps.s1) tramos.push("S1"); if (data.gps.e2) tramos.push("E2"); if (data.gps.s2) tramos.push("S2");
           gpsTag = ` 📍 GPS (${tramos.join(', ')})`;
         }
-
         mensaje += `Día ${i}: ${manualTag}${data.t || '00:00'} (${txtHoras})${tipo}${gpsTag}${anotacion}\n`;
       }
       if(data.t && data.t !== '00:00') {
-        let partes = data.t.split(':'); totalMinutosMes += (parseInt(partes[0]||0) * 60) + parseInt(partes[1]||0);
+        let partes = data.t.split(':'); totalMinutosMes += (parseInt(partes[0]||0, 10) * 60) + parseInt(partes[1]||0, 10);
       }
     }
   }
@@ -653,41 +667,27 @@ function fallbackCopiar(texto) {
 }
 function verificarPermisoGPS(silencioso = false) {
   const lbl = document.getElementById('estado-gps-lbl');
-  if (!navigator.geolocation) {
-    lbl.textContent = "No compatible";
-    lbl.style.color = "red";
-    return;
-  }
+  if (!navigator.geolocation) { lbl.textContent = "No compatible"; lbl.style.color = "red"; return; }
   if (!silencioso) lbl.textContent = "Solicitando...";
   
   navigator.geolocation.getCurrentPosition(
-    () => {
-      lbl.textContent = "Permitido ✓";
-      lbl.style.color = "green";
-    },
+    () => { lbl.textContent = "Permitido ✓"; lbl.style.color = "green"; },
     (error) => {
-      if (error.code === error.PERMISSION_DENIED) {
-        lbl.textContent = "Bloqueado ✗";
-        lbl.style.color = "red";
-      } else {
-        lbl.textContent = "Inactivo/Sin señal";
-        lbl.style.color = "orange";
-      }
+      if (error.code === error.PERMISSION_DENIED) { lbl.textContent = "Bloqueado ✗"; lbl.style.color = "red"; } 
+      else { lbl.textContent = "Inactivo/Sin señal"; lbl.style.color = "orange"; }
     },
     { timeout: 3000 }
   );
 }
+
 document.getElementById('selector-turno-global').value = configuracionTurno;
 if(configuracionTurno === 'partido') document.getElementById('app-container').classList.add('vista-partido');
 let nombreUsuario = localStorage.getItem('config-nombre') || ''; document.getElementById('input-nombre-global').value = nombreUsuario;
 let dniUsuario = localStorage.getItem('config-dni') || ''; document.getElementById('input-dni-global').value = dniUsuario;
 inicializarColores(); registrarUbicacionInicial(); dibujarBotonesFicharSuperiores(); renderizarCalendario(true, 'instant');
 
-function registrarUbicacionInicial() {
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(()=>{}, ()=>{}, {timeout: 1000});
-  }
-}
+function registrarUbicacionInicial() { if (navigator.geolocation) { navigator.geolocation.getCurrentPosition(()=>{}, ()=>{}, {timeout: 1000}); } }
+
 function descargarCopiaSeguridad() {
   let copiaDato = {};
   for (let i = 0; i < localStorage.length; i++) { let cl = localStorage.key(i); if (cl.startsWith('fichaje-')) copiaDato[cl] = localStorage.getItem(cl); }
@@ -706,6 +706,7 @@ function cargarCopiaSeguridad(event) {
   };
   reader.readAsText(f);
 }
+
 function calcularTotalesGenerales() {
   const anio = fechaActual.getFullYear(); const mes = fechaActual.getMonth();
   let totalMinutosMes = 0; let totalDias = new Date(anio, mes + 1, 0).getDate();
@@ -714,7 +715,7 @@ function calcularTotalesGenerales() {
     const claveId = `fichaje-${anio}-${mes}-${i}`; let data = JSON.parse(localStorage.getItem(claveId));
     let minsDia = 0;
     if(data && data.t && data.t !== '00:00') {
-      let partes = data.t.split(':'); minsDia = (parseInt(partes[0]||0) * 60) + parseInt(partes[1]||0);
+      let partes = data.t.split(':'); minsDia = (parseInt(partes[0]||0, 10) * 60) + parseInt(partes[1]||0, 10);
       totalMinutosMes += minsDia;
     }
     minsSemanaMismoMes += minsDia;
@@ -736,21 +737,13 @@ function calcularTotalesGenerales() {
 }
 function minsATexto(minutos) { let hrs = String(Math.floor(minutos / 60)).padStart(2, '0'); let mins = String(minutos % 60).padStart(2, '0'); return `${hrs}:${mins}`; }
 
-// ACTIVAR SERVICE WORKER
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js')
-      .then(registration => {
-        console.log('ServiceWorker registrado con éxito');
-      })
-      .catch(err => {
-        console.log('Error al registrar el ServiceWorker: ', err);
-      });
+    navigator.serviceWorker.register('sw.js').then(reg => { console.log('SW Ok'); }).catch(err => { console.log('SW Err', err); });
   });
 }
 </script>
 </body>
 </html>
-
 
 
