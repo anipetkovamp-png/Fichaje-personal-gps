@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Fichaje Pro V18.8 Audit-Ready</title>
+<title>Fichaje Pro V18.9 Auto-Format</title>
 
 <!-- ENLACES PARA QUE SEA INSTALABLE (PWA) -->
 <link rel="manifest" href="manifest.json">
@@ -201,7 +200,7 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 </div>
 </div>
 
-<!-- NUEVO MODAL DESPLEGABLE DE AUDITORÍA GPS / TRABAJO MANUAL -->
+<!-- MODAL AUDITORÍA -->
 <div class="modal-overlay" id="modal-audit-overlay" onclick="cerrarModalAudit()">
 <div class="modal-content" onclick="event.stopPropagation()">
 <div class="modal-titulo" id="modal-audit-titulo">Detalles del Fichaje</div>
@@ -220,6 +219,35 @@ let vistaActual = 'mes';
 let configuracionTurno = localStorage.getItem('config-turno') || 'continuo';
 let diaNotaSeleccionado = null;
 const coloresDefecto = { trabajo: '#d4edda', vacaciones: '#cce5ff', libre: '#fff3cd', baja: '#f8d7da' };
+
+/* FUNCION DE AUTO-FORMATO DE HORAS (NORMALIZACIÓN INTELIGENTE) */
+function normalizarTextoHora(txt) {
+  if (!txt) return '';
+  // 1. Reemplazar separadores comunes (, ; .) por dos puntos :
+  let limpio = txt.trim().replace(/[,;.]/g, ':');
+  
+  // 2. Si el usuario escribe tipo 8:45 -> auto-convertir a 08:45
+  let partes = limpio.split(':');
+  if (partes.length === 2) {
+    let h = partes[0].trim();
+    let m = partes[1].trim();
+    if (h.length === 1 && /^\d$/.test(h)) h = '0' + h;
+    if (m.length === 1 && /^\d$/.test(m)) m = m + '0'; // ej: 8:4 -> 08:40
+    if (/^\d{2}$/.test(h) && /^\d{2}$/.test(m)) {
+      let numH = parseInt(h, 10);
+      let numM = parseInt(m, 10);
+      if (numH >= 0 && numH < 24 && numM >= 0 && numM < 60) {
+        return `${h}:${m}`;
+      }
+    }
+  }
+  return limpio;
+}
+
+function esHoraValida(txt) {
+  let norm = normalizarTextoHora(txt);
+  return /^\d{2}:\d{2}$/.test(norm);
+}
 
 function inicializarColores() {
   ['trabajo', 'vacaciones', 'libre', 'baja'].forEach(tipo => {
@@ -296,7 +324,11 @@ function renderizarCalendario(autoScroll = true, comportamiento = 'smooth') {
     let valE1 = data.e1 || ''; let valS1 = data.s1 || ''; let valE2 = data.e2 || ''; let valS2 = data.s2 || '';
     const objetoFecha = new Date(anio, mes, i); const textoDiaSemana = diasSemanaNombres[objetoFecha.getDay()];
     const fila = document.createElement('div'); fila.className = `fila-dia tipo-${data.est}`; fila.id = `fila-${i}`;
-    let inputsHTML = (configuracionTurno === 'continuo') ? `<input type="text" class="caja-input" id="e1-${i}" placeholder="Ent" value="${valE1}" oninput="calc(${i})"><input type="text" class="caja-input" id="s1-${i}" placeholder="Sal" value="${valS1}" oninput="calc(${i})">` : `<input type="text" class="caja-input" id="e1-${i}" placeholder="M.E" value="${valE1}" oninput="calc(${i})"><input type="text" class="caja-input" id="s1-${i}" placeholder="M.S" value="${valS1}" oninput="calc(${i})"><input type="text" class="caja-input" id="e2-${i}" placeholder="T.E" value="${valE2}" oninput="calc(${i})"><input type="text" class="caja-input" id="s2-${i}" placeholder="T.S" value="${valS2}" oninput="calc(${i})">`;
+    
+    let inputsHTML = (configuracionTurno === 'continuo') 
+      ? `<input type="text" class="caja-input" id="e1-${i}" placeholder="Ent" value="${valE1}" oninput="calc(${i})" onblur="autoFormatearInput(${i}, 'e1')"><input type="text" class="caja-input" id="s1-${i}" placeholder="Sal" value="${valS1}" oninput="calc(${i})" onblur="autoFormatearInput(${i}, 's1')">` 
+      : `<input type="text" class="caja-input" id="e1-${i}" placeholder="M.E" value="${valE1}" oninput="calc(${i})" onblur="autoFormatearInput(${i}, 'e1')"><input type="text" class="caja-input" id="s1-${i}" placeholder="M.S" value="${valS1}" oninput="calc(${i})" onblur="autoFormatearInput(${i}, 's1')"><input type="text" class="caja-input" id="e2-${i}" placeholder="T.E" value="${valE2}" oninput="calc(${i})" onblur="autoFormatearInput(${i}, 'e2')"><input type="text" class="caja-input" id="s2-${i}" placeholder="T.S" value="${valS2}" oninput="calc(${i})" onblur="autoFormatearInput(${i}, 's2')">`;
+    
     let claseNota = (data.nota && data.nota.trim() !== "") ? "btn-nota-trigger con-nota" : "btn-nota-trigger";
     let iconoNota = (data.nota && data.nota.trim() !== "") ? "📝" : "💬";
     
@@ -329,6 +361,17 @@ function renderizarCalendario(autoScroll = true, comportamiento = 'smooth') {
   }
 }
 
+function autoFormatearInput(id, campo) {
+  let el = document.getElementById(`${campo}-${id}`);
+  if (el && el.value.trim() !== '') {
+    let norm = normalizarTextoHora(el.value);
+    if (norm !== el.value) {
+      el.value = norm;
+      calc(id);
+    }
+  }
+}
+
 function abrirModalNota(dia) {
   diaNotaSeleccionado = dia; const anio = fechaActual.getFullYear(); const mes = fechaActual.getMonth();
   const claveId = `fichaje-${anio}-${mes}-${dia}`; let data = JSON.parse(localStorage.getItem(claveId)) || { nota: '' };
@@ -356,7 +399,6 @@ function guardarNotaModal() {
   cerrarModalNota(); renderizarCalendario(false);
 }
 
-/* NUEVA LÓGICA DE AUDITORÍA: DESPLEGABLE EN PANTALLA PARA METADATOS Y GEOLOCALIZACIÓN */
 function abrirModalAudit(dia) {
   const anio = fechaActual.getFullYear(); const mes = fechaActual.getMonth();
   const claveId = `fichaje-${anio}-${mes}-${dia}`;
@@ -426,17 +468,21 @@ function cerrarModalAudit() { document.getElementById('modal-audit-overlay').sty
 function calc(id) {
   let iE1 = document.getElementById(`e1-${id}`); let iS1 = document.getElementById(`s1-${id}`); let iE2 = document.getElementById(`e2-${id}`); let iS2 = document.getElementById(`s2-${id}`);
   let mTotales = 0;
+  
   function calcularTramo(ent, sal) {
-    if(ent && sal && ent.includes(':') && sal.includes(':')) {
-      let e = ent.split(':'), s = sal.split(':');
+    let normEnt = normalizarTextoHora(ent);
+    let normSal = normalizarTextoHora(sal);
+    if(normEnt && normSal && normEnt.includes(':') && normSal.includes(':')) {
+      let e = normEnt.split(':'), s = normSal.split(':');
       let diff = (parseInt(s[0]||0, 10)*60 + parseInt(s[1]||0, 10)) - (parseInt(e[0]||0, 10)*60 + parseInt(e[1]||0, 10));
       return diff > 0 ? diff : 0;
     }
     return 0;
   }
-  let e1 = iE1 ? iE1.value.trim().replace('.', ':') : ''; let s1 = iS1 ? iS1.value.trim().replace('.', ':') : ''; mTotales += calcularTramo(e1, s1);
+  
+  let e1 = iE1 ? iE1.value : ''; let s1 = iS1 ? iS1.value : ''; mTotales += calcularTramo(e1, s1);
   let e2 = '', s2 = '';
-  if (configuracionTurno === 'partido') { e2 = iE2 ? iE2.value.trim().replace('.', ':') : ''; s2 = iS2 ? iS2.value.trim().replace('.', ':') : ''; }
+  if (configuracionTurno === 'partido') { e2 = iE2 ? iE2.value : ''; s2 = iS2 ? iS2.value : ''; }
   else {
     const anio = fechaActual.getFullYear(); const mes = fechaActual.getMonth();
     const claveId = `fichaje-${anio}-${mes}-${id}`; let dataAnterior = JSON.parse(localStorage.getItem(claveId));
@@ -470,10 +516,10 @@ function guardarFila(id, tTexto) {
   if (dataAnterior.origen && typeof dataAnterior.origen === 'object') { origenObj = { ...dataAnterior.origen }; } 
   else if (dataAnterior.origen === 'MANUAL') { origenObj = { e1: 'MANUAL', s1: 'MANUAL', e2: 'MANUAL', s2: 'MANUAL' }; }
 
-  const valE1 = elE1 ? elE1.value.trim().replace('.', ':') : '';
-  const valS1 = elS1 ? elS1.value.trim().replace('.', ':') : '';
-  const valE2 = elE2 ? elE2.value.trim().replace('.', ':') : '';
-  const valS2 = elS2 ? elS2.value.trim().replace('.', ':') : '';
+  const valE1 = elE1 ? normalizarTextoHora(elE1.value) : '';
+  const valS1 = elS1 ? normalizarTextoHora(elS1.value) : '';
+  const valE2 = elE2 ? normalizarTextoHora(elE2.value) : '';
+  const valS2 = elS2 ? normalizarTextoHora(elS2.value) : '';
 
   if (elE1 && valE1 !== dataAnterior.e1) { if(valE1) origenObj.e1 = 'MANUAL'; else delete origenObj.e1; }
   if (elS1 && valS1 !== dataAnterior.s1) { if(valS1) origenObj.s1 = 'MANUAL'; else delete origenObj.s1; }
@@ -491,8 +537,6 @@ function guardarFila(id, tTexto) {
   localStorage.setItem(claveId, JSON.stringify(datos));
   solicitarGpsManualSiProcede(claveId, datos, id);
 }
-
-function esHoraValida(txt) { return /^\d{1,2}:\d{2}$/.test(txt); }
 
 function solicitarGpsManualSiProcede(claveId, datos, id) {
   if (!navigator.geolocation) return;
@@ -580,8 +624,10 @@ function ficharSecuencial(modo) {
 
 function guardarYProcesarFichaje(claveId, data, hoy, campoFichado) {
   function calcularTramoInterno(ent, sal) {
-    if(ent && sal && ent.includes(':') && sal.includes(':')) {
-      let e = ent.split(':'), s = sal.split(':');
+    let normEnt = normalizarTextoHora(ent);
+    let normSal = normalizarTextoHora(sal);
+    if(normEnt && normSal && normEnt.includes(':') && normSal.includes(':')) {
+      let e = normEnt.split(':'), s = normSal.split(':');
       let diff = (parseInt(s[0]||0, 10)*60 + parseInt(s[1]||0, 10)) - (parseInt(e[0]||0, 10)*60 + parseInt(e[1]||0, 10));
       return diff > 0 ? diff : 0;
     }
@@ -745,5 +791,3 @@ if ('serviceWorker' in navigator) {
 </script>
 </body>
 </html>
-
-
