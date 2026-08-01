@@ -34,18 +34,18 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 .panel-totales { display: flex; justify-content: space-between; background: white; padding: 8px 10px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); font-size: 0.85rem; font-weight: bold; color: #333; width: 100%; flex-shrink: 0; }
 .panel-totales span { color: var(--teal-header); font-size: 0.95rem; }
 
-/* ZONA SUPERIOR: AJUSTE SIMÉTRICO */
-.zona-accion-superior { display: flex; background: white; padding: 6px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); gap: 6px; align-items: stretch; width: 100%; flex-shrink: 0; }
+/* ZONA SUPERIOR: AJUSTE SIMÉTRICO Y AMPLIADO */
+.zona-accion-superior { display: flex; background: white; padding: 6px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); gap: 8px; align-items: stretch; width: 100%; flex-shrink: 0; }
 
 .bloque-semanas-mini { display: flex; flex: 1; gap: 3px; min-width: 0; align-items: center; }
 .btn-semana-mini { flex: 1; min-width: 0; background: #eef0f2; border: 1px solid #ccc; border-radius: 4px; font-size: 0.6rem; font-weight: bold; padding: 3px 1px; text-align: center; cursor: pointer; transition: all 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .btn-semana-mini span { display: block; color: var(--teal-header); font-size: 0.68rem; font-weight: bold; margin-top: 1px; }
 .btn-semana-mini.activo { background-color: #ccefe2; border-color: var(--teal-header); box-shadow: inset 0 1px 3px rgba(0,0,0,0.15); }
 
-/* BOTONES DE FICHAR 100% SIMÉTRICOS Y SIMILARES */
-.bloque-fichar-superior { display: flex; flex-direction: column; gap: 4px; width: 85px; justify-content: center; flex-shrink: 0; align-self: stretch; }
-.btn-fichar-principal { background-color: #ffaa3b; border: 1px solid #333; border-radius: 4px; padding: 4px 2px; font-size: 0.7rem; font-weight: bold; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.1); line-height: 1.1; flex: 1; display: flex; align-items: center; justify-content: center; text-align: center; }
-.btn-fichar-principal:active { background-color: #e59530; }
+/* BOTONES DE FICHAR MÁS ANCHOS Y CÓMODOS PARA MANOS GRANDES */
+.bloque-fichar-superior { display: flex; flex-direction: column; gap: 6px; width: 125px; justify-content: center; flex-shrink: 0; align-self: stretch; }
+.btn-fichar-principal { background-color: #ffaa3b; border: 1px solid #333; border-radius: 6px; padding: 6px 4px; font-size: 0.82rem; font-weight: bold; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.12); line-height: 1.1; flex: 1; display: flex; align-items: center; justify-content: center; text-align: center; min-height: 38px; }
+.btn-fichar-principal:active { background-color: #e59530; transform: scale(0.98); }
 .btn-fichar-principal.tarde { background-color: #a372eb; color: white; }
 .btn-fichar-principal.tarde:active { background-color: #8956d6; }
 
