@@ -34,15 +34,20 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 .panel-totales { display: flex; justify-content: space-between; background: white; padding: 8px 10px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); font-size: 0.85rem; font-weight: bold; color: #333; width: 100%; flex-shrink: 0; }
 .panel-totales span { color: var(--teal-header); font-size: 0.95rem; }
 
+/* ZONA SUPERIOR AJUSTADA: FLEXIBILIDAD Y CONTROL DE ALTURA/ANCHO */
 .zona-accion-superior { display: flex; background: white; padding: 6px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); gap: 6px; align-items: center; width: 100%; flex-shrink: 0; }
-.bloque-semanas-mini { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; flex: 1; }
-.btn-semana-mini { background: #eef0f2; border: 1px solid #ccc; border-radius: 4px; font-size: 0.65rem; font-weight: bold; padding: 4px 2px; text-align: center; cursor: pointer; transition: all 0.2s; }
-.btn-semana-mini span { display: block; color: var(--teal-header); font-size: 0.7rem; font-weight: bold; margin-top: 1px; }
+
+/* El contenedor de las semanas ahora se encoge y adapta si hay 6 semanas */
+.bloque-semanas-mini { display: flex; flex: 1; gap: 3px; min-width: 0; }
+.btn-semana-mini { flex: 1; min-width: 0; background: #eef0f2; border: 1px solid #ccc; border-radius: 4px; font-size: 0.6rem; font-weight: bold; padding: 3px 1px; text-align: center; cursor: pointer; transition: all 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.btn-semana-mini span { display: block; color: var(--teal-header); font-size: 0.68rem; font-weight: bold; margin-top: 1px; }
 .btn-semana-mini.activo { background-color: #ccefe2; border-color: var(--teal-header); box-shadow: inset 0 1px 3px rgba(0,0,0,0.15); }
-.bloque-fichar-superior { display: flex; flex-direction: column; gap: 4px; width: 110px; justify-content: center; flex-shrink: 0; }
-.btn-fichar-principal { background-color: #ffaa3b; border: 1px solid #333; border-radius: 4px; padding: 6px 2px; font-size: 0.72rem; font-weight: bold; text-align: center; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+
+/* Botón Fichar: Más compacto horizontalmente (82px) y más alto para no desbordar */
+.bloque-fichar-superior { display: flex; flex-direction: column; gap: 4px; width: 82px; justify-content: center; flex-shrink: 0; }
+.btn-fichar-principal { background-color: #ffaa3b; border: 1px solid #333; border-radius: 4px; padding: 10px 2px; font-size: 0.72rem; font-weight: bold; text-align: center; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); line-height: 1.1; }
 .btn-fichar-principal:active { background-color: #e59530; }
-.btn-fichar-principal.tarde { background-color: #a372eb; color: white; }
+.btn-fichar-principal.tarde { background-color: #a372eb; color: white; padding: 6px 2px; }
 .btn-fichar-principal.tarde:active { background-color: #8956d6; }
 
 .vistas-sub { display: flex; justify-content: space-around; background: rgba(0,0,0,0.04); padding: 4px; border-radius: 4px; font-size: 0.85rem; width: 100%; flex-shrink: 0; }
@@ -223,16 +228,14 @@ const coloresDefecto = { trabajo: '#d4edda', vacaciones: '#cce5ff', libre: '#fff
 /* FUNCION DE AUTO-FORMATO DE HORAS (NORMALIZACIÓN INTELIGENTE) */
 function normalizarTextoHora(txt) {
   if (!txt) return '';
-  // 1. Reemplazar separadores comunes (, ; .) por dos puntos :
   let limpio = txt.trim().replace(/[,;.]/g, ':');
   
-  // 2. Si el usuario escribe tipo 8:45 -> auto-convertir a 08:45
   let partes = limpio.split(':');
   if (partes.length === 2) {
     let h = partes[0].trim();
     let m = partes[1].trim();
     if (h.length === 1 && /^\d$/.test(h)) h = '0' + h;
-    if (m.length === 1 && /^\d$/.test(m)) m = m + '0'; // ej: 8:4 -> 08:40
+    if (m.length === 1 && /^\d$/.test(m)) m = m + '0';
     if (/^\d{2}$/.test(h) && /^\d{2}$/.test(m)) {
       let numH = parseInt(h, 10);
       let numM = parseInt(m, 10);
@@ -466,7 +469,21 @@ function abrirModalAudit(dia) {
 function cerrarModalAudit() { document.getElementById('modal-audit-overlay').style.display = 'none'; }
 
 function calc(id) {
-  let iE1 = document.getElementById(`e1-${id}`); let iS1 = document.getElementById(`s1-${id}`); let iE2 = document.getElementById(`e2-${id}`); let iS2 = document.getElementById(`s2-${id}`);
+  let campos = [`e1-${id}`, `s1-${id}`, `e2-${id}`, `s2-${id}`];
+  
+  // Reemplazar comas/puntos por dos puntos en vivo sobre el input
+  campos.forEach(cId => {
+    let el = document.getElementById(cId);
+    if (el && el.value) {
+      let valLimpia = el.value.replace(/[,;.]/g, ':');
+      if (el.value !== valLimpia) el.value = valLimpia;
+    }
+  });
+
+  let iE1 = document.getElementById(`e1-${id}`); 
+  let iS1 = document.getElementById(`s1-${id}`); 
+  let iE2 = document.getElementById(`e2-${id}`); 
+  let iS2 = document.getElementById(`s2-${id}`);
   let mTotales = 0;
   
   function calcularTramo(ent, sal) {
@@ -777,7 +794,7 @@ function calcularTotalesGenerales() {
   if(document.getElementById('total-semana')) document.getElementById('total-semana').textContent = minsATexto(minsSemanaActualFocus);
   const elDesglose = document.getElementById('desglose-semanas');
   if(elDesglose) {
-    if(vistaActual === 'mes' || vistaActual === 'semana') { elDesglose.style.gridTemplateColumns = `repeat(${contadorSemana-1}, 1fr)`; elDesglose.innerHTML = semanasHTML; }
+    if(vistaActual === 'mes' || vistaActual === 'semana') { elDesglose.innerHTML = semanasHTML; }
     else { elDesglose.innerHTML = ''; }
   }
 }
