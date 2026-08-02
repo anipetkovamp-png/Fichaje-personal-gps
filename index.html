@@ -1,101 +1,93 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Fichaje Pro V19.0 Smart-Button</title>
+<title>Fichaje Pro V18.9 Auto-Format</title>
 
-<!-- ENLACES PWA -->
+<!-- ENLACES PARA QUE SEA INSTALABLE (PWA) -->
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#007d7a">
 <link rel="apple-touch-icon" href="icon-192x192.png">
 
 <style>
-/* CONTROL ESTRICTO DE MEDIDAS Y PALETA */
+/* CONTROL ESTRICTO DE MEDIDAS Y SIMETRÍA */
 * { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-  --bg-app: #f7f6dd;
-  --teal-header: #007d7a;
-  --teal-dark: #005f5d;
-  --box-empty: #eae7c9;
-  --color-trabajo: #d4edda;
-  --color-vacaciones: #cce5ff;
-  --color-libre: #fff3cd;
-  --color-baja: #f8d7da;
-  --btn-manana: #ffaa3b;
-  --btn-tarde: #a372eb;
+--bg-app: #f7f6dd;
+--teal-header: #007d7a;
+--box-empty: #eae7c9;
+--color-trabajo: #d4edda;
+--color-vacaciones: #cce5ff;
+--color-libre: #fff3cd;
+--color-baja: #f8d7da;
 }
+body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6px; overflow: hidden; width: 100%; height: 100vh; display: flex; flex-direction: column; }
+.container { max-width: 460px; width: 100%; margin: 0 auto; display: flex; flex-direction: column; gap: 8px; position: relative; flex: 1; overflow: hidden; }
 
-body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-app); padding: 8px 6px; overflow: hidden; width: 100%; height: 100vh; display: flex; flex-direction: column; }
-.container { max-width: 450px; width: 100%; margin: 0 auto; display: flex; flex-direction: column; gap: 8px; position: relative; flex: 1; overflow: hidden; }
+.header-barra { display: flex; align-items: center; justify-content: center; background-color: var(--teal-header); color: white; border-radius: 6px; padding: 4px 6px; width: 100%; position: relative; min-height: 38px; flex-shrink: 0; }
+.btn-menu-tres { position: absolute; left: 6px; background: none; border: none; color: white; font-size: 1.3rem; cursor: pointer; padding: 4px 8px; }
+.contenedor-control-mes { display: flex; align-items: center; justify-content: center; gap: 25px; }
+.titulo-mes-central { font-size: 0.95rem; font-weight: bold; text-transform: uppercase; letter-spacing: 0.3px; text-align: center; white-space: nowrap; }
+.btn-Cambio-mes { background: rgba(255,255,255,0.15); border: none; color: white; padding: 4px 10px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 0.85rem; flex-shrink: 0; }
 
-/* HEADER */
-.header-barra { display: flex; align-items: center; justify-content: center; background-color: var(--teal-header); color: white; border-radius: 8px; padding: 6px 8px; width: 100%; position: relative; min-height: 42px; flex-shrink: 0; }
-.btn-menu-tres { position: absolute; left: 8px; background: none; border: none; color: white; font-size: 1.4rem; cursor: pointer; padding: 4px; }
-.contenedor-control-mes { display: flex; align-items: center; justify-content: center; gap: 20px; }
-.titulo-mes-central { font-size: 0.95rem; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; text-align: center; }
-.btn-Cambio-mes { background: rgba(255,255,255,0.2); border: none; color: white; padding: 4px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 0.9rem; }
-
-/* TOTALES */
-.panel-totales { display: flex; justify-content: space-between; background: white; padding: 8px 12px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); font-size: 0.85rem; font-weight: bold; color: #444; width: 100%; flex-shrink: 0; }
+.panel-totales { display: flex; justify-content: space-between; background: white; padding: 8px 10px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); font-size: 0.85rem; font-weight: bold; color: #333; width: 100%; flex-shrink: 0; }
 .panel-totales span { color: var(--teal-header); font-size: 0.95rem; }
 
-/* ZONA SUPERIOR: BOTÓN INTELIGENTE + SEMANAS */
-.zona-accion-superior { display: flex; flex-direction: column; background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); gap: 8px; width: 100%; flex-shrink: 0; }
+/* ZONA SUPERIOR: REESTRUCTURADA EN FILAS INDEPENDIENTES */
+.zona-accion-superior { display: flex; flex-direction: column; background: white; padding: 8px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); gap: 8px; width: 100%; flex-shrink: 0; }
 
-.bloque-fichar-superior { display: flex; flex-direction: column; gap: 6px; width: 100%; align-items: center; }
-.btn-fichar-smart { width: 100%; min-height: 48px; border: none; border-radius: 8px; padding: 8px 12px; font-size: 0.95rem; font-weight: bold; cursor: pointer; box-shadow: 0 3px 6px rgba(0,0,0,0.15); display: flex; align-items: center; justify-content: space-between; transition: all 0.2s ease; color: #111; background-color: var(--btn-manana); }
-.btn-fichar-smart:active { transform: scale(0.98); opacity: 0.9; }
-.btn-fichar-smart.tarde { background-color: var(--btn-tarde); color: white; }
-.btn-fichar-smart.completo { background-color: #28a745; color: white; cursor: default; }
+/* BOTONES DE FICHAR GIGANTES Y SIMÉTRICOS (FILA 1) */
+.bloque-fichar-superior { display: flex; flex-direction: row; gap: 8px; width: 100%; justify-content: center; flex-shrink: 0; }
+.btn-fichar-principal { background-color: #ffaa3b; border: 1px solid #333; border-radius: 6px; padding: 10px 8px; font-size: 0.88rem; font-weight: bold; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.12); line-height: 1.1; flex: 1 1 0%; display: flex; align-items: center; justify-content: center; text-align: center; min-height: 44px; transition: transform 0.1s; }
+.btn-fichar-principal:active { background-color: #e59530; transform: scale(0.98); }
+.btn-fichar-principal.tarde { background-color: #a372eb; color: white; }
+.btn-fichar-principal.tarde:active { background-color: #8956d6; }
 
-.btn-fichar-smart .badge-hora { background: rgba(0,0,0,0.15); padding: 4px 8px; border-radius: 4px; font-family: monospace; font-size: 0.9rem; }
-
-/* SEMANAS */
+/* BLOQUE DE SEMANAS LEGIBLE Y RESPONSIVO (FILA 2) */
 .bloque-semanas-mini { display: flex; width: 100%; gap: 4px; overflow-x: auto; padding-bottom: 2px; }
 .btn-semana-mini { flex: 1; min-width: 52px; background: #eef0f2; border: 1px solid #ccc; border-radius: 4px; font-size: 0.65rem; font-weight: bold; padding: 4px 2px; text-align: center; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
 .btn-semana-mini span { display: block; color: var(--teal-header); font-size: 0.7rem; font-weight: bold; margin-top: 1px; }
 .btn-semana-mini.activo { background-color: #ccefe2; border-color: var(--teal-header); box-shadow: inset 0 1px 3px rgba(0,0,0,0.15); }
 
-/* VISTAS */
-.vistas-sub { display: flex; justify-content: space-around; background: rgba(0,0,0,0.04); padding: 4px; border-radius: 6px; font-size: 0.85rem; width: 100%; flex-shrink: 0; }
-.vistas-sub span { padding: 4px 12px; border-radius: 4px; color: #555; cursor: pointer; font-weight: bold; }
-.vistas-sub span.activo { background: var(--teal-header); color: white; }
+.vistas-sub { display: flex; justify-content: space-around; background: rgba(0,0,0,0.04); padding: 4px; border-radius: 4px; font-size: 0.85rem; width: 100%; flex-shrink: 0; }
+.vistas-sub span { padding: 4px 12px; border-radius: 4px; color: #555; cursor: pointer; }
+.vistas-sub span.activo { background: var(--teal-header); color: white; font-weight: bold; }
 
-/* LISTA DÍAS */
-.calendario-lista { background: white; border-radius: 8px; padding: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; scroll-behavior: smooth; width: 100%; }
+.calendario-lista { background: white; border-radius: 6px; padding: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; scroll-behavior: smooth; width: 100%; }
 .fila-dia { display: flex; align-items: center; justify-content: space-between; padding: 5px 4px; border-bottom: 1px solid #eef0f2; border-radius: 6px; background: #fafafa; gap: 4px; width: 100%; flex-shrink: 0; }
 .fila-mes-ano { display: flex; justify-content: space-between; padding: 11px 14px; border-bottom: 1px solid #eef0f2; border-radius: 6px; cursor: pointer; transition: background 0.1s; flex-shrink: 0; }
 .fila-mes-ano:active { background-color: #e2f3ee !important; }
-.label-dia { width: 50px; font-size: 0.78rem; font-weight: bold; color: #444; text-transform: capitalize; flex-shrink: 0; }
+.label-dia { width: 48px; font-size: 0.76rem; font-weight: bold; color: #444; text-transform: capitalize; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .bloques-inputs { display: flex; gap: 3px; flex: 1; justify-content: center; align-items: center; }
 .caja-input { width: 42px; height: 26px; background-color: var(--box-empty); border: 1px solid #777; border-radius: 4px; text-align: center; font-size: 0.75rem; font-weight: bold; }
-.selector-estado { width: 78px; height: 28px; border: 1px solid #777; border-radius: 4px; font-size: 0.75rem; font-weight: bold; background-color: #eae7c9; }
+.selector-estado { width: 76px; height: 26px; border: 1px solid #777; border-radius: 4px; font-size: 0.74rem; font-weight: bold; background-color: #eae7c9; }
 
-.total-horas { width: 85px; display: flex; align-items: center; justify-content: flex-end; font-size: 0.78rem; color: #333; font-weight: bold; flex-shrink: 0; gap: 2px; cursor: pointer; padding: 2px 0; }
+.total-horas { width: 78px; display: flex; align-items: center; justify-content: flex-end; font-size: 0.78rem; color: #333; font-weight: bold; flex-shrink: 0; gap: 2px; cursor: pointer; padding: 2px 0; }
 .texto-horas { width: 42px; text-align: right; font-family: monospace; font-size: 0.85rem; display: inline-block; }
 
-.ad-container { width: 100%; min-height: 45px; background-color: #f0ebd8; border-radius: 6px; display: flex; justify-content: center; align-items: center; border: 1px dashed #ccc; color: #888; font-size: 0.75rem; flex-shrink: 0; }
+.ad-container { width: 100%; min-height: 50px; background-color: #f0ebd8; border-radius: 6px; display: flex; justify-content: center; align-items: center; border: 1px dashed #ccc; color: #888; font-size: 0.75rem; flex-shrink: 0; }
 
 .btn-nota-trigger { font-size: 1.05rem; cursor: pointer; padding: 2px; background: none; border: none; filter: grayscale(1); transition: transform 0.1s; flex-shrink: 0; }
 .btn-nota-trigger.con-nota { filter: grayscale(0); position: relative; }
 .btn-nota-trigger.con-nota::after { content: ''; position: absolute; top: 0; right: 0; width: 5px; height: 5px; background: red; border-radius: 50%; }
 
+/* OPTIMIZACIÓN EXTREMA DE ESPACIO PARA VISTA PARTIDO EN PANTALLAS PEQUEÑAS */
 .vista-partido .fila-dia { gap: 2px; padding: 4px 2px; }
-.vista-partido .label-dia { width: 40px; font-size: 0.72rem; }
+.vista-partido .label-dia { width: 38px; font-size: 0.70rem; }
 .vista-partido .bloques-inputs { gap: 2px; }
-.vista-partido .caja-input { width: 33px; height: 25px; font-size: 0.68rem; }
-.vista-partido .selector-estado { width: 60px; font-size: 0.65rem; }
-.vista-partido .total-horas { width: 75px; }
+.vista-partido .caja-input { width: 31px; height: 25px; font-size: 0.67rem; padding: 0; }
+.vista-partido .selector-estado { width: 56px; font-size: 0.65rem; height: 25px; }
+.vista-partido .total-horas { width: 68px; }
+.vista-partido .texto-horas { width: 38px; font-size: 0.80rem; }
 
 .fila-dia.tipo-trabajo { background-color: var(--color-trabajo) !important; }
 .fila-dia.tipo-vacaciones { background-color: var(--color-vacaciones) !important; }
 .fila-dia.tipo-libre { background-color: var(--color-libre) !important; }
 .fila-dia.tipo-baja { background-color: var(--color-baja) !important; }
 
-/* MENÚ LATERAL Y MODALES */
-.menu-lateral-overlay, .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; z-index: 1000; }
-.modal-overlay { z-index: 2000; justify-content: center; align-items: center; padding: 10px; }
+.menu-lateral-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; z-index: 1000; }
 .menu-lateral { position: fixed; top: 0; left: 0; width: 290px; height: 100%; background: white; box-shadow: 2px 0 10px rgba(0,0,0,0.3); display: none; flex-direction: column; padding: 16px; z-index: 1011; overflow-y: auto; }
 .menu-titulo { font-size: 1.1rem; font-weight: bold; color: var(--teal-header); border-bottom: 2px solid var(--teal-header); padding-bottom: 6px; margin-bottom: 12px; }
 .menu-seccion { font-size: 0.85rem; color: #777; font-weight: bold; margin-top: 10px; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -109,6 +101,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helve
 .bloque-color-picker input[type="color"] { border: none; width: 24px; height: 24px; border-radius: 50%; cursor: pointer; background: none; padding: 0; }
 .btn-cerrar-menu { background: #555; color: white; border: none; padding: 10px; border-radius: 4px; margin-top: 16px; font-weight: bold; cursor: pointer; }
 
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 2000; padding: 10px; }
 .modal-content { background: white; border-radius: 8px; padding: 16px; width: 100%; max-width: 350px; box-shadow: 0 4px 10px rgba(0,0,0,0.25); display: flex; flex-direction: column; gap: 12px; }
 .modal-titulo { font-size: 1rem; font-weight: bold; color: #333; border-bottom: 1px solid #eee; padding-bottom: 4px; }
 .modal-textarea { width: 100%; height: 80px; padding: 8px; font-size: 0.9rem; border: 1px solid #bbb; border-radius: 4px; resize: none; font-family: sans-serif; }
@@ -116,7 +109,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helve
 .btn-modal { padding: 8px 14px; border: none; border-radius: 4px; font-weight: bold; font-size: 0.85rem; cursor: pointer; }
 .btn-modal.guardar { background: var(--teal-header); color: white; }
 .btn-modal.cancelar { background: #bbb; color: #333; }
-.btn-modal.opcion { background: #e0e0e0; color: #333; }
 
 .linea-audit { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f1f1f1; padding: 6px 0; gap: 8px; font-size: 0.82rem; }
 .badge-audit { padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; color: white; min-width: 72px; text-align: center; }
@@ -125,123 +117,110 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helve
 </head>
 <body>
 <div class="container" id="app-container">
-  <div class="header-barra">
-    <button class="btn-menu-tres" onclick="toggleMenu(true)">☰</button>
-    <div class="contenedor-control-mes">
-      <button class="btn-Cambio-mes" onclick="cambiarMes(-1)">-</button>
-      <div class="titulo-mes-central" id="mes-titulo">...</div>
-      <button class="btn-Cambio-mes" onclick="cambiarMes(1)">+</button>
-    </div>
-  </div>
-
-  <div class="panel-totales">
-    <div>Horas Semana: <span id="total-semana">00:00</span></div>
-    <div>Total Mes: <span id="total-mes">00:00</span></div>
-  </div>
-
-  <div class="zona-accion-superior">
-    <!-- BOTÓN INTELIGENTE -->
-    <div class="bloque-fichar-superior" id="contenedor-botones-fichar"></div>
-    <!-- DESGLOSE SEMANAL -->
-    <div class="bloque-semanas-mini" id="desglose-semanas"></div>
-  </div>
-
-  <div class="vistas-sub">
-    <span id="v-semana" onclick="cambiarVista('semana')">SEMANA</span>
-    <span id="v-mes" class="activo" onclick="cambiarVista('mes')">MES</span>
-    <span id="v-ano" onclick="cambiarVista('ano')">AÑO</span>
-  </div>
-
-  <div class="calendario-lista" id="lista-dias"></div>
-  <div id="ad-banner" class="ad-container">Espacio para anuncio AdMob</div>
+<div class="header-barra">
+<button class="btn-menu-tres" onclick="toggleMenu(true)">☰</button>
+<div class="contenedor-control-mes">
+<button class="btn-Cambio-mes" onclick="cambiarMes(-1)">-</button>
+<div class="titulo-mes-central" id="mes-titulo">...</div>
+<button class="btn-Cambio-mes" onclick="cambiarMes(1)">+</button>
+</div>
+</div>
+<div class="panel-totales">
+<div>Horas Semana: <span id="total-semana">00:00</span></div>
+<div>Total Mes: <span id="total-mes">00:00</span></div>
+</div>
+<div class="zona-accion-superior">
+<!-- FILA 1: BOTONES GRANDES DE FICHAJE (SIMÉTRICOS) -->
+<div class="bloque-fichar-superior" id="contenedor-botones-fichar"></div>
+<!-- FILA 2: DESGLOSE DE SEMANAS -->
+<div class="bloque-semanas-mini" id="desglose-semanas"></div>
+</div>
+<div class="vistas-sub">
+<span id="v-semana" onclick="cambiarVista('semana')">SEMANA</span>
+<span id="v-mes" class="activo" onclick="cambiarVista('mes')">MES</span>
+<span id="v-ano" onclick="cambiarVista('ano')">AÑO</span>
+</div>
+<div class="calendario-lista" id="lista-dias"></div>
+<div id="ad-banner" class="ad-container">Espacio para anuncio AdMob</div>
 </div>
 
-<!-- MENÚ LATERAL -->
+<!-- MENU LATERAL -->
 <div class="menu-lateral-overlay" id="menu-overlay" onclick="toggleMenu(false)"></div>
 <div class="menu-lateral" id="menu-lateral">
-  <div class="menu-titulo">Ajustes de Fichaje</div>
-  <div class="menu-seccion">Configuración</div>
-  <div class="menu-opcion-input">
-    <span>👤 Nombre:</span>
-    <input type="text" id="input-nombre-global" oninput="guardarNombre(this.value)" placeholder="Nombre y Apellidos">
-  </div>
-  <div class="menu-opcion-input">
-    <span>🪪 DNI / NIE:</span>
-    <input type="text" id="input-dni-global" oninput="guardarDni(this.value)" placeholder="Documento ID">
-  </div>
-  <div class="menu-opcion">
-    <span>⚙️ Tipo de Turno:</span>
-    <select id="selector-turno-global" onchange="ajustarTipoTurno(this.value)">
-      <option value="continuo">Continuo</option>
-      <option value="partido">Partido</option>
-    </select>
-  </div>
-  <div class="menu-opcion" onclick="verificarPermisoGPS()">
-    <span>🛰️ Estado del GPS:</span>
-    <span id="estado-gps-lbl" style="color: #666; font-size: 0.8rem; font-weight: bold;">Verificar...</span>
-  </div>
-  <div class="menu-opcion" onclick="toggleSeccionColores()">
-    <span>🎨 Personalizar Colores</span>
-    <span id="flecha-colores-menu">▼</span>
-  </div>
-  <div class="contenedor-ajuste-colores" id="desplegable-colores">
-    <div class="bloque-color-picker">
-      <span>Trabajo</span>
-      <input type="color" id="picker-trabajo" onchange="guardarColorPersonalizado('trabajo', this.value)">
-    </div>
-    <div class="bloque-color-picker">
-      <span>Vacac.</span>
-      <input type="color" id="picker-vacaciones" onchange="guardarColorPersonalizado('vacaciones', this.value)">
-    </div>
-    <div class="bloque-color-picker">
-      <span>Libre</span>
-      <input type="color" id="picker-libre" onchange="guardarColorPersonalizado('libre', this.value)">
-    </div>
-    <div class="bloque-color-picker">
-      <span>Baja M.</span>
-      <input type="color" id="picker-baja" onchange="guardarColorPersonalizado('baja', this.value)">
-    </div>
-  </div>
-  <div class="menu-seccion">Compartir Datos del Mes</div>
-  <div class="menu-opcion" onclick="compartirPorWhatsApp()">🟢 Compartir por WhatsApp</div>
-  <div class="menu-opcion" onclick="compartirPorCorreo()">✉️ Compartir por Correo</div>
-  <div class="menu-seccion">Seguridad Anual</div>
-  <div class="menu-opcion" onclick="descargarCopiaSeguridad()">💾 Guardar Copia (.json)</div>
-  <div class="menu-opcion" onclick="document.getElementById('input-importar').click()">📂 Restaurar Copia (.json)</div>
-  <button class="btn-cerrar-menu" onclick="toggleMenu(false)">Cerrar Menú</button>
+<div class="menu-titulo">Ajustes de Fichaje</div>
+<div class="menu-seccion">Configuración</div>
+<div class="menu-opcion-input">
+<span>👤 Nombre:</span>
+<input type="text" id="input-nombre-global" oninput="guardarNombre(this.value)" placeholder="Nombre y Apellidos">
+</div>
+<div class="menu-opcion-input">
+<span>🪪 DNI / NIE:</span>
+<input type="text" id="input-dni-global" oninput="guardarDni(this.value)" placeholder="Documento ID">
+</div>
+<div class="menu-opcion">
+<span>⚙️ Tipo de Turno:</span>
+<select id="selector-turno-global" onchange="ajustarTipoTurno(this.value)">
+<option value="continuo">Continuo</option>
+<option value="partido">Partido</option>
+</select>
+</div>
+<div class="menu-opcion" onclick="verificarPermisoGPS()">
+<span>🛰️ Estado del GPS:</span>
+<span id="estado-gps-lbl" style="color: #666; font-size: 0.8rem; font-weight: bold;">Verificar...</span>
+</div>
+<div class="menu-opcion" onclick="toggleSeccionColores()">
+<span>🎨 Personalizar Colores</span>
+<span id="flecha-colores-menu">▼</span>
+</div>
+<div class="contenedor-ajuste-colores" id="desplegable-colores">
+<div class="bloque-color-picker">
+<span>Trabajo</span>
+<input type="color" id="picker-trabajo" onchange="guardarColorPersonalizado('trabajo', this.value)">
+</div>
+<div class="bloque-color-picker">
+<span>Vacac.</span>
+<input type="color" id="picker-vacaciones" onchange="guardarColorPersonalizado('vacaciones', this.value)">
+</div>
+<div class="bloque-color-picker">
+<span>Libre</span>
+<input type="color" id="picker-libre" onchange="guardarColorPersonalizado('libre', this.value)">
+</div>
+<div class="bloque-color-picker">
+<span>Baja M.</span>
+<input type="color" id="picker-baja" onchange="guardarColorPersonalizado('baja', this.value)">
+</div>
+</div>
+<div class="menu-seccion">Compartir Datos del Mes</div>
+<div class="menu-opcion" onclick="compartirPorWhatsApp()">🟢 Compartir por WhatsApp</div>
+<div class="menu-opcion" onclick="compartirPorCorreo()">✉️ Compartir por Correo</div>
+<div class="menu-seccion">Seguridad Anual</div>
+<div class="menu-opcion" onclick="descargarCopiaSeguridad()">💾 Guardar Copia (.json)</div>
+<div class="menu-opcion" onclick="document.getElementById('input-importar').click()">📂 Restaurar Copia (.json)</div>
+<button class="btn-cerrar-menu" onclick="toggleMenu(false)">Cerrar Menú</button>
 </div>
 <input type="file" id="input-importar" style="display:none;" accept=".json" onchange="cargarCopiaSeguridad(event)">
 
-<!-- MODAL CONFIRMACIÓN BOTÓN INTELIGENTE -->
-<div class="modal-overlay" id="modal-smart-overlay">
-  <div class="modal-content">
-    <div class="modal-titulo" id="modal-smart-titulo">Confirmar Fichaje</div>
-    <div id="modal-smart-cuerpo" style="font-size:0.9rem; color:#444; line-height:1.4;"></div>
-    <div class="modal-botones" id="modal-smart-botones"></div>
-  </div>
-</div>
-
 <!-- MODAL NOTAS -->
 <div class="modal-overlay" id="modal-nota-overlay">
-  <div class="modal-content">
-    <div class="modal-titulo" id="modal-nota-titulo">Nota del día</div>
-    <textarea class="modal-textarea" id="modal-nota-texto" placeholder="Escribe aquí anotaciones importantes..."></textarea>
-    <div class="modal-botones">
-      <button class="btn-modal cancelar" onclick="cerrarModalNota()">Cancelar</button>
-      <button class="btn-modal guardar" onclick="guardarNotaModal()">Guardar</button>
-    </div>
-  </div>
+<div class="modal-content">
+<div class="modal-titulo" id="modal-nota-titulo">Nota del día</div>
+<textarea class="modal-textarea" id="modal-nota-texto" placeholder="Escribe aquí anotaciones importantes..."></textarea>
+<div class="modal-botones">
+<button class="btn-modal cancelar" onclick="cerrarModalNota()">Cancelar</button>
+<button class="btn-modal guardar" onclick="guardarNotaModal()">Guardar</button>
+</div>
+</div>
 </div>
 
 <!-- MODAL AUDITORÍA -->
 <div class="modal-overlay" id="modal-audit-overlay" onclick="cerrarModalAudit()">
-  <div class="modal-content" onclick="event.stopPropagation()">
-    <div class="modal-titulo" id="modal-audit-titulo">Detalles del Fichaje</div>
-    <div id="modal-audit-cuerpo" style="display: flex; flex-direction: column; gap: 4px;"></div>
-    <div class="modal-botones" style="margin-top: 6px;">
-      <button class="btn-modal cancelar" onclick="cerrarModalAudit()">Cerrar</button>
-    </div>
-  </div>
+<div class="modal-content" onclick="event.stopPropagation()">
+<div class="modal-titulo" id="modal-audit-titulo">Detalles del Fichaje</div>
+<div id="modal-audit-cuerpo" style="display: flex; flex-direction: column; gap: 4px;"></div>
+<div class="modal-botones" style="margin-top: 6px;">
+<button class="btn-modal cancelar" onclick="cerrarModalAudit()">Cerrar</button>
+</div>
+</div>
 </div>
 
 <script>
@@ -253,10 +232,25 @@ let configuracionTurno = localStorage.getItem('config-turno') || 'continuo';
 let diaNotaSeleccionado = null;
 const coloresDefecto = { trabajo: '#d4edda', vacaciones: '#cce5ff', libre: '#fff3cd', baja: '#f8d7da' };
 
-/* FORMATO AUTOMÁTICO DE HORAS */
+/* FUNCIÓN DE AUTO-FORMATO DE HORAS AVANZADA (PUNTOS, COMAS Y NÚMEROS CONTINUOS) */
 function normalizarTextoHora(txt) {
   if (!txt) return '';
   let limpio = txt.trim().replace(/[,;.]/g, ':');
+  
+  // Reconocimiento automático sin dos puntos (ej. "800" -> "08:00", "1430" -> "14:30")
+  if (!limpio.includes(':')) {
+    if (/^\d{3,4}$/.test(limpio)) {
+      let mPart = limpio.slice(-2);
+      let hPart = limpio.slice(0, -2);
+      limpio = `${hPart}:${mPart}`;
+    } else if (/^\d{1,2}$/.test(limpio)) {
+      let numH = parseInt(limpio, 10);
+      if (numH >= 0 && numH < 24) {
+        return `${String(numH).padStart(2, '0')}:00`;
+      }
+    }
+  }
+  
   let partes = limpio.split(':');
   if (partes.length === 2) {
     let h = partes[0].trim();
@@ -310,107 +304,18 @@ function ajustarTipoTurno(valor) {
   if(valor === 'partido') container.classList.add('vista-partido'); else container.classList.remove('vista-partido');
   dibujarBotonesFicharSuperiores(); renderizarCalendario(false);
 }
-
-/* LÓGICA DEL BOTÓN INTELIGENTE */
-function evaluarSiguienteAccion() {
-  const hoy = new Date();
-  const realAnio = hoy.getFullYear(), realMes = hoy.getMonth(), realDia = hoy.getDate();
-  const claveId = `fichaje-${realAnio}-${realMes}-${realDia}`;
-  let data = JSON.parse(localStorage.getItem(claveId)) || { e1:'', s1:'', e2:'', s2:'', est:'defecto', t:'00:00', nota:'', origen: {}, gps: {} };
-
-  if (configuracionTurno === 'continuo') {
-    if (!data.e1) return { modo: 'continuo', campo: 'e1', label: '☀️ Entrada', subtitulo: 'Fichar inicio de jornada', estilo: 'manana' };
-    if (!data.s1) return { modo: 'continuo', campo: 's1', label: '🔴 Salida', subtitulo: 'Fichar fin de jornada', estilo: 'manana' };
-    return { modo: 'completo', campo: null, label: '✅ Jornada Completa', subtitulo: 'Todos los registros completados', estilo: 'completo' };
-  } else {
-    // Turno Partido
-    if (!data.e1) return { modo: 'm', campo: 'e1', label: '☀️ Entrada Mañana', subtitulo: 'Tramo de Mañana', estilo: 'manana' };
-    if (!data.s1) return { modo: 'm', campo: 's1', label: '☀️ Salida Mañana', subtitulo: 'Tramo de Mañana', estilo: 'manana' };
-    if (!data.e2) return { modo: 't', campo: 'e2', label: '🌙 Entrada Tarde', subtitulo: 'Tramo de Tarde', estilo: 'tarde' };
-    if (!data.s2) return { modo: 't', campo: 's2', label: '🌙 Salida Tarde', subtitulo: 'Tramo de Tarde', estilo: 'tarde' };
-    return { modo: 'completo', campo: null, label: '✅ Jornada Completa', subtitulo: 'Mañana y Tarde registradas', estilo: 'completo' };
-  }
-}
-
 function dibujarBotonesFicharSuperiores() {
   const contenedor = document.getElementById('contenedor-botones-fichar');
   contenedor.innerHTML = '';
-
-  const accion = evaluarSiguienteAccion();
-  const horaActualStr = new Date().toTimeString().substring(0, 5);
-
-  let claseEstilo = 'btn-fichar-smart';
-  if (accion.estilo === 'tarde') claseEstilo += ' tarde';
-  if (accion.estilo === 'completo') claseEstilo += ' completo';
-
-  contenedor.innerHTML = `
-    <button class="${claseEstilo}" onclick="iniciarProcesoFichajeSmart('${accion.modo}', '${accion.campo}')">
-      <div style="text-align:left;">
-        <div style="font-size:0.95rem; font-weight:bold;">${accion.label}</div>
-        <div style="font-size:0.7rem; opacity:0.85;">${accion.subtitulo}</div>
-      </div>
-      <div class="badge-hora">⏱️ ${horaActualStr}</div>
-    </button>
-  `;
+  if(configuracionTurno === 'continuo') contenedor.innerHTML = `<button class="btn-fichar-principal" onclick="ficharSecuencial('continuo')">🕒 FICHAR</button>`;
+  else contenedor.innerHTML = `<button class="btn-fichar-principal" onclick="ficharSecuencial('m')">☀️ MAÑANA</button> <button class="btn-fichar-principal tarde" onclick="ficharSecuencial('t')">🌙 TARDE</button>`;
 }
-
-function iniciarProcesoFichajeSmart(modoPredeterminado, campoPredeterminado) {
-  const hoy = new Date();
-  if(fechaActual.getFullYear() !== hoy.getFullYear() || fechaActual.getMonth() !== hoy.getMonth()) {
-    alert("⚠️ Debes estar en el mes actual para utilizar el botón inteligente."); return;
-  }
-  if(vistaActual === 'ano') { alert("⚠️ Pasa a la vista de MES."); return; }
-
-  if (modoPredeterminado === 'completo') {
-    alert("✅ La jornada de hoy ya tiene todas sus horas registradas.");
-    return;
-  }
-
-  const horaMarcada = hoy.toTimeString().substring(0, 5);
-  const cuerpoModal = document.getElementById('modal-smart-cuerpo');
-  const botonesModal = document.getElementById('modal-smart-botones');
-
-  let esTarde = (modoPredeterminado === 't');
-  let textoTipo = esTarde ? "🌙 TARDE" : "☀️ MAÑANA";
-  let textoAccion = (campoPredeterminado === 'e1' || campoPredeterminado === 'e2') ? "ENTRADA" : "SALIDA";
-
-  cuerpoModal.innerHTML = `
-    <p>Se va a registrar la <b>${textoAccion}</b> a las <b style="font-family:monospace; font-size:1.05rem; color:var(--teal-header);">${horaMarcada}</b>.</p>
-    <p style="margin-top:6px;">Tramo detectado: <b>${textoTipo}</b></p>
-  `;
-
-  if (configuracionTurno === 'partido') {
-    botonesModal.innerHTML = `
-      <button class="btn-modal cancelar" onclick="cerrarModalSmart()">Cancelar</button>
-      <button class="btn-modal opcion" onclick="ejecutarFichajeDirecto('${esTarde ? 'm' : 't'}')">Cambiar a ${esTarde ? 'Mañana' : 'Tarde'}</button>
-      <button class="btn-modal guardar" onclick="ejecutarFichajeDirecto('${modoPredeterminado}')">Confirmar</button>
-    `;
-  } else {
-    botonesModal.innerHTML = `
-      <button class="btn-modal cancelar" onclick="cerrarModalSmart()">Cancelar</button>
-      <button class="btn-modal guardar" onclick="ejecutarFichajeDirecto('continuo')">Confirmar</button>
-    `;
-  }
-
-  document.getElementById('modal-smart-overlay').style.display = 'flex';
-}
-
-function cerrarModalSmart() {
-  document.getElementById('modal-smart-overlay').style.display = 'none';
-}
-
-function ejecutarFichajeDirecto(modo) {
-  cerrarModalSmart();
-  ficharSecuencial(modo);
-}
-
-function irAlMesSeleccionado(indiceMes) { fechaActual.setMonth(indiceMes); cambiarVista('mes'); }
+function irAlMesSeleccionado(indiceMes) { fechaActual.setDate(1); fechaActual.setMonth(indiceMes); changingMonth = false; cambiarVista('mes'); }
 
 function renderizarCalendario(autoScroll = true, comportamiento = 'smooth') {
   const anio = fechaActual.getFullYear(); const mes = fechaActual.getMonth();
   const lista = document.getElementById('lista-dias'); lista.innerHTML = '';
   let totalDiasMes = new Date(anio, mes + 1, 0).getDate();
-
   if(vistaActual === 'ano') {
     document.getElementById('mes-titulo').textContent = `AÑO ${anio}`;
     for(let m = 0; m < 12; m++) {
@@ -429,7 +334,6 @@ function renderizarCalendario(autoScroll = true, comportamiento = 'smooth') {
     }
     calcularTotalesGenerales(); return;
   }
-
   document.getElementById('mes-titulo').textContent = `${mesesNombres[mes]} ${anio}`;
   let diaInicio = 1, diaFin = totalDiasMes;
   if(vistaActual === 'semana') {
@@ -438,7 +342,6 @@ function renderizarCalendario(autoScroll = true, comportamiento = 'smooth') {
     let diffToSunday = currentDayOfWeek === 0 ? 0 : 7 - currentDayOfWeek;
     diaInicio = Math.max(1, targetDay - diffToMonday); diaFin = Math.min(totalDiasMes, targetDay + diffToSunday);
   }
-
   for(let i = diaInicio; i <= diaFin; i++) {
     const claveId = `fichaje-${anio}-${mes}-${i}`;
     let data = JSON.parse(localStorage.getItem(claveId)) || { e1:'', s1:'', e2:'', s2:'', est:'defecto', t:'00:00', nota:'', origen: {}, gps: {} };
@@ -465,10 +368,7 @@ function renderizarCalendario(autoScroll = true, comportamiento = 'smooth') {
     fila.innerHTML = `<div class="label-dia" onclick="desplazarADia(${i}, 'smooth', 'center')">${textoDiaSemana} ${i}</div><div class="bloques-inputs">${inputsHTML}<select class="selector-estado" id="est-${i}" onchange="cambiarEstado(${i})"><option value="defecto" ${data.est==='defecto'?'selected':''}>- Tipo -</option><option value="trabajo" ${data.est==='trabajo'?'selected':''}>TRABAJO</option><option value="vacaciones" ${data.est==='vacaciones'?'selected':''}>VACAC.</option><option value="libre" ${data.est==='libre'?'selected':''}>LIBRE</option><option value="baja" ${data.est==='baja'?'selected':''}>BAJA M.</option></select></div><div class="total-horas" id="t-${i}" onclick="abrirModalAudit(${i})">${smartIcono}<span class="texto-horas">${data.t}</span></div><button class="${claseNota}" id="icononota-${i}" onclick="abrirModalNota(${i})">${iconoNota}</button>`;
     lista.appendChild(fila);
   }
-  
   calcularTotalesGenerales();
-  dibujarBotonesFicharSuperiores();
-
   if(autoScroll && vistaActual === 'mes') {
     const hoy = new Date(); let diaDestino = 1; let alineacion = 'start';
     if (anio === hoy.getFullYear() && mes === hoy.getMonth()) {
@@ -719,6 +619,9 @@ function actualizarFilaUI(id, data) {
 
 function ficharSecuencial(modo) {
   const hoy = new Date(); const realAnio = hoy.getFullYear(); const realMes = hoy.getMonth(); const realDia = hoy.getDate();
+  if(fechaActual.getFullYear() !== realAnio || fechaActual.getMonth() !== realMes) { alert("⚠️ Cambia al mes actual para usar el botón de fichar."); return; }
+  if(vistaActual === 'ano') { alert("⚠️ Pasa a la vista de MES."); return; }
+  
   fechaActual = new Date();
   const horaMarcada = hoy.toTimeString().substring(0, 5);
   const claveId = `fichaje-${realAnio}-${realMes}-${realDia}`;
@@ -743,17 +646,24 @@ function ficharSecuencial(modo) {
 
   if (!data.gps) data.gps = {};
 
+  // Actualización instantánea para que el usuario tenga confirmación visual inmediata
+  guardarYProcesarFichaje(claveId, data, hoy, campoFichado);
+
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
       (position) => {
+        let dataFresh = JSON.parse(localStorage.getItem(claveId));
+        if (!dataFresh) return;
         const coords = `${position.coords.latitude.toFixed(6)},${position.coords.longitude.toFixed(6)}`;
-        data.gps[campoFichado] = coords;
-        guardarYProcesarFichaje(claveId, data, hoy, campoFichado);
+        if (!dataFresh.gps) dataFresh.gps = {};
+        dataFresh.gps[campoFichado] = coords;
+        localStorage.setItem(claveId, JSON.stringify(dataFresh));
+        actualizarFilaUI(realDia, dataFresh);
       },
-      (error) => { console.warn("GPS no disponible:", error.message); guardarYProcesarFichaje(claveId, data, hoy, campoFichado); },
+      (error) => { console.warn("GPS no disponible:", error.message); },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
-  } else { guardarYProcesarFichaje(claveId, data, hoy, campoFichado); }
+  }
 }
 
 function guardarYProcesarFichaje(claveId, data, hoy, campoFichado) {
@@ -785,7 +695,15 @@ function desplazarADia(dia, comportamiento = 'smooth', alineacion = 'center') {
   if(vistaActual === 'mes') { const el = document.getElementById(`fila-${dia}`); if(el) el.scrollIntoView({ behavior: comportamiento, block: alineacion }); }
 }
 function seleccionarSemana(dia) { fechaActual.setDate(dia); if(vistaActual === 'semana') renderizarCalendario(false); else { desplazarADia(dia, 'smooth', 'start'); calcularTotalesGenerales(); } }
-function cambiarMes(dir) { if(vistaActual === 'ano') fechaActual.setFullYear(fechaActual.getFullYear() + dir); else fechaActual.setMonth(fechaActual.getMonth() + dir); renderizarCalendario(true, 'smooth'); }
+
+function cambiarMes(dir) {
+  // Se previene el salto accidental en días 31 del mes estableciendo el día 1 antes de modificar mes/año
+  fechaActual.setDate(1);
+  if(vistaActual === 'ano') fechaActual.setFullYear(fechaActual.getFullYear() + dir);
+  else fechaActual.setMonth(fechaActual.getMonth() + dir);
+  renderizarCalendario(true, 'smooth');
+}
+
 function cambiarVista(vista) {
   vistaActual = vista; document.getElementById('v-semana').classList.remove('activo'); document.getElementById('v-mes').classList.remove('activo'); document.getElementById('v-ano').classList.remove('activo');
   document.getElementById(`v-${vista}`).classList.add('activo'); renderizarCalendario(true, 'instant');
@@ -864,7 +782,7 @@ document.getElementById('selector-turno-global').value = configuracionTurno;
 if(configuracionTurno === 'partido') document.getElementById('app-container').classList.add('vista-partido');
 let nombreUsuario = localStorage.getItem('config-nombre') || ''; document.getElementById('input-nombre-global').value = nombreUsuario;
 let dniUsuario = localStorage.getItem('config-dni') || ''; document.getElementById('input-dni-global').value = dniUsuario;
-inicializarColores(); registrarUbicacionInicial(); renderizarCalendario(true, 'instant');
+inicializarColores(); registrarUbicacionInicial(); dibujarBotonesFicharSuperiores(); renderizarCalendario(true, 'instant');
 
 function registrarUbicacionInicial() { if (navigator.geolocation) { navigator.geolocation.getCurrentPosition(()=>{}, ()=>{}, {timeout: 1000}); } }
 
