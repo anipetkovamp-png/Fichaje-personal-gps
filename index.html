@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Fichaje Pro V18.10 Botón Único</title>
+<title>Fichaje Pro V18.11 Botón Único</title>
 
 <!-- ENLACES PARA QUE SEA INSTALABLE (PWA) -->
 <link rel="manifest" href="manifest.json">
@@ -59,9 +59,9 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 .label-dia { width: 48px; font-size: 0.76rem; font-weight: bold; color: #444; text-transform: capitalize; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .bloques-inputs { display: flex; gap: 3px; flex: 1; justify-content: center; align-items: center; }
 .caja-input { width: 42px; height: 26px; background-color: var(--box-empty); border: 1px solid #777; border-radius: 4px; text-align: center; font-size: 0.75rem; font-weight: bold; }
-.selector-estado { width: 76px; height: 26px; border: 1px solid #777; border-radius: 4px; font-size: 0.74rem; font-weight: bold; background-color: #eae7c9; }
+.selector-estado { width: 80px; height: 26px; border: 1px solid #777; border-radius: 4px; font-size: 0.74rem; font-weight: bold; background-color: #eae7c9; padding: 0 2px; }
 
-.total-horas { width: 78px; display: flex; align-items: center; justify-content: flex-end; font-size: 0.78rem; color: #333; font-weight: bold; flex-shrink: 0; gap: 2px; cursor: pointer; padding: 2px 0; }
+.total-horas { width: 76px; display: flex; align-items: center; justify-content: flex-end; font-size: 0.78rem; color: #333; font-weight: bold; flex-shrink: 0; gap: 2px; cursor: pointer; padding: 2px 0; }
 .texto-horas { width: 42px; text-align: right; font-family: monospace; font-size: 0.85rem; display: inline-block; }
 
 .ad-container { width: 100%; min-height: 50px; background-color: #f0ebd8; border-radius: 6px; display: flex; justify-content: center; align-items: center; border: 1px dashed #ccc; color: #888; font-size: 0.75rem; flex-shrink: 0; }
@@ -70,14 +70,14 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 .btn-nota-trigger.con-nota { filter: grayscale(0); position: relative; }
 .btn-nota-trigger.con-nota::after { content: ''; position: absolute; top: 0; right: 0; width: 5px; height: 5px; background: red; border-radius: 50%; }
 
-/* OPTIMIZACIÓN EXTREMA DE ESPACIO PARA VISTA PARTIDO EN PANTALLAS PEQUEÑAS */
-.vista-partido .fila-dia { gap: 2px; padding: 4px 2px; }
-.vista-partido .label-dia { width: 38px; font-size: 0.70rem; }
+/* OPTIMIZACIÓN DE ESPACIO PARA VISTA PARTIDO SIN CORTAR LA PALABRA "TRABAJO" */
+.vista-partido .fila-dia { gap: 3px; padding: 4px 2px; }
+.vista-partido .label-dia { width: 38px; font-size: 0.72rem; }
 .vista-partido .bloques-inputs { gap: 2px; }
-.vista-partido .caja-input { width: 31px; height: 25px; font-size: 0.67rem; padding: 0; }
-.vista-partido .selector-estado { width: 56px; font-size: 0.65rem; height: 25px; }
-.vista-partido .total-horas { width: 68px; }
-.vista-partido .texto-horas { width: 38px; font-size: 0.80rem; }
+.vista-partido .caja-input { width: 31px; height: 25px; font-size: 0.68rem; padding: 0; }
+.vista-partido .selector-estado { width: 70px; font-size: 0.67rem; height: 25px; padding: 0 1px; }
+.vista-partido .total-horas { width: 64px; }
+.vista-partido .texto-horas { width: 38px; font-size: 0.82rem; }
 
 .fila-dia.tipo-trabajo { background-color: var(--color-trabajo) !important; }
 .fila-dia.tipo-vacaciones { background-color: var(--color-vacaciones) !important; }
@@ -256,7 +256,6 @@ function normalizarTextoHora(txt) {
   if (!txt) return '';
   let limpio = txt.trim().replace(/[,;.]/g, ':');
   
-  // Reconocimiento automático sin dos puntos (ej. "800" -> "08:00", "1430" -> "14:30")
   if (!limpio.includes(':')) {
     if (/^\d{3,4}$/.test(limpio)) {
       let mPart = limpio.slice(-2);
@@ -681,7 +680,6 @@ function ejecutarFichaje(modo) {
 
   if (!data.gps) data.gps = {};
 
-  // Actualización inmediata para retroalimentación instantánea al usuario
   guardarYProcesarFichaje(claveId, data, hoy, campoFichado);
 
   if (navigator.geolocation) {
@@ -732,7 +730,6 @@ function desplazarADia(dia, comportamiento = 'smooth', alineacion = 'center') {
 function seleccionarSemana(dia) { fechaActual.setDate(dia); if(vistaActual === 'semana') renderizarCalendario(false); else { desplazarADia(dia, 'smooth', 'start'); calcularTotalesGenerales(); } }
 
 function cambiarMes(dir) {
-  // Ajuste previo para prevenir errores al pasar mes en días 31
   fechaActual.setDate(1);
   if(vistaActual === 'ano') fechaActual.setFullYear(fechaActual.getFullYear() + dir);
   else fechaActual.setMonth(fechaActual.getMonth() + dir);
