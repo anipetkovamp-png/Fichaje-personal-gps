@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Fichaje Pro V18.9 Auto-Format</title>
+<title>Fichaje Pro V18.10 Botón Único</title>
 
 <!-- ENLACES PARA QUE SEA INSTALABLE (PWA) -->
 <link rel="manifest" href="manifest.json">
@@ -37,12 +37,10 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 /* ZONA SUPERIOR: REESTRUCTURADA EN FILAS INDEPENDIENTES */
 .zona-accion-superior { display: flex; flex-direction: column; background: white; padding: 8px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); gap: 8px; width: 100%; flex-shrink: 0; }
 
-/* BOTONES DE FICHAR GIGANTES Y SIMÉTRICOS (FILA 1) */
+/* BOTÓN ÚNICO DE FICHAJE SIMÉTRICO (FILA 1) */
 .bloque-fichar-superior { display: flex; flex-direction: row; gap: 8px; width: 100%; justify-content: center; flex-shrink: 0; }
-.btn-fichar-principal { background-color: #ffaa3b; border: 1px solid #333; border-radius: 6px; padding: 10px 8px; font-size: 0.88rem; font-weight: bold; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.12); line-height: 1.1; flex: 1 1 0%; display: flex; align-items: center; justify-content: center; text-align: center; min-height: 44px; transition: transform 0.1s; }
+.btn-fichar-principal { background-color: #ffaa3b; border: 1px solid #333; border-radius: 6px; padding: 11px 8px; font-size: 0.95rem; font-weight: bold; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.12); line-height: 1.1; width: 100%; display: flex; align-items: center; justify-content: center; text-align: center; min-height: 46px; transition: transform 0.1s; }
 .btn-fichar-principal:active { background-color: #e59530; transform: scale(0.98); }
-.btn-fichar-principal.tarde { background-color: #a372eb; color: white; }
-.btn-fichar-principal.tarde:active { background-color: #8956d6; }
 
 /* BLOQUE DE SEMANAS LEGIBLE Y RESPONSIVO (FILA 2) */
 .bloque-semanas-mini { display: flex; width: 100%; gap: 4px; overflow-x: auto; padding-bottom: 2px; }
@@ -109,6 +107,12 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 .btn-modal.guardar { background: var(--teal-header); color: white; }
 .btn-modal.cancelar { background: #bbb; color: #333; }
 
+/* ESTILOS PARA EL MODAL DE CONFIRMACIÓN DE TURNO PARTIDO */
+.btn-turno-modal { padding: 12px; border: 1px solid #333; border-radius: 6px; font-weight: bold; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; text-align: center; width: 100%; transition: transform 0.1s; }
+.btn-turno-modal:active { transform: scale(0.98); }
+.btn-turno-modal.manana { background-color: #ffaa3b; color: #111; }
+.btn-turno-modal.tarde { background-color: #a372eb; color: white; }
+
 .linea-audit { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f1f1f1; padding: 6px 0; gap: 8px; font-size: 0.82rem; }
 .badge-audit { padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; color: white; min-width: 72px; text-align: center; }
 .btn-mapa-audit { text-decoration: none; background: var(--teal-header); color: white; padding: 3px 7px; border-radius: 4px; font-size: 0.72rem; font-weight: bold; display: inline-flex; align-items: center; }
@@ -129,8 +133,10 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 <div>Total Mes: <span id="total-mes">00:00</span></div>
 </div>
 <div class="zona-accion-superior">
-<!-- FILA 1: BOTONES GRANDES DE FICHAJE (SIMÉTRICOS) -->
-<div class="bloque-fichar-superior" id="contenedor-botones-fichar"></div>
+<!-- FILA 1: BOTÓN ÚNICO DE FICHAJE -->
+<div class="bloque-fichar-superior">
+<button class="btn-fichar-principal" onclick="iniciarFichaje()">🕒 FICHAR</button>
+</div>
 <!-- FILA 2: DESGLOSE DE SEMANAS -->
 <div class="bloque-semanas-mini" id="desglose-semanas"></div>
 </div>
@@ -198,6 +204,20 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 <button class="btn-cerrar-menu" onclick="toggleMenu(false)">Cerrar Menú</button>
 </div>
 <input type="file" id="input-importar" style="display:none;" accept=".json" onchange="cargarCopiaSeguridad(event)">
+
+<!-- MODAL CONFIRMACIÓN TURNO PARTIDO -->
+<div class="modal-overlay" id="modal-turno-overlay" onclick="cerrarModalTurno()">
+<div class="modal-content" onclick="event.stopPropagation()">
+<div class="modal-titulo" style="text-align: center;">¿Qué turno vas a registrar?</div>
+<div style="display: flex; flex-direction: column; gap: 8px; margin: 4px 0;">
+<button class="btn-turno-modal manana" onclick="confirmarFichajeTurno('m')">☀️ TURNO DE MAÑANA</button>
+<button class="btn-turno-modal tarde" onclick="confirmarFichajeTurno('t')">🌙 TURNO DE TARDE</button>
+</div>
+<div class="modal-botones" style="justify-content: center;">
+<button class="btn-modal cancelar" onclick="cerrarModalTurno()" style="width: 100%;">Cancelar</button>
+</div>
+</div>
+</div>
 
 <!-- MODAL NOTAS -->
 <div class="modal-overlay" id="modal-nota-overlay">
@@ -301,15 +321,10 @@ function ajustarTipoTurno(valor) {
   configuracionTurno = valor; localStorage.setItem('config-turno', valor);
   const container = document.getElementById('app-container');
   if(valor === 'partido') container.classList.add('vista-partido'); else container.classList.remove('vista-partido');
-  dibujarBotonesFicharSuperiores(); renderizarCalendario(false);
+  renderizarCalendario(false);
 }
-function dibujarBotonesFicharSuperiores() {
-  const contenedor = document.getElementById('contenedor-botones-fichar');
-  contenedor.innerHTML = '';
-  if(configuracionTurno === 'continuo') contenedor.innerHTML = `<button class="btn-fichar-principal" onclick="ficharSecuencial('continuo')">🕒 FICHAR</button>`;
-  else contenedor.innerHTML = `<button class="btn-fichar-principal" onclick="ficharSecuencial('m')">☀️ MAÑANA</button> <button class="btn-fichar-principal tarde" onclick="ficharSecuencial('t')">🌙 TARDE</button>`;
-}
-function irAlMesSeleccionado(indiceMes) { fechaActual.setDate(1); fechaActual.setMonth(indiceMes); changingMonth = false; cambiarVista('mes'); }
+
+function irAlMesSeleccionado(indiceMes) { fechaActual.setDate(1); fechaActual.setMonth(indiceMes); cambiarVista('mes'); }
 
 function renderizarCalendario(autoScroll = true, comportamiento = 'smooth') {
   const anio = fechaActual.getFullYear(); const mes = fechaActual.getMonth();
@@ -616,11 +631,32 @@ function actualizarFilaUI(id, data) {
   elTot.innerHTML = `${smartIcono}<span class="texto-horas">${data.t || '00:00'}</span>`;
 }
 
-function ficharSecuencial(modo) {
-  const hoy = new Date(); const realAnio = hoy.getFullYear(); const realMes = hoy.getMonth(); const realDia = hoy.getDate();
-  if(fechaActual.getFullYear() !== realAnio || fechaActual.getMonth() !== realMes) { alert("⚠️ Cambia al mes actual para usar el botón de fichar."); return; }
+/* LÓGICA DE BOTÓN ÚNICO Y CONFIRMACIÓN DE TURNO */
+function iniciarFichaje() {
+  const hoy = new Date();
+  if(fechaActual.getFullYear() !== hoy.getFullYear() || fechaActual.getMonth() !== hoy.getMonth()) {
+    alert("⚠️ Cambia al mes actual para usar el botón de fichar."); return;
+  }
   if(vistaActual === 'ano') { alert("⚠️ Pasa a la vista de MES."); return; }
   
+  if (configuracionTurno === 'partido') {
+    document.getElementById('modal-turno-overlay').style.display = 'flex';
+  } else {
+    ejecutarFichaje('continuo');
+  }
+}
+
+function cerrarModalTurno() {
+  document.getElementById('modal-turno-overlay').style.display = 'none';
+}
+
+function confirmarFichajeTurno(turno) {
+  cerrarModalTurno();
+  ejecutarFichaje(turno);
+}
+
+function ejecutarFichaje(modo) {
+  const hoy = new Date(); const realAnio = hoy.getFullYear(); const realMes = hoy.getMonth(); const realDia = hoy.getDate();
   fechaActual = new Date();
   const horaMarcada = hoy.toTimeString().substring(0, 5);
   const claveId = `fichaje-${realAnio}-${realMes}-${realDia}`;
@@ -635,17 +671,17 @@ function ficharSecuencial(modo) {
   else if(modo === 'm') { 
     if(data.e1 === "") { data.e1 = horaMarcada; data.est = 'trabajo'; campoFichado = 'e1'; } 
     else if(data.s1 === "") { data.s1 = horaMarcada; campoFichado = 's1'; } 
-    else { alert("📝 Mañana completa."); return; } 
+    else { alert("📝 Turno de mañana completo."); return; } 
   }
   else if(modo === 't') { 
     if(data.e2 === "") { data.e2 = horaMarcada; data.est = 'trabajo'; campoFichado = 'e2'; } 
     else if(data.s2 === "") { data.s2 = horaMarcada; campoFichado = 's2'; } 
-    else { alert("📝 Tarde completa."); return; } 
+    else { alert("📝 Turno de tarde completo."); return; } 
   }
 
   if (!data.gps) data.gps = {};
 
-  // Actualización instantánea para que el usuario tenga confirmación visual inmediata
+  // Actualización inmediata para retroalimentación instantánea al usuario
   guardarYProcesarFichaje(claveId, data, hoy, campoFichado);
 
   if (navigator.geolocation) {
@@ -696,7 +732,7 @@ function desplazarADia(dia, comportamiento = 'smooth', alineacion = 'center') {
 function seleccionarSemana(dia) { fechaActual.setDate(dia); if(vistaActual === 'semana') renderizarCalendario(false); else { desplazarADia(dia, 'smooth', 'start'); calcularTotalesGenerales(); } }
 
 function cambiarMes(dir) {
-  // Se previene el salto accidental en días 31 del mes estableciendo el día 1 antes de modificar mes/año
+  // Ajuste previo para prevenir errores al pasar mes en días 31
   fechaActual.setDate(1);
   if(vistaActual === 'ano') fechaActual.setFullYear(fechaActual.getFullYear() + dir);
   else fechaActual.setMonth(fechaActual.getMonth() + dir);
@@ -781,7 +817,7 @@ document.getElementById('selector-turno-global').value = configuracionTurno;
 if(configuracionTurno === 'partido') document.getElementById('app-container').classList.add('vista-partido');
 let nombreUsuario = localStorage.getItem('config-nombre') || ''; document.getElementById('input-nombre-global').value = nombreUsuario;
 let dniUsuario = localStorage.getItem('config-dni') || ''; document.getElementById('input-dni-global').value = dniUsuario;
-inicializarColores(); registrarUbicacionInicial(); dibujarBotonesFicharSuperiores(); renderizarCalendario(true, 'instant');
+inicializarColores(); registrarUbicacionInicial(); renderizarCalendario(true, 'instant');
 
 function registrarUbicacionInicial() { if (navigator.geolocation) { navigator.geolocation.getCurrentPosition(()=>{}, ()=>{}, {timeout: 1000}); } }
 
