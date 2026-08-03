@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Fichaje Pro V18.11 Botón Único</title>
+<title>Fichaje Pro V18.12 Botón Único</title>
 
 <!-- ENLACES PARA QUE SEA INSTALABLE (PWA) -->
 <link rel="manifest" href="manifest.json">
@@ -70,13 +70,13 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 .btn-nota-trigger.con-nota { filter: grayscale(0); position: relative; }
 .btn-nota-trigger.con-nota::after { content: ''; position: absolute; top: 0; right: 0; width: 5px; height: 5px; background: red; border-radius: 50%; }
 
-/* OPTIMIZACIÓN DE ESPACIO PARA VISTA PARTIDO SIN CORTAR LA PALABRA "TRABAJO" */
+/* OPTIMIZACIÓN DE ESPACIO PARA VISTA PARTIDO CON MARGEN HOLGADO PARA "TRABAJO" */
 .vista-partido .fila-dia { gap: 3px; padding: 4px 2px; }
-.vista-partido .label-dia { width: 38px; font-size: 0.72rem; }
+.vista-partido .label-dia { width: 36px; font-size: 0.72rem; }
 .vista-partido .bloques-inputs { gap: 2px; }
-.vista-partido .caja-input { width: 31px; height: 25px; font-size: 0.68rem; padding: 0; }
-.vista-partido .selector-estado { width: 70px; font-size: 0.67rem; height: 25px; padding: 0 1px; }
-.vista-partido .total-horas { width: 64px; }
+.vista-partido .caja-input { width: 30px; height: 25px; font-size: 0.68rem; padding: 0; }
+.vista-partido .selector-estado { width: 78px; font-size: 0.67rem; height: 25px; padding: 0 2px; }
+.vista-partido .total-horas { width: 62px; }
 .vista-partido .texto-horas { width: 38px; font-size: 0.82rem; }
 
 .fila-dia.tipo-trabajo { background-color: var(--color-trabajo) !important; }
