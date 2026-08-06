@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Fichaje Pro V18.16 Botón Único</title>
+<title>Fichaje Pro V18.17 Botón Único</title>
 
 <!-- ENLACES PARA QUE SEA INSTALABLE (PWA) -->
 <link rel="manifest" href="manifest.json">
@@ -34,15 +34,12 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 .panel-totales { display: flex; justify-content: space-between; background: white; padding: 8px 10px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); font-size: 0.85rem; font-weight: bold; color: #333; width: 100%; flex-shrink: 0; }
 .panel-totales span { color: var(--teal-header); font-size: 0.95rem; }
 
-/* ZONA SUPERIOR: REESTRUCTURADA EN FILAS INDEPENDIENTES */
 .zona-accion-superior { display: flex; flex-direction: column; background: white; padding: 8px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); gap: 8px; width: 100%; flex-shrink: 0; }
 
-/* BOTÓN ÚNICO DE FICHAJE SIMÉTRICO (FILA 1) */
 .bloque-fichar-superior { display: flex; flex-direction: row; gap: 8px; width: 100%; justify-content: center; flex-shrink: 0; }
 .btn-fichar-principal { background-color: #ffaa3b; border: 1px solid #333; border-radius: 6px; padding: 11px 8px; font-size: 0.95rem; font-weight: bold; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.12); line-height: 1.1; width: 100%; display: flex; align-items: center; justify-content: center; text-align: center; min-height: 46px; transition: transform 0.1s; }
 .btn-fichar-principal:active { background-color: #e59530; transform: scale(0.98); }
 
-/* BLOQUE DE SEMANAS LEGIBLE Y RESPONSIVO (FILA 2) */
 .bloque-semanas-mini { display: flex; width: 100%; gap: 4px; overflow-x: auto; padding-bottom: 2px; }
 .btn-semana-mini { flex: 1; min-width: 52px; background: #eef0f2; border: 1px solid #ccc; border-radius: 4px; font-size: 0.65rem; font-weight: bold; padding: 4px 2px; text-align: center; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
 .btn-semana-mini span { display: block; color: var(--teal-header); font-size: 0.7rem; font-weight: bold; margin-top: 1px; }
@@ -66,14 +63,12 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 
 .ad-container { width: 100%; min-height: 44px; background-color: #f0ebd8; border-radius: 6px; display: flex; justify-content: center; align-items: center; border: 1px dashed #ccc; color: #888; font-size: 0.75rem; flex-shrink: 0; }
 
-/* VERSIÓN E INDICADOR DE MODO EN LA PARTE INFERIOR */
 .footer-version { text-align: center; font-size: 0.72rem; font-weight: bold; color: #666; padding: 2px 0; flex-shrink: 0; width: 100%; }
 
 .btn-nota-trigger { font-size: 1.05rem; cursor: pointer; padding: 2px; background: none; border: none; filter: grayscale(1); transition: transform 0.1s; flex-shrink: 0; }
 .btn-nota-trigger.con-nota { filter: grayscale(0); position: relative; }
 .btn-nota-trigger.con-nota::after { content: ''; position: absolute; top: 0; right: 0; width: 5px; height: 5px; background: red; border-radius: 50%; }
 
-/* OPTIMIZACIÓN FINURA V18.14 */
 .vista-partido .fila-dia { gap: 2px; padding: 4px 2px; }
 .vista-partido .label-dia { width: 44px; font-size: 0.70rem; }
 .vista-partido .bloques-inputs { gap: 2px; }
@@ -93,9 +88,12 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 .menu-seccion { font-size: 0.85rem; color: #777; font-weight: bold; margin-top: 10px; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
 .menu-opcion { display: flex; align-items: center; justify-content: space-between; padding: 10px 6px; font-weight: bold; color: #444; border-bottom: 1px solid #eee; font-size: 0.85rem; cursor: pointer; }
 .menu-opcion select { padding: 4px; font-weight: bold; border-radius: 4px; border: 1px solid #999; }
-.menu-opcion-input { display: flex; align-items: center; gap: 6px; padding: 8px 6px; border-bottom: 1px solid #eee; width: 100%; }
+.menu-opcion-input { display: flex; align-items: center; gap: 6px; padding: 8px 6px; border-bottom: 1px solid #eee; width: 100%; position: relative; }
 .menu-opcion-input span { font-size: 0.85rem; font-weight: bold; color: #444; flex: 0 0 88px; white-space: nowrap; }
 .menu-opcion-input input { flex: 1; padding: 5px; font-weight: bold; border-radius: 4px; border: 1px solid #999; font-size: 0.82rem; }
+
+/* DESPLEGABLES / ACORDEONES DEL MENÚ */
+.contenedor-desplegable-grupo { display: none; flex-direction: column; background-color: #fafafa; border-bottom: 1px solid #eee; }
 .contenedor-ajuste-colores { display: none; grid-template-columns: 1fr 1fr; gap: 6px; padding: 8px 6px; background-color: #fafafa; border-bottom: 1px solid #eee; }
 .bloque-color-picker { display: flex; align-items: center; justify-content: space-between; background: #eef0f2; padding: 5px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; }
 .bloque-color-picker input[type="color"] { border: none; width: 24px; height: 24px; border-radius: 50%; cursor: pointer; background: none; padding: 0; }
@@ -110,7 +108,6 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 .btn-modal.guardar { background: var(--teal-header); color: white; }
 .btn-modal.cancelar { background: #bbb; color: #333; }
 
-/* ESTILOS PARA EL MODAL DE CONFIRMACIÓN DE TURNO PARTIDO */
 .btn-turno-modal { padding: 12px; border: 1px solid #333; border-radius: 6px; font-weight: bold; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; text-align: center; width: 100%; transition: transform 0.1s; }
 .btn-turno-modal:active { transform: scale(0.98); }
 .btn-turno-modal.manana { background-color: #ffaa3b; color: #111; }
@@ -136,11 +133,9 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 <div>Total Mes: <span id="total-mes">00:00</span></div>
 </div>
 <div class="zona-accion-superior">
-<!-- FILA 1: BOTÓN ÚNICO DE FICHAJE -->
 <div class="bloque-fichar-superior">
 <button class="btn-fichar-principal" onclick="iniciarFichaje()">🕒 FICHAR</button>
 </div>
-<!-- FILA 2: DESGLOSE DE SEMANAS -->
 <div class="bloque-semanas-mini" id="desglose-semanas"></div>
 </div>
 <div class="vistas-sub">
@@ -150,8 +145,7 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 </div>
 <div class="calendario-lista" id="lista-dias"></div>
 <div id="ad-banner" class="ad-container">Espacio para anuncio AdMob</div>
-<!-- VERSIÓN INFERIOR FIJA PARA SABER SIEMPRE EN CUÁL ESTAMOS -->
-<div class="footer-version">Fichaje Pro V18.16 • Modo: <span id="lbl-modo-pie">Particular</span></div>
+<div class="footer-version">Fichaje Pro V18.17 • Modo: <span id="lbl-modo-pie">Particular</span></div>
 </div>
 
 <!-- MENU LATERAL -->
@@ -159,38 +153,46 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 <div class="menu-lateral" id="menu-lateral">
 <div class="menu-titulo">Ajustes de Fichaje</div>
 <div class="menu-seccion">Configuración</div>
+
 <div class="menu-opcion-input">
 <span>👤 Nombre:</span>
 <input type="text" id="input-nombre-global" oninput="guardarNombre(this.value)" placeholder="Nombre y Apellidos">
 </div>
+
 <div class="menu-opcion-input">
 <span>🪪 DNI / NIE:</span>
 <input type="text" id="input-dni-global" oninput="guardarDni(this.value)" placeholder="Documento ID">
 </div>
-<!-- SELECCIÓN DE ROL / MODO DE USO -->
+
 <div class="menu-opcion">
 <span>👤 Modo / Rol:</span>
 <select id="selector-rol-global" onchange="ajustarRol(this.value)">
-<option value="particular">Particular (Solo Local)</option>
+<option value="particular">Particular (Local / Nube)</option>
 <option value="empleado">Empleado (Enviar a Nube)</option>
 <option value="jefe">Jefe (Receptor Nube)</option>
 </select>
 </div>
-<!-- CONFIGURACIÓN WEBHOOK / SERVIDOR NUBE -->
+
+<!-- CAMPOS DE NUBE (SE OCULTAN AL CONECTAR) -->
+<div id="bloque-campos-nube">
 <div class="menu-opcion-input">
 <span>☁️ Nube URL:</span>
-<input type="text" id="input-url-nube" oninput="guardarUrlNube(this.value)" placeholder="https://tu-servidor/o-script">
+<input type="text" id="input-url-nube" oninput="guardarUrlNube(this.value)" placeholder="https://script.google.com/...">
 </div>
-<!-- CAMPO DE CONTRASEÑA / CLAVE DE ACCESO -->
+
 <div class="menu-opcion-input">
 <span>🔑 Contraseña:</span>
-<input type="password" id="input-pass-nube" oninput="guardarPassNube(this.value)" placeholder="Clave de acceso">
+<input type="password" id="input-pass-nube" oninput="guardarPassNube(this.value)" placeholder="Clave de acceso" style="padding-right: 28px;">
+<button type="button" onclick="toggleMostrarPass()" style="position:absolute; right:8px; background:none; border:none; cursor:pointer; font-size:0.95rem; opacity:0.7;">👁️</button>
 </div>
-<!-- BOTÓN INTERACTIVO PARA COMPROBAR CONEXIÓN / ESTADO NUBE -->
-<div class="menu-opcion" onclick="probarConexionNube()">
+</div>
+
+<!-- BOTÓN ESTADO Y CONEXIÓN NUBE -->
+<div class="menu-opcion" onclick="alternarConexionNube()">
 <span>⚡ Estado Nube:</span>
-<span id="estado-nube-lbl" style="color: #666; font-size: 0.8rem; font-weight: bold;">Sin probar</span>
+<span id="estado-nube-lbl" style="color: #666; font-size: 0.8rem; font-weight: bold;">Desconectado</span>
 </div>
+
 <div class="menu-opcion">
 <span>⚙️ Tipo de Turno:</span>
 <select id="selector-turno-global" onchange="ajustarTipoTurno(this.value)">
@@ -198,11 +200,13 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 <option value="partido">Partido</option>
 </select>
 </div>
+
 <div class="menu-opcion" onclick="verificarPermisoGPS()">
 <span>🛰️ Estado del GPS:</span>
 <span id="estado-gps-lbl" style="color: #666; font-size: 0.8rem; font-weight: bold;">Verificar...</span>
 </div>
-<div class="menu-opcion" onclick="toggleSeccionColores()">
+
+<div class="menu-opcion" onclick="toggleSeccion('desplegable-colores', 'flecha-colores-menu')">
 <span>🎨 Personalizar Colores</span>
 <span id="flecha-colores-menu">▼</span>
 </div>
@@ -224,12 +228,27 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 <input type="color" id="picker-baja" onchange="guardarColorPersonalizado('baja', this.value)">
 </div>
 </div>
-<div class="menu-seccion">Compartir Datos del Mes</div>
+
+<!-- COMPARTIR DESPLEGABLE -->
+<div class="menu-opcion" onclick="toggleSeccion('desplegable-compartir', 'flecha-compartir-menu')">
+<span>📤 Compartir Datos del Mes</span>
+<span id="flecha-compartir-menu">▼</span>
+</div>
+<div class="contenedor-desplegable-grupo" id="desplegable-compartir">
 <div class="menu-opcion" onclick="compartirPorWhatsApp()">🟢 Compartir por WhatsApp</div>
 <div class="menu-opcion" onclick="compartirPorCorreo()">✉️ Compartir por Correo</div>
-<div class="menu-seccion">Seguridad Anual</div>
+</div>
+
+<!-- SEGURIDAD ANUAL DESPLEGABLE -->
+<div class="menu-opcion" onclick="toggleSeccion('desplegable-seguridad', 'flecha-seguridad-menu')">
+<span>🛡️ Seguridad Anual</span>
+<span id="flecha-seguridad-menu">▼</span>
+</div>
+<div class="contenedor-desplegable-grupo" id="desplegable-seguridad">
 <div class="menu-opcion" onclick="descargarCopiaSeguridad()">💾 Guardar Copia (.json)</div>
 <div class="menu-opcion" onclick="document.getElementById('input-importar').click()">📂 Restaurar Copia (.json)</div>
+</div>
+
 <button class="btn-cerrar-menu" onclick="toggleMenu(false)">Cerrar Menú</button>
 </div>
 <input type="file" id="input-importar" style="display:none;" accept=".json" onchange="cargarCopiaSeguridad(event)">
@@ -281,11 +300,9 @@ let configuracionRol = localStorage.getItem('config-rol') || 'particular';
 let diaNotaSeleccionado = null;
 const coloresDefecto = { trabajo: '#d4edda', vacaciones: '#cce5ff', libre: '#fff3cd', baja: '#f8d7da' };
 
-/* FUNCIÓN DE AUTO-FORMATO DE HORAS AVANZADA */
 function normalizarTextoHora(txt) {
   if (!txt) return '';
   let limpio = txt.trim().replace(/[,;.]/g, ':');
-  
   if (!limpio.includes(':')) {
     if (/^\d{3,4}$/.test(limpio)) {
       let mPart = limpio.slice(-2);
@@ -293,24 +310,17 @@ function normalizarTextoHora(txt) {
       limpio = `${hPart}:${mPart}`;
     } else if (/^\d{1,2}$/.test(limpio)) {
       let numH = parseInt(limpio, 10);
-      if (numH >= 0 && numH < 24) {
-        return `${String(numH).padStart(2, '0')}:00`;
-      }
+      if (numH >= 0 && numH < 24) return `${String(numH).padStart(2, '0')}:00`;
     }
   }
-  
   let partes = limpio.split(':');
   if (partes.length === 2) {
-    let h = partes[0].trim();
-    let m = partes[1].trim();
+    let h = partes[0].trim(), m = partes[1].trim();
     if (h.length === 1 && /^\d$/.test(h)) h = '0' + h;
     if (m.length === 1 && /^\d$/.test(m)) m = m + '0';
     if (/^\d{2}$/.test(h) && /^\d{2}$/.test(m)) {
-      let numH = parseInt(h, 10);
-      let numM = parseInt(m, 10);
-      if (numH >= 0 && numH < 24 && numM >= 0 && numM < 60) {
-        return `${h}:${m}`;
-      }
+      let numH = parseInt(h, 10), numM = parseInt(m, 10);
+      if (numH >= 0 && numH < 24 && numM >= 0 && numM < 60) return `${h}:${m}`;
     }
   }
   return limpio;
@@ -328,12 +338,25 @@ function inicializarColores() {
     document.getElementById(`picker-${tipo}`).value = col;
   });
 }
-function toggleSeccionColores() {
-  const contenedor = document.getElementById('desplegable-colores');
-  const flecha = document.getElementById('flecha-colores-menu');
-  if (contenedor.style.display === 'grid') { contenedor.style.display = 'none'; flecha.textContent = '▼'; }
-  else { contenedor.style.display = 'grid'; flecha.textContent = '▲'; }
+
+function toggleSeccion(idContenedor, idFlecha) {
+  const cont = document.getElementById(idContenedor);
+  const flecha = document.getElementById(idFlecha);
+  let visible = (cont.style.display === 'flex' || cont.style.display === 'grid' || cont.style.display === 'block');
+  if (visible) {
+    cont.style.display = 'none';
+    if(flecha) flecha.textContent = '▼';
+  } else {
+    cont.style.display = (idContenedor === 'desplegable-colores') ? 'grid' : 'flex';
+    if(flecha) flecha.textContent = '▲';
+  }
 }
+
+function toggleMostrarPass() {
+  const inputPass = document.getElementById('input-pass-nube');
+  inputPass.type = (inputPass.type === 'password') ? 'text' : 'password';
+}
+
 function guardarColorPersonalizado(tipo, valor) {
   localStorage.setItem(`color-custom-${tipo}`, valor);
   document.documentElement.style.setProperty(`--color-${tipo}`, valor);
@@ -352,33 +375,48 @@ function ajustarRol(valor) {
   else if (valor === 'jefe') lblPie.textContent = 'Jefe (Nube)';
 }
 
-function probarConexionNube() {
-  const lbl = document.getElementById('estado-nube-lbl');
+function alternarConexionNube() {
   const url = localStorage.getItem('config-url-nube');
   const pass = localStorage.getItem('config-pass-nube');
-  
-  if (configuracionRol === 'particular') {
-    lbl.textContent = 'Modo Particular';
-    lbl.style.color = '#888';
-    alert("ℹ️ Has seleccionado Modo Particular (Uso 100% Local). Si necesitas conectar con el Jefe, cambia el Modo en la lista.");
-    return;
+  const estaConectado = localStorage.getItem('nube-conectado') === 'true';
+
+  if (estaConectado) {
+    localStorage.setItem('nube-conectado', 'false');
+    actualizarEstadoNubeUI();
+  } else {
+    if (!url || !pass) {
+      alert("⚠️ Introduce la URL de la nube y la contraseña antes de conectar.");
+      return;
+    }
+    if (url.includes('@')) {
+      alert("⚠️ Has escrito un correo electrónico en Nube URL.\n\nPara guardar en Google Drive se necesita una URL Web App de Google Apps Script (https://script.google.com/...), no una cuenta de correo.");
+      return;
+    }
+    localStorage.setItem('nube-conectado', 'true');
+    actualizarEstadoNubeUI();
+    alert("✅ Conexión activada. Se han ocultado los campos de configuración.");
   }
-  
-  if (!url || !pass) {
-    lbl.textContent = 'Falta URL/Clave ✗';
-    lbl.style.color = 'red';
-    alert("⚠️ Para conectar en modo Empleado o Jefe debes rellenar los campos 'Nube URL' y 'Contraseña'.");
-    return;
-  }
-  
-  lbl.textContent = 'Conectado ✓';
-  lbl.style.color = 'green';
-  alert("✅ Parámetros guardados y listos para sincronizar (" + configuracionRol.toUpperCase() + ").");
 }
 
-/* SINCRONIZACIÓN EN EL FONDO CON CLAVE Y ROL */
+function actualizarEstadoNubeUI() {
+  const estaConectado = localStorage.getItem('nube-conectado') === 'true';
+  const lbl = document.getElementById('estado-nube-lbl');
+  const bloqueCampos = document.getElementById('bloque-campos-nube');
+
+  if (estaConectado) {
+    lbl.textContent = 'Conectado ✓ (Toca para desconectar)';
+    lbl.style.color = 'green';
+    if(bloqueCampos) bloqueCampos.style.display = 'none';
+  } else {
+    lbl.textContent = 'Desconectado ✗';
+    lbl.style.color = '#888';
+    if(bloqueCampos) bloqueCampos.style.display = 'block';
+  }
+}
+
 async function sincronizarConNube(claveId, datos) {
-  if (configuracionRol === 'particular') return; // Si es usuario local, no envía nada a internet
+  const estaConectado = localStorage.getItem('nube-conectado') === 'true';
+  if (!estaConectado) return;
   const urlNube = localStorage.getItem('config-url-nube');
   const passNube = localStorage.getItem('config-pass-nube');
   if (!urlNube || !navigator.onLine) return;
@@ -404,9 +442,12 @@ async function sincronizarConNube(claveId, datos) {
 function toggleMenu(abrir) {
   document.getElementById('menu-overlay').style.display = abrir ? 'block' : 'none';
   document.getElementById('menu-lateral').style.display = abrir ? 'flex' : 'none';
-  if (!abrir) { document.getElementById('desplegable-colores').style.display = 'none'; document.getElementById('flecha-colores-menu').textContent = '▼'; }
-  else { verificarPermisoGPS(true); }
+  if (abrir) {
+    actualizarEstadoNubeUI();
+    verificarPermisoGPS(true);
+  }
 }
+
 function ajustarTipoTurno(valor) {
   configuracionTurno = valor; localStorage.setItem('config-turno', valor);
   const container = document.getElementById('app-container');
@@ -493,10 +534,7 @@ function autoFormatearInput(id, campo) {
   let el = document.getElementById(`${campo}-${id}`);
   if (el && el.value.trim() !== '') {
     let norm = normalizarTextoHora(el.value);
-    if (norm !== el.value) {
-      el.value = norm;
-      calc(id);
-    }
+    if (norm !== el.value) { el.value = norm; calc(id); }
   }
 }
 
@@ -544,8 +582,7 @@ function abrirModalAudit(dia) {
     { id: 's2', label: '🌙 Salida (Tarde)', opcional: configuracionTurno !== 'partido' }
   ];
   
-  let htmlContenido = '';
-  let tieneAlmenosUno = false;
+  let htmlContenido = ''; let tieneAlmenosUno = false;
   
   bloquesInfo.forEach(b => {
     if (b.opcional) return;
@@ -561,33 +598,13 @@ function abrirModalAudit(dia) {
     
     let tipoTexto = esManual ? '⚠️ MANUAL' : '✅ AUTO';
     let colorFondo = esManual ? '#dc3545' : '#28a745';
+    let botonMapaHTML = (data.gps && data.gps[b.id]) ? `<a href="https://www.google.com/maps?q=${data.gps[b.id]}" target="_blank" class="btn-mapa-audit">📍 Ver Mapa</a>` : `<span style="font-size:0.75rem; color:#888; font-style:italic;">Sin GPS</span>`;
     
-    let botonMapaHTML = '';
-    if (data.gps && data.gps[b.id]) {
-      botonMapaHTML = `<a href="https://www.google.com/maps?q=${data.gps[b.id]}" target="_blank" class="btn-mapa-audit">📍 Ver Mapa</a>`;
-    } else {
-      botonMapaHTML = `<span style="font-size:0.75rem; color:#888; font-style:italic;">Sin GPS</span>`;
-    }
-    
-    htmlContenido += `
-      <div class="linea-audit">
-        <span style="font-weight:bold; color:#444; width:115px; white-space:nowrap;">${b.label}:</span>
-        <span style="font-family:monospace; font-size:0.9rem; font-weight:bold; color:#111;">${horaValor}</span>
-        <span class="badge-audit" style="background-color:${colorFondo};">${tipoTexto}</span>
-        <div style="margin-left:auto; display:flex; align-items:center;">${botonMapaHTML}</div>
-      </div>
-    `;
+    htmlContenido += `<div class="linea-audit"><span style="font-weight:bold; color:#444; width:115px; white-space:nowrap;">${b.label}:</span><span style="font-family:monospace; font-size:0.9rem; font-weight:bold; color:#111;">${horaValor}</span><span class="badge-audit" style="background-color:${colorFondo};">${tipoTexto}</span><div style="margin-left:auto; display:flex; align-items:center;">${botonMapaHTML}</div></div>`;
   });
   
-  if (!tieneAlmenosUno) {
-    htmlContenido = `<div style="text-align:center; padding:12px; font-size:0.85rem; color:#666; font-style:italic;">No hay horas ni datos registrados para este día.</div>`;
-  } else {
-    htmlContenido += `
-      <div style="margin-top:10px; padding-top:6px; border-top:1px dashed #ccc; text-align:right; font-size:0.88rem; font-weight:bold; color:var(--teal-header);">
-        Total Calculado: ${data.t || '00:00'} hrs
-      </div>
-    `;
-  }
+  if (!tieneAlmenosUno) { htmlContenido = `<div style="text-align:center; padding:12px; font-size:0.85rem; color:#666; font-style:italic;">No hay horas registradas para este día.</div>`; }
+  else { htmlContenido += `<div style="margin-top:10px; padding-top:6px; border-top:1px dashed #ccc; text-align:right; font-size:0.88rem; font-weight:bold; color:var(--teal-header);">Total Calculado: ${data.t || '00:00'} hrs</div>`; }
   
   cuerpo.innerHTML = htmlContenido;
   document.getElementById('modal-audit-overlay').style.display = 'flex';
@@ -596,7 +613,6 @@ function cerrarModalAudit() { document.getElementById('modal-audit-overlay').sty
 
 function calc(id) {
   let campos = [`e1-${id}`, `s1-${id}`, `e2-${id}`, `s2-${id}`];
-  
   campos.forEach(cId => {
     let el = document.getElementById(cId);
     if (el && el.value) {
@@ -605,15 +621,12 @@ function calc(id) {
     }
   });
 
-  let iE1 = document.getElementById(`e1-${id}`); 
-  let iS1 = document.getElementById(`s1-${id}`); 
-  let iE2 = document.getElementById(`e2-${id}`); 
-  let iS2 = document.getElementById(`s2-${id}`);
+  let iE1 = document.getElementById(`e1-${id}`); let iS1 = document.getElementById(`s1-${id}`); 
+  let iE2 = document.getElementById(`e2-${id}`); let iS2 = document.getElementById(`s2-${id}`);
   let mTotales = 0;
   
   function calcularTramo(ent, sal) {
-    let normEnt = normalizarTextoHora(ent);
-    let normSal = normalizarTextoHora(sal);
+    let normEnt = normalizarTextoHora(ent); let normSal = normalizarTextoHora(sal);
     if(normEnt && normSal && normEnt.includes(':') && normSal.includes(':')) {
       let e = normEnt.split(':'), s = normSal.split(':');
       let diff = (parseInt(s[0]||0, 10)*60 + parseInt(s[1]||0, 10)) - (parseInt(e[0]||0, 10)*60 + parseInt(e[1]||0, 10));
@@ -638,7 +651,6 @@ function calc(id) {
   const claveId = `fichaje-${fechaActual.getFullYear()}-${fechaActual.getMonth()}-${id}`;
   let dataActual = JSON.parse(localStorage.getItem(claveId)) || {};
   actualizarFilaUI(id, dataActual);
-  
   calcularTotalesGenerales();
 }
 
@@ -674,7 +686,6 @@ function guardarFila(id, tTexto) {
   if (!valS2) { delete origenObj.s2; if(dataAnterior.gps) delete dataAnterior.gps.s2; }
 
   let tFinal = tTexto || dataAnterior.t || '00:00';
-
   const datos = { e1: valE1, s1: valS1, e2: valE2, s2: valS2, est: elEst ? elEst.value : 'defecto', t: tFinal, nota: dataAnterior.nota || '', origen: origenObj, gps: dataAnterior.gps || {} };
   localStorage.setItem(claveId, JSON.stringify(datos));
   sincronizarConNube(claveId, datos);
@@ -685,7 +696,6 @@ function solicitarGpsManualSiProcede(claveId, datos, id) {
   if (!navigator.geolocation) return;
   let campos = ['e1', 's1', 'e2', 's2'];
   let necesitaGps = false;
-  
   campos.forEach(c => {
     if (datos.origen && datos.origen[c] === 'MANUAL' && datos[c] && esHoraValida(datos[c]) && (!datos.gps || !datos.gps[c])) { necesitaGps = true; }
   });
@@ -696,7 +706,6 @@ function solicitarGpsManualSiProcede(claveId, datos, id) {
       let dataFresh = JSON.parse(localStorage.getItem(claveId));
       if (!dataFresh) return;
       if (!dataFresh.gps) dataFresh.gps = {};
-      
       let seAnadioGps = false;
       campos.forEach(c => {
         if (dataFresh.origen && dataFresh.origen[c] === 'MANUAL' && dataFresh[c] && esHoraValida(dataFresh[c]) && !dataFresh.gps[c]) {
@@ -718,12 +727,10 @@ function actualizarFilaUI(id, data) {
   let tieneManual = false;
   if (data.origen && typeof data.origen === 'object') { tieneManual = Object.keys(data.origen).some(k => data.origen[k] === 'MANUAL' && data[k]); }
   let tieneGps = data.gps && Object.keys(data.gps).some(k => data.gps[k] && data[k]);
-  
   let smartIcono = (hayContenido && (tieneManual || tieneGps)) ? `<span style="font-size:0.75rem; color:var(--teal-header); font-weight:bold; margin-right:1px;">ℹ️</span>` : '';
   elTot.innerHTML = `${smartIcono}<span class="texto-horas">${data.t || '00:00'}</span>`;
 }
 
-/* LÓGICA DE BOTÓN ÚNICO Y CONFIRMACIÓN DE TURNO */
 function iniciarFichaje() {
   const hoy = new Date();
   if(fechaActual.getFullYear() !== hoy.getFullYear() || fechaActual.getMonth() !== hoy.getMonth()) {
@@ -731,21 +738,12 @@ function iniciarFichaje() {
   }
   if(vistaActual === 'ano') { alert("⚠️ Pasa a la vista de MES."); return; }
   
-  if (configuracionTurno === 'partido') {
-    document.getElementById('modal-turno-overlay').style.display = 'flex';
-  } else {
-    ejecutarFichaje('continuo');
-  }
+  if (configuracionTurno === 'partido') { document.getElementById('modal-turno-overlay').style.display = 'flex'; }
+  else { ejecutarFichaje('continuo'); }
 }
 
-function cerrarModalTurno() {
-  document.getElementById('modal-turno-overlay').style.display = 'none';
-}
-
-function confirmarFichajeTurno(turno) {
-  cerrarModalTurno();
-  ejecutarFichaje(turno);
-}
+function cerrarModalTurno() { document.getElementById('modal-turno-overlay').style.display = 'none'; }
+function confirmarFichajeTurno(turno) { cerrarModalTurno(); ejecutarFichaje(turno); }
 
 function ejecutarFichaje(modo) {
   const hoy = new Date(); const realAnio = hoy.getFullYear(); const realMes = hoy.getMonth(); const realDia = hoy.getDate();
@@ -772,7 +770,6 @@ function ejecutarFichaje(modo) {
   }
 
   if (!data.gps) data.gps = {};
-
   guardarYProcesarFichaje(claveId, data, hoy, campoFichado);
 
   if (navigator.geolocation) {
@@ -795,8 +792,7 @@ function ejecutarFichaje(modo) {
 
 function guardarYProcesarFichaje(claveId, data, hoy, campoFichado) {
   function calcularTramoInterno(ent, sal) {
-    let normEnt = normalizarTextoHora(ent);
-    let normSal = normalizarTextoHora(sal);
+    let normEnt = normalizarTextoHora(ent); let normSal = normalizarTextoHora(sal);
     if(normEnt && normSal && normEnt.includes(':') && normSal.includes(':')) {
       let e = normEnt.split(':'), s = normSal.split(':');
       let diff = (parseInt(s[0]||0, 10)*60 + parseInt(s[1]||0, 10)) - (parseInt(e[0]||0, 10)*60 + parseInt(e[1]||0, 10));
@@ -890,11 +886,11 @@ function fallbackCopiar(texto) {
   try { document.execCommand('copy'); alert("📋 Copiado al portapapeles. ¡Pégalo directamente en WhatsApp!"); } catch (err) { alert("⚠️ No se pudo compartir automáticamente."); }
   document.body.removeChild(tArea);
 }
+
 function verificarPermisoGPS(silencioso = false) {
   const lbl = document.getElementById('estado-gps-lbl');
   if (!navigator.geolocation) { lbl.textContent = "No compatible"; lbl.style.color = "red"; return; }
   if (!silencioso) lbl.textContent = "Solicitando...";
-  
   navigator.geolocation.getCurrentPosition(
     () => { lbl.textContent = "Permitido ✓"; lbl.style.color = "green"; },
     (error) => {
@@ -913,7 +909,8 @@ let nombreUsuario = localStorage.getItem('config-nombre') || ''; document.getEle
 let dniUsuario = localStorage.getItem('config-dni') || ''; document.getElementById('input-dni-global').value = dniUsuario;
 let urlNubeGuardada = localStorage.getItem('config-url-nube') || ''; document.getElementById('input-url-nube').value = urlNubeGuardada;
 let passNubeGuardada = localStorage.getItem('config-pass-nube') || ''; document.getElementById('input-pass-nube').value = passNubeGuardada;
-inicializarColores(); registrarUbicacionInicial(); renderizarCalendario(true, 'instant');
+
+inicializarColores(); registrarUbicacionInicial(); renderizarCalendario(true, 'instant'); actualizarEstadoNubeUI();
 
 function registrarUbicacionInicial() { if (navigator.geolocation) { navigator.geolocation.getCurrentPosition(()=>{}, ()=>{}, {timeout: 1000}); } }
 
