@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Fichaje Pro V18.17 Botón Único</title>
+<title>Fichaje Pro V18.18 Botón Único</title>
 
 <!-- ENLACES PARA QUE SEA INSTALABLE (PWA) -->
 <link rel="manifest" href="manifest.json">
@@ -145,7 +145,7 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 </div>
 <div class="calendario-lista" id="lista-dias"></div>
 <div id="ad-banner" class="ad-container">Espacio para anuncio AdMob</div>
-<div class="footer-version">Fichaje Pro V18.17 • Modo: <span id="lbl-modo-pie">Particular</span></div>
+<div class="footer-version">Fichaje Pro V18.18 • Modo: <span id="lbl-modo-pie">Particular</span></div>
 </div>
 
 <!-- MENU LATERAL -->
@@ -173,7 +173,7 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 </select>
 </div>
 
-<!-- CAMPOS DE NUBE (OPCION WEBSCRIPT) -->
+<!-- CAMPOS DE NUBE (SE OCULTAN AL CONECTAR) -->
 <div id="bloque-campos-nube">
 <div class="menu-opcion-input">
 <span>☁️ Nube URL:</span>
@@ -189,7 +189,7 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 
 <!-- BOTÓN ESTADO Y CONEXIÓN NUBE -->
 <div class="menu-opcion" onclick="alternarConexionNube()">
-<span>⚡ Estado Nube WebApp:</span>
+<span>⚡ Estado Nube:</span>
 <span id="estado-nube-lbl" style="color: #666; font-size: 0.8rem; font-weight: bold;">Desconectado</span>
 </div>
 
@@ -241,11 +241,11 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 
 <!-- SEGURIDAD ANUAL DESPLEGABLE -->
 <div class="menu-opcion" onclick="toggleSeccion('desplegable-seguridad', 'flecha-seguridad-menu')">
-<span>🛡️ Respaldos y Google Drive</span>
+<span>🛡️ Seguridad Anual</span>
 <span id="flecha-seguridad-menu">▼</span>
 </div>
 <div class="contenedor-desplegable-grupo" id="desplegable-seguridad">
-<div class="menu-opcion" onclick="descargarCopiaSeguridad()">☁️ Guardar Copia en Google Drive / Móvil</div>
+<div class="menu-opcion" onclick="descargarCopiaSeguridad()">💾 Guardar Copia (.json)</div>
 <div class="menu-opcion" onclick="document.getElementById('input-importar').click()">📂 Restaurar Copia (.json)</div>
 </div>
 
@@ -335,7 +335,8 @@ function inicializarColores() {
   ['trabajo', 'vacaciones', 'libre', 'baja'].forEach(tipo => {
     let col = localStorage.getItem(`color-custom-${tipo}`) || coloresDefecto[tipo];
     document.documentElement.style.setProperty(`--color-${tipo}`, col);
-    document.getElementById(`picker-${tipo}`).value = col;
+    let picker = document.getElementById(`picker-${tipo}`);
+    if(picker) picker.value = col;
   });
 }
 
@@ -914,44 +915,12 @@ inicializarColores(); registrarUbicacionInicial(); renderizarCalendario(true, 'i
 
 function registrarUbicacionInicial() { if (navigator.geolocation) { navigator.geolocation.getCurrentPosition(()=>{}, ()=>{}, {timeout: 1000}); } }
 
-/* MEJORA: GUARDADO DIRECTO A GOOGLE DRIVE / MÓVIL EN 1 TOQUE */
-async function descargarCopiaSeguridad() {
+function descargarCopiaSeguridad() {
   let copiaDato = {};
-  for (let i = 0; i < localStorage.length; i++) { 
-    let cl = localStorage.key(i); 
-    if (cl.startsWith('fichaje-')) copiaDato[cl] = localStorage.getItem(cl); 
-  }
-  
-  const nombreArchivo = `copia_fichajes_${fechaActual.getFullYear()}.json`;
-  const blob = new Blob([JSON.stringify(copiaDato, null, 2)], { type: "application/json" });
-  const archivo = new File([blob], nombreArchivo, { type: "application/json" });
-
-  // Si el navegador soporta compartir archivos nativamente (S24 Ultra / Android)
-  if (navigator.canShare && navigator.canShare({ files: [archivo] })) {
-    try {
-      await navigator.share({
-        title: 'Copia de Seguridad - Fichaje Pro',
-        text: 'Respaldo de datos de fichaje',
-        files: [archivo]
-      });
-      toggleMenu(false);
-      return;
-    } catch (err) {
-      if (err.name !== 'AbortError') {
-        console.warn("Fallo al compartir nativamente:", err);
-      }
-    }
-  }
-
-  // Descarga tradicional como alternativa
-  let url = URL.createObjectURL(blob); 
-  let a = document.createElement('a'); 
-  a.href = url; 
-  a.setAttribute("download", nombreArchivo); 
-  a.click(); 
-  toggleMenu(false);
+  for (let i = 0; i < localStorage.length; i++) { let cl = localStorage.key(i); if (cl.startsWith('fichaje-')) copiaDato[cl] = localStorage.getItem(cl); }
+  let blob = new Blob([JSON.stringify(copiaDato, null, 2)], {type: "application/json"});
+  let url = URL.createObjectURL(blob); let a = document.createElement('a'); a.href = url; a.setAttribute("download", `copia_fichajes_${fechaActual.getFullYear()}.json`); a.click(); toggleMenu(false);
 }
-
 function cargarCopiaSeguridad(event) {
   const f = event.target.files[0]; if (!f) return;
   const reader = new FileReader();
