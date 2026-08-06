@@ -173,7 +173,7 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 </select>
 </div>
 
-<!-- CAMPOS DE NUBE (SE OCULTAN AL CONECTAR) -->
+<!-- CAMPOS DE NUBE (OPCION WEBSCRIPT) -->
 <div id="bloque-campos-nube">
 <div class="menu-opcion-input">
 <span>☁️ Nube URL:</span>
@@ -189,7 +189,7 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 
 <!-- BOTÓN ESTADO Y CONEXIÓN NUBE -->
 <div class="menu-opcion" onclick="alternarConexionNube()">
-<span>⚡ Estado Nube:</span>
+<span>⚡ Estado Nube WebApp:</span>
 <span id="estado-nube-lbl" style="color: #666; font-size: 0.8rem; font-weight: bold;">Desconectado</span>
 </div>
 
@@ -241,11 +241,11 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 
 <!-- SEGURIDAD ANUAL DESPLEGABLE -->
 <div class="menu-opcion" onclick="toggleSeccion('desplegable-seguridad', 'flecha-seguridad-menu')">
-<span>🛡️ Seguridad Anual</span>
+<span>🛡️ Respaldos y Google Drive</span>
 <span id="flecha-seguridad-menu">▼</span>
 </div>
 <div class="contenedor-desplegable-grupo" id="desplegable-seguridad">
-<div class="menu-opcion" onclick="descargarCopiaSeguridad()">💾 Guardar Copia (.json)</div>
+<div class="menu-opcion" onclick="descargarCopiaSeguridad()">☁️ Guardar Copia en Google Drive / Móvil</div>
 <div class="menu-opcion" onclick="document.getElementById('input-importar').click()">📂 Restaurar Copia (.json)</div>
 </div>
 
@@ -914,12 +914,44 @@ inicializarColores(); registrarUbicacionInicial(); renderizarCalendario(true, 'i
 
 function registrarUbicacionInicial() { if (navigator.geolocation) { navigator.geolocation.getCurrentPosition(()=>{}, ()=>{}, {timeout: 1000}); } }
 
-function descargarCopiaSeguridad() {
+/* MEJORA: GUARDADO DIRECTO A GOOGLE DRIVE / MÓVIL EN 1 TOQUE */
+async function descargarCopiaSeguridad() {
   let copiaDato = {};
-  for (let i = 0; i < localStorage.length; i++) { let cl = localStorage.key(i); if (cl.startsWith('fichaje-')) copiaDato[cl] = localStorage.getItem(cl); }
-  let blob = new Blob([JSON.stringify(copiaDato, null, 2)], {type: "application/json"});
-  let url = URL.createObjectURL(blob); let a = document.createElement('a'); a.href = url; a.setAttribute("download", `copia_fichajes_${fechaActual.getFullYear()}.json`); a.click(); toggleMenu(false);
+  for (let i = 0; i < localStorage.length; i++) { 
+    let cl = localStorage.key(i); 
+    if (cl.startsWith('fichaje-')) copiaDato[cl] = localStorage.getItem(cl); 
+  }
+  
+  const nombreArchivo = `copia_fichajes_${fechaActual.getFullYear()}.json`;
+  const blob = new Blob([JSON.stringify(copiaDato, null, 2)], { type: "application/json" });
+  const archivo = new File([blob], nombreArchivo, { type: "application/json" });
+
+  // Si el navegador soporta compartir archivos nativamente (S24 Ultra / Android)
+  if (navigator.canShare && navigator.canShare({ files: [archivo] })) {
+    try {
+      await navigator.share({
+        title: 'Copia de Seguridad - Fichaje Pro',
+        text: 'Respaldo de datos de fichaje',
+        files: [archivo]
+      });
+      toggleMenu(false);
+      return;
+    } catch (err) {
+      if (err.name !== 'AbortError') {
+        console.warn("Fallo al compartir nativamente:", err);
+      }
+    }
+  }
+
+  // Descarga tradicional como alternativa
+  let url = URL.createObjectURL(blob); 
+  let a = document.createElement('a'); 
+  a.href = url; 
+  a.setAttribute("download", nombreArchivo); 
+  a.click(); 
+  toggleMenu(false);
 }
+
 function cargarCopiaSeguridad(event) {
   const f = event.target.files[0]; if (!f) return;
   const reader = new FileReader();
