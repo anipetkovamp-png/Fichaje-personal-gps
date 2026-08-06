@@ -335,7 +335,6 @@ function inicializarGoogleOAuth() {
 }
 
 function alternarConexionGoogle() {
-  // ESCUDO ANTI-ERROR 401: Avisa al programador si el ID sigue siendo el texto de ejemplo
   if (GOOGLE_CLIENT_ID.includes("TU_CLIENT_ID_GOOGLE") || GOOGLE_CLIENT_ID.trim() === "") {
     alert("⚠️ CONFIGURACIÓN PENDIENTE:\nPara poder conectar con Google, debes reemplazar la variable 'GOOGLE_CLIENT_ID' en el código de la app por tu Client ID real de Google Cloud Console.");
     return;
@@ -349,7 +348,6 @@ function alternarConexionGoogle() {
     actualizarEstadoNubeUI();
     alert("Desconectado de Google.");
   } else {
-    // Si la librería tardó en cargar al inicio, intentamos inicializarla de nuevo al hacer clic
     if (!tokenClient) {
       inicializarGoogleOAuth();
     }
@@ -429,6 +427,18 @@ function normalizarTextoHora(txt) {
 function esHoraValida(txt) {
   let norm = normalizarTextoHora(txt);
   return /^\d{2}:\d{2}$/.test(norm);
+}
+
+function calcularTramo(ent, sal) {
+  let normEnt = normalizarTextoHora(ent);
+  let normSal = normalizarTextoHora(sal);
+  if (normEnt && normSal && normEnt.includes(':') && normSal.includes(':')) {
+    let e = normEnt.split(':'), s = normSal.split(':');
+    let diff = (parseInt(s[0]||0, 10)*60 + parseInt(s[1]||0, 10)) - (parseInt(e[0]||0, 10)*60 + parseInt(e[1]||0, 10));
+    if (diff < 0) diff += 1440; // Soporte para turnos que cruzan la medianoche
+    return diff;
+  }
+  return 0;
 }
 
 function inicializarColores() {
@@ -655,16 +665,6 @@ function calc(id) {
   let iE2 = document.getElementById(`e2-${id}`); let iS2 = document.getElementById(`s2-${id}`);
   let mTotales = 0;
   
-  function calcularTramo(ent, sal) {
-    let normEnt = normalizarTextoHora(ent); let normSal = normalizarTextoHora(sal);
-    if(normEnt && normSal && normEnt.includes(':') && normSal.includes(':')) {
-      let e = normEnt.split(':'), s = normSal.split(':');
-      let diff = (parseInt(s[0]||0, 10)*60 + parseInt(s[1]||0, 10)) - (parseInt(e[0]||0, 10)*60 + parseInt(e[1]||0, 10));
-      return diff > 0 ? diff : 0;
-    }
-    return 0;
-  }
-  
   let e1 = iE1 ? iE1.value : ''; let s1 = iS1 ? iS1.value : ''; mTotales += calcularTramo(e1, s1);
   let e2 = '', s2 = '';
   if (configuracionTurno === 'partido') { e2 = iE2 ? iE2.value : ''; s2 = iS2 ? iS2.value : ''; }
@@ -715,7 +715,9 @@ function guardarFila(id, tTexto) {
   if (!valE2) { delete origenObj.e2; if(dataAnterior.gps) delete dataAnterior.gps.e2; }
   if (!valS2) { delete origenObj.s2; if(dataAnterior.gps) delete dataAnterior.gps.s2; }
 
-  let tFinal = tTexto || dataAnterior.t || '00:00';
+  let mTotales = calcularTramo(valE1, valS1) + calcularTramo(valE2, valS2);
+  let tFinal = tTexto !== undefined ? tTexto : (mTotales > 0 ? minsATexto(mTotales) : '00:00');
+
   const datos = { e1: valE1, s1: valS1, e2: valE2, s2: valS2, est: elEst ? elEst.value : 'defecto', t: tFinal, nota: dataAnterior.nota || '', origen: origenObj, gps: dataAnterior.gps || {} };
   localStorage.setItem(claveId, JSON.stringify(datos));
   sincronizarConNube(claveId, datos);
@@ -821,16 +823,7 @@ function ejecutarFichaje(modo) {
 }
 
 function guardarYProcesarFichaje(claveId, data, hoy, campoFichado) {
-  function calcularTramoInterno(ent, sal) {
-    let normEnt = normalizarTextoHora(ent); let normSal = normalizarTextoHora(sal);
-    if(normEnt && normSal && normEnt.includes(':') && normSal.includes(':')) {
-      let e = normEnt.split(':'), s = normSal.split(':');
-      let diff = (parseInt(s[0]||0, 10)*60 + parseInt(s[1]||0, 10)) - (parseInt(e[0]||0, 10)*60 + parseInt(e[1]||0, 10));
-      return diff > 0 ? diff : 0;
-    }
-    return 0;
-  }
-  let mTotales = calcularTramoInterno(data.e1, data.s1) + calcularTramoInterno(data.e2, data.s2);
+  let mTotales = calcularTramo(data.e1, data.s1) + calcularTramo(data.e2, data.s2);
   data.t = mTotales > 0 ? minsATexto(mTotales) : "00:00"; 
   
   if (!data.origen || typeof data.origen !== 'object') {
@@ -939,7 +932,6 @@ let nombreUsuario = localStorage.getItem('config-nombre') || ''; document.getEle
 let dniUsuario = localStorage.getItem('config-dni') || ''; document.getElementById('input-dni-global').value = dniUsuario;
 
 window.onload = () => {
-  // Intentar cargar al iniciar la ventana
   inicializarGoogleOAuth();
 };
 
