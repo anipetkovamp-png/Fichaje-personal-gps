@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Fichaje Pro V18.15 Botón Único</title>
+<title>Fichaje Pro V18.16 Botón Único</title>
 
 <!-- ENLACES PARA QUE SEA INSTALABLE (PWA) -->
 <link rel="manifest" href="manifest.json">
@@ -64,13 +64,16 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 .total-horas { width: 76px; display: flex; align-items: center; justify-content: flex-end; font-size: 0.78rem; color: #333; font-weight: bold; flex-shrink: 0; gap: 2px; cursor: pointer; padding: 2px 0; }
 .texto-horas { width: 42px; text-align: right; font-family: monospace; font-size: 0.85rem; display: inline-block; }
 
-.ad-container { width: 100%; min-height: 50px; background-color: #f0ebd8; border-radius: 6px; display: flex; justify-content: center; align-items: center; border: 1px dashed #ccc; color: #888; font-size: 0.75rem; flex-shrink: 0; }
+.ad-container { width: 100%; min-height: 44px; background-color: #f0ebd8; border-radius: 6px; display: flex; justify-content: center; align-items: center; border: 1px dashed #ccc; color: #888; font-size: 0.75rem; flex-shrink: 0; }
+
+/* VERSIÓN E INDICADOR DE MODO EN LA PARTE INFERIOR */
+.footer-version { text-align: center; font-size: 0.72rem; font-weight: bold; color: #666; padding: 2px 0; flex-shrink: 0; width: 100%; }
 
 .btn-nota-trigger { font-size: 1.05rem; cursor: pointer; padding: 2px; background: none; border: none; filter: grayscale(1); transition: transform 0.1s; flex-shrink: 0; }
 .btn-nota-trigger.con-nota { filter: grayscale(0); position: relative; }
 .btn-nota-trigger.con-nota::after { content: ''; position: absolute; top: 0; right: 0; width: 5px; height: 5px; background: red; border-radius: 50%; }
 
-/* OPTIMIZACIÓN FINURA V18.14 ( ETIQUETA DE DÍA AMPLIADA PARA FECHAS LARGAS ) */
+/* OPTIMIZACIÓN FINURA V18.14 */
 .vista-partido .fila-dia { gap: 2px; padding: 4px 2px; }
 .vista-partido .label-dia { width: 44px; font-size: 0.70rem; }
 .vista-partido .bloques-inputs { gap: 2px; }
@@ -91,7 +94,7 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 .menu-opcion { display: flex; align-items: center; justify-content: space-between; padding: 10px 6px; font-weight: bold; color: #444; border-bottom: 1px solid #eee; font-size: 0.85rem; cursor: pointer; }
 .menu-opcion select { padding: 4px; font-weight: bold; border-radius: 4px; border: 1px solid #999; }
 .menu-opcion-input { display: flex; align-items: center; gap: 6px; padding: 8px 6px; border-bottom: 1px solid #eee; width: 100%; }
-.menu-opcion-input span { font-size: 0.85rem; font-weight: bold; color: #444; flex: 0 0 85px; white-space: nowrap; }
+.menu-opcion-input span { font-size: 0.85rem; font-weight: bold; color: #444; flex: 0 0 88px; white-space: nowrap; }
 .menu-opcion-input input { flex: 1; padding: 5px; font-weight: bold; border-radius: 4px; border: 1px solid #999; font-size: 0.82rem; }
 .contenedor-ajuste-colores { display: none; grid-template-columns: 1fr 1fr; gap: 6px; padding: 8px 6px; background-color: #fafafa; border-bottom: 1px solid #eee; }
 .bloque-color-picker { display: flex; align-items: center; justify-content: space-between; background: #eef0f2; padding: 5px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; }
@@ -147,6 +150,8 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 </div>
 <div class="calendario-lista" id="lista-dias"></div>
 <div id="ad-banner" class="ad-container">Espacio para anuncio AdMob</div>
+<!-- VERSIÓN INFERIOR FIJA PARA SABER SIEMPRE EN CUÁL ESTAMOS -->
+<div class="footer-version">Fichaje Pro V18.16 • Modo: <span id="lbl-modo-pie">Particular</span></div>
 </div>
 
 <!-- MENU LATERAL -->
@@ -162,10 +167,29 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 <span>🪪 DNI / NIE:</span>
 <input type="text" id="input-dni-global" oninput="guardarDni(this.value)" placeholder="Documento ID">
 </div>
-<!-- MEJORA INTEGRADA: CONFIGURACIÓN WEBHOOK / BYOC NUBE -->
+<!-- SELECCIÓN DE ROL / MODO DE USO -->
+<div class="menu-opcion">
+<span>👤 Modo / Rol:</span>
+<select id="selector-rol-global" onchange="ajustarRol(this.value)">
+<option value="particular">Particular (Solo Local)</option>
+<option value="empleado">Empleado (Enviar a Nube)</option>
+<option value="jefe">Jefe (Receptor Nube)</option>
+</select>
+</div>
+<!-- CONFIGURACIÓN WEBHOOK / SERVIDOR NUBE -->
 <div class="menu-opcion-input">
 <span>☁️ Nube URL:</span>
 <input type="text" id="input-url-nube" oninput="guardarUrlNube(this.value)" placeholder="https://tu-servidor/o-script">
+</div>
+<!-- CAMPO DE CONTRASEÑA / CLAVE DE ACCESO -->
+<div class="menu-opcion-input">
+<span>🔑 Contraseña:</span>
+<input type="password" id="input-pass-nube" oninput="guardarPassNube(this.value)" placeholder="Clave de acceso">
+</div>
+<!-- BOTÓN INTERACTIVO PARA COMPROBAR CONEXIÓN / ESTADO NUBE -->
+<div class="menu-opcion" onclick="probarConexionNube()">
+<span>⚡ Estado Nube:</span>
+<span id="estado-nube-lbl" style="color: #666; font-size: 0.8rem; font-weight: bold;">Sin probar</span>
 </div>
 <div class="menu-opcion">
 <span>⚙️ Tipo de Turno:</span>
@@ -252,11 +276,12 @@ const mesesNombres = ["ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO", "JU
 const diasSemanaNombres = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
 let fechaActual = new Date();
 let vistaActual = 'mes';
-let configuracionTurno = localStorage.getItem('config-turno') || 'continuo';
+let configuracionTurno = localStorage.getItem('config-turno') || 'partido';
+let configuracionRol = localStorage.getItem('config-rol') || 'particular';
 let diaNotaSeleccionado = null;
 const coloresDefecto = { trabajo: '#d4edda', vacaciones: '#cce5ff', libre: '#fff3cd', baja: '#f8d7da' };
 
-/* FUNCIÓN DE AUTO-FORMATO DE HORAS AVANZADA (PUNTOS, COMAS Y NÚMEROS CONTINUOS) */
+/* FUNCIÓN DE AUTO-FORMATO DE HORAS AVANZADA */
 function normalizarTextoHora(txt) {
   if (!txt) return '';
   let limpio = txt.trim().replace(/[,;.]/g, ':');
@@ -316,25 +341,63 @@ function guardarColorPersonalizado(tipo, valor) {
 function guardarNombre(valor) { localStorage.setItem('config-nombre', valor); }
 function guardarDni(valor) { localStorage.setItem('config-dni', valor); }
 function guardarUrlNube(valor) { localStorage.setItem('config-url-nube', valor); }
+function guardarPassNube(valor) { localStorage.setItem('config-pass-nube', valor); }
 
-/* MEJORA INTEGRADA: SINCRONIZACIÓN EN EL FONDO (BYOC / WEBHOOK) */
+function ajustarRol(valor) {
+  configuracionRol = valor;
+  localStorage.setItem('config-rol', valor);
+  const lblPie = document.getElementById('lbl-modo-pie');
+  if (valor === 'particular') lblPie.textContent = 'Particular';
+  else if (valor === 'empleado') lblPie.textContent = 'Empleado';
+  else if (valor === 'jefe') lblPie.textContent = 'Jefe (Nube)';
+}
+
+function probarConexionNube() {
+  const lbl = document.getElementById('estado-nube-lbl');
+  const url = localStorage.getItem('config-url-nube');
+  const pass = localStorage.getItem('config-pass-nube');
+  
+  if (configuracionRol === 'particular') {
+    lbl.textContent = 'Modo Particular';
+    lbl.style.color = '#888';
+    alert("ℹ️ Has seleccionado Modo Particular (Uso 100% Local). Si necesitas conectar con el Jefe, cambia el Modo en la lista.");
+    return;
+  }
+  
+  if (!url || !pass) {
+    lbl.textContent = 'Falta URL/Clave ✗';
+    lbl.style.color = 'red';
+    alert("⚠️ Para conectar en modo Empleado o Jefe debes rellenar los campos 'Nube URL' y 'Contraseña'.");
+    return;
+  }
+  
+  lbl.textContent = 'Conectado ✓';
+  lbl.style.color = 'green';
+  alert("✅ Parámetros guardados y listos para sincronizar (" + configuracionRol.toUpperCase() + ").");
+}
+
+/* SINCRONIZACIÓN EN EL FONDO CON CLAVE Y ROL */
 async function sincronizarConNube(claveId, datos) {
+  if (configuracionRol === 'particular') return; // Si es usuario local, no envía nada a internet
   const urlNube = localStorage.getItem('config-url-nube');
-  if (!urlNube || !navigator.onLine) return; // Si no hay URL configurada o no hay internet, sigue en local
+  const passNube = localStorage.getItem('config-pass-nube');
+  if (!urlNube || !navigator.onLine) return;
   try {
     await fetch(urlNube, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         claveId: claveId,
+        rol: configuracionRol,
         empleado: localStorage.getItem('config-nombre') || 'Sin Nombre',
         dni: localStorage.getItem('config-dni') || '',
+        claveAcceso: passNube || '',
         timestamp: new Date().toISOString(),
         registro: datos
       })
     });
   } catch (err) {
-    console.warn("Fallo temporal al sincronizar en nube del jefe:", err);
+    console.warn("Fallo temporal en sincronización:", err);
   }
 }
 
@@ -843,10 +906,13 @@ function verificarPermisoGPS(silencioso = false) {
 }
 
 document.getElementById('selector-turno-global').value = configuracionTurno;
+document.getElementById('selector-rol-global').value = configuracionRol;
+ajustarRol(configuracionRol);
 if(configuracionTurno === 'partido') document.getElementById('app-container').classList.add('vista-partido');
 let nombreUsuario = localStorage.getItem('config-nombre') || ''; document.getElementById('input-nombre-global').value = nombreUsuario;
 let dniUsuario = localStorage.getItem('config-dni') || ''; document.getElementById('input-dni-global').value = dniUsuario;
 let urlNubeGuardada = localStorage.getItem('config-url-nube') || ''; document.getElementById('input-url-nube').value = urlNubeGuardada;
+let passNubeGuardada = localStorage.getItem('config-pass-nube') || ''; document.getElementById('input-pass-nube').value = passNubeGuardada;
 inicializarColores(); registrarUbicacionInicial(); renderizarCalendario(true, 'instant');
 
 function registrarUbicacionInicial() { if (navigator.geolocation) { navigator.geolocation.getCurrentPosition(()=>{}, ()=>{}, {timeout: 1000}); } }
