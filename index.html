@@ -1,600 +1,910 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Turnos y Control Horario - Nube Propia (BYOC)</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <style>
-        .fade-in { animation: fadeIn 0.25s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
-        /* Ocultar flechas en inputs numéricos/tiempo */
-        input[type="time"]::-webkit-calendar-picker-indicator { cursor: pointer; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Fichaje Pro V18.15 Botón Único</title>
+
+<!-- ENLACES PARA QUE SEA INSTALABLE (PWA) -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#007d7a">
+<link rel="apple-touch-icon" href="icon-192x192.png">
+
+<style>
+/* CONTROL ESTRICTO DE MEDIDAS Y SIMETRÍA */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+--bg-app: #f7f6dd;
+--teal-header: #007d7a;
+--box-empty: #eae7c9;
+--color-trabajo: #d4edda;
+--color-vacaciones: #cce5ff;
+--color-libre: #fff3cd;
+--color-baja: #f8d7da;
+}
+body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6px; overflow: hidden; width: 100%; height: 100vh; display: flex; flex-direction: column; }
+.container { max-width: 460px; width: 100%; margin: 0 auto; display: flex; flex-direction: column; gap: 8px; position: relative; flex: 1; overflow: hidden; }
+
+.header-barra { display: flex; align-items: center; justify-content: center; background-color: var(--teal-header); color: white; border-radius: 6px; padding: 4px 6px; width: 100%; position: relative; min-height: 38px; flex-shrink: 0; }
+.btn-menu-tres { position: absolute; left: 6px; background: none; border: none; color: white; font-size: 1.3rem; cursor: pointer; padding: 4px 8px; }
+.contenedor-control-mes { display: flex; align-items: center; justify-content: center; gap: 25px; }
+.titulo-mes-central { font-size: 0.95rem; font-weight: bold; text-transform: uppercase; letter-spacing: 0.3px; text-align: center; white-space: nowrap; }
+.btn-Cambio-mes { background: rgba(255,255,255,0.15); border: none; color: white; padding: 4px 10px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 0.85rem; flex-shrink: 0; }
+
+.panel-totales { display: flex; justify-content: space-between; background: white; padding: 8px 10px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); font-size: 0.85rem; font-weight: bold; color: #333; width: 100%; flex-shrink: 0; }
+.panel-totales span { color: var(--teal-header); font-size: 0.95rem; }
+
+/* ZONA SUPERIOR: REESTRUCTURADA EN FILAS INDEPENDIENTES */
+.zona-accion-superior { display: flex; flex-direction: column; background: white; padding: 8px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); gap: 8px; width: 100%; flex-shrink: 0; }
+
+/* BOTÓN ÚNICO DE FICHAJE SIMÉTRICO (FILA 1) */
+.bloque-fichar-superior { display: flex; flex-direction: row; gap: 8px; width: 100%; justify-content: center; flex-shrink: 0; }
+.btn-fichar-principal { background-color: #ffaa3b; border: 1px solid #333; border-radius: 6px; padding: 11px 8px; font-size: 0.95rem; font-weight: bold; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.12); line-height: 1.1; width: 100%; display: flex; align-items: center; justify-content: center; text-align: center; min-height: 46px; transition: transform 0.1s; }
+.btn-fichar-principal:active { background-color: #e59530; transform: scale(0.98); }
+
+/* BLOQUE DE SEMANAS LEGIBLE Y RESPONSIVO (FILA 2) */
+.bloque-semanas-mini { display: flex; width: 100%; gap: 4px; overflow-x: auto; padding-bottom: 2px; }
+.btn-semana-mini { flex: 1; min-width: 52px; background: #eef0f2; border: 1px solid #ccc; border-radius: 4px; font-size: 0.65rem; font-weight: bold; padding: 4px 2px; text-align: center; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+.btn-semana-mini span { display: block; color: var(--teal-header); font-size: 0.7rem; font-weight: bold; margin-top: 1px; }
+.btn-semana-mini.activo { background-color: #ccefe2; border-color: var(--teal-header); box-shadow: inset 0 1px 3px rgba(0,0,0,0.15); }
+
+.vistas-sub { display: flex; justify-content: space-around; background: rgba(0,0,0,0.04); padding: 4px; border-radius: 4px; font-size: 0.85rem; width: 100%; flex-shrink: 0; }
+.vistas-sub span { padding: 4px 12px; border-radius: 4px; color: #555; cursor: pointer; }
+.vistas-sub span.activo { background: var(--teal-header); color: white; font-weight: bold; }
+
+.calendario-lista { background: white; border-radius: 6px; padding: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; scroll-behavior: smooth; width: 100%; }
+.fila-dia { display: flex; align-items: center; justify-content: space-between; padding: 5px 4px; border-bottom: 1px solid #eef0f2; border-radius: 6px; background: #fafafa; gap: 4px; width: 100%; flex-shrink: 0; }
+.fila-mes-ano { display: flex; justify-content: space-between; padding: 11px 14px; border-bottom: 1px solid #eef0f2; border-radius: 6px; cursor: pointer; transition: background 0.1s; flex-shrink: 0; }
+.fila-mes-ano:active { background-color: #e2f3ee !important; }
+.label-dia { width: 48px; font-size: 0.76rem; font-weight: bold; color: #444; text-transform: capitalize; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bloques-inputs { display: flex; gap: 3px; flex: 1; justify-content: center; align-items: center; }
+.caja-input { width: 42px; height: 26px; background-color: var(--box-empty); border: 1px solid #777; border-radius: 4px; text-align: center; font-size: 0.75rem; font-weight: bold; }
+.selector-estado { width: 80px; height: 26px; border: 1px solid #777; border-radius: 4px; font-size: 0.74rem; font-weight: bold; background-color: #eae7c9; padding: 0 2px; }
+
+.total-horas { width: 76px; display: flex; align-items: center; justify-content: flex-end; font-size: 0.78rem; color: #333; font-weight: bold; flex-shrink: 0; gap: 2px; cursor: pointer; padding: 2px 0; }
+.texto-horas { width: 42px; text-align: right; font-family: monospace; font-size: 0.85rem; display: inline-block; }
+
+.ad-container { width: 100%; min-height: 50px; background-color: #f0ebd8; border-radius: 6px; display: flex; justify-content: center; align-items: center; border: 1px dashed #ccc; color: #888; font-size: 0.75rem; flex-shrink: 0; }
+
+.btn-nota-trigger { font-size: 1.05rem; cursor: pointer; padding: 2px; background: none; border: none; filter: grayscale(1); transition: transform 0.1s; flex-shrink: 0; }
+.btn-nota-trigger.con-nota { filter: grayscale(0); position: relative; }
+.btn-nota-trigger.con-nota::after { content: ''; position: absolute; top: 0; right: 0; width: 5px; height: 5px; background: red; border-radius: 50%; }
+
+/* OPTIMIZACIÓN FINURA V18.14 ( ETIQUETA DE DÍA AMPLIADA PARA FECHAS LARGAS ) */
+.vista-partido .fila-dia { gap: 2px; padding: 4px 2px; }
+.vista-partido .label-dia { width: 44px; font-size: 0.70rem; }
+.vista-partido .bloques-inputs { gap: 2px; }
+.vista-partido .caja-input { width: 29px; height: 25px; font-size: 0.65rem; padding: 0; }
+.vista-partido .selector-estado { width: 72px; font-size: 0.65rem; height: 25px; padding: 0 1px; }
+.vista-partido .total-horas { width: 56px; }
+.vista-partido .texto-horas { width: 36px; font-size: 0.78rem; }
+
+.fila-dia.tipo-trabajo { background-color: var(--color-trabajo) !important; }
+.fila-dia.tipo-vacaciones { background-color: var(--color-vacaciones) !important; }
+.fila-dia.tipo-libre { background-color: var(--color-libre) !important; }
+.fila-dia.tipo-baja { background-color: var(--color-baja) !important; }
+
+.menu-lateral-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; z-index: 1000; }
+.menu-lateral { position: fixed; top: 0; left: 0; width: 290px; height: 100%; background: white; box-shadow: 2px 0 10px rgba(0,0,0,0.3); display: none; flex-direction: column; padding: 16px; z-index: 1011; overflow-y: auto; }
+.menu-titulo { font-size: 1.1rem; font-weight: bold; color: var(--teal-header); border-bottom: 2px solid var(--teal-header); padding-bottom: 6px; margin-bottom: 12px; }
+.menu-seccion { font-size: 0.85rem; color: #777; font-weight: bold; margin-top: 10px; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+.menu-opcion { display: flex; align-items: center; justify-content: space-between; padding: 10px 6px; font-weight: bold; color: #444; border-bottom: 1px solid #eee; font-size: 0.85rem; cursor: pointer; }
+.menu-opcion select { padding: 4px; font-weight: bold; border-radius: 4px; border: 1px solid #999; }
+.menu-opcion-input { display: flex; align-items: center; gap: 6px; padding: 8px 6px; border-bottom: 1px solid #eee; width: 100%; }
+.menu-opcion-input span { font-size: 0.85rem; font-weight: bold; color: #444; flex: 0 0 85px; white-space: nowrap; }
+.menu-opcion-input input { flex: 1; padding: 5px; font-weight: bold; border-radius: 4px; border: 1px solid #999; font-size: 0.82rem; }
+.contenedor-ajuste-colores { display: none; grid-template-columns: 1fr 1fr; gap: 6px; padding: 8px 6px; background-color: #fafafa; border-bottom: 1px solid #eee; }
+.bloque-color-picker { display: flex; align-items: center; justify-content: space-between; background: #eef0f2; padding: 5px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; }
+.bloque-color-picker input[type="color"] { border: none; width: 24px; height: 24px; border-radius: 50%; cursor: pointer; background: none; padding: 0; }
+.btn-cerrar-menu { background: #555; color: white; border: none; padding: 10px; border-radius: 4px; margin-top: 16px; font-weight: bold; cursor: pointer; }
+
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 2000; padding: 10px; }
+.modal-content { background: white; border-radius: 8px; padding: 16px; width: 100%; max-width: 350px; box-shadow: 0 4px 10px rgba(0,0,0,0.25); display: flex; flex-direction: column; gap: 12px; }
+.modal-titulo { font-size: 1rem; font-weight: bold; color: #333; border-bottom: 1px solid #eee; padding-bottom: 4px; }
+.modal-textarea { width: 100%; height: 80px; padding: 8px; font-size: 0.9rem; border: 1px solid #bbb; border-radius: 4px; resize: none; font-family: sans-serif; }
+.modal-botones { display: flex; gap: 8px; justify-content: flex-end; }
+.btn-modal { padding: 8px 14px; border: none; border-radius: 4px; font-weight: bold; font-size: 0.85rem; cursor: pointer; }
+.btn-modal.guardar { background: var(--teal-header); color: white; }
+.btn-modal.cancelar { background: #bbb; color: #333; }
+
+/* ESTILOS PARA EL MODAL DE CONFIRMACIÓN DE TURNO PARTIDO */
+.btn-turno-modal { padding: 12px; border: 1px solid #333; border-radius: 6px; font-weight: bold; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; text-align: center; width: 100%; transition: transform 0.1s; }
+.btn-turno-modal:active { transform: scale(0.98); }
+.btn-turno-modal.manana { background-color: #ffaa3b; color: #111; }
+.btn-turno-modal.tarde { background-color: #a372eb; color: white; }
+
+.linea-audit { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f1f1f1; padding: 6px 0; gap: 8px; font-size: 0.82rem; }
+.badge-audit { padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; color: white; min-width: 72px; text-align: center; }
+.btn-mapa-audit { text-decoration: none; background: var(--teal-header); color: white; padding: 3px 7px; border-radius: 4px; font-size: 0.72rem; font-weight: bold; display: inline-flex; align-items: center; }
+</style>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col justify-between">
+<body>
+<div class="container" id="app-container">
+<div class="header-barra">
+<button class="btn-menu-tres" onclick="toggleMenu(true)">☰</button>
+<div class="contenedor-control-mes">
+<button class="btn-Cambio-mes" onclick="cambiarMes(-1)">-</button>
+<div class="titulo-mes-central" id="mes-titulo">...</div>
+<button class="btn-Cambio-mes" onclick="cambiarMes(1)">+</button>
+</div>
+</div>
+<div class="panel-totales">
+<div>Horas Semana: <span id="total-semana">00:00</span></div>
+<div>Total Mes: <span id="total-mes">00:00</span></div>
+</div>
+<div class="zona-accion-superior">
+<!-- FILA 1: BOTÓN ÚNICO DE FICHAJE -->
+<div class="bloque-fichar-superior">
+<button class="btn-fichar-principal" onclick="iniciarFichaje()">🕒 FICHAR</button>
+</div>
+<!-- FILA 2: DESGLOSE DE SEMANAS -->
+<div class="bloque-semanas-mini" id="desglose-semanas"></div>
+</div>
+<div class="vistas-sub">
+<span id="v-semana" onclick="cambiarVista('semana')">SEMANA</span>
+<span id="v-mes" class="activo" onclick="cambiarVista('mes')">MES</span>
+<span id="v-ano" onclick="cambiarVista('ano')">AÑO</span>
+</div>
+<div class="calendario-lista" id="lista-dias"></div>
+<div id="ad-banner" class="ad-container">Espacio para anuncio AdMob</div>
+</div>
 
-    <!-- BARRA SUPERIOR (HEADER) -->
-    <header class="bg-slate-900 text-white shadow-lg sticky top-0 z-50">
-        <div class="max-w-6xl mx-auto px-4 py-3 flex flex-col sm:flex-row justify-between items-center gap-3">
-            <div class="flex items-center space-x-3">
-                <span class="text-2xl">📅</span>
-                <div>
-                    <h1 class="text-lg font-bold tracking-tight leading-none">TimeSync Pro</h1>
-                    <p class="text-[11px] text-slate-400 mt-0.5">Control Horario & Turnos Partidos &bull; Nube Cliente (BYOC)</p>
-                </div>
-            </div>
-            
-            <!-- Indicador de Estado de Nube en Tiempo Real -->
-            <div id="badge-estado-emp" class="bg-slate-800 border border-slate-700 px-3.5 py-1.5 rounded-full text-xs font-medium text-emerald-400 flex items-center gap-2 shadow-inner transition-all">
-                ☁️✓ <b>Sincronizado con Nube</b>
-            </div>
-        </div>
-    </header>
+<!-- MENU LATERAL -->
+<div class="menu-lateral-overlay" id="menu-overlay" onclick="toggleMenu(false)"></div>
+<div class="menu-lateral" id="menu-lateral">
+<div class="menu-titulo">Ajustes de Fichaje</div>
+<div class="menu-seccion">Configuración</div>
+<div class="menu-opcion-input">
+<span>👤 Nombre:</span>
+<input type="text" id="input-nombre-global" oninput="guardarNombre(this.value)" placeholder="Nombre y Apellidos">
+</div>
+<div class="menu-opcion-input">
+<span>🪪 DNI / NIE:</span>
+<input type="text" id="input-dni-global" oninput="guardarDni(this.value)" placeholder="Documento ID">
+</div>
+<!-- MEJORA INTEGRADA: CONFIGURACIÓN WEBHOOK / BYOC NUBE -->
+<div class="menu-opcion-input">
+<span>☁️ Nube URL:</span>
+<input type="text" id="input-url-nube" oninput="guardarUrlNube(this.value)" placeholder="https://tu-servidor/o-script">
+</div>
+<div class="menu-opcion">
+<span>⚙️ Tipo de Turno:</span>
+<select id="selector-turno-global" onchange="ajustarTipoTurno(this.value)">
+<option value="continuo">Continuo</option>
+<option value="partido">Partido</option>
+</select>
+</div>
+<div class="menu-opcion" onclick="verificarPermisoGPS()">
+<span>🛰️ Estado del GPS:</span>
+<span id="estado-gps-lbl" style="color: #666; font-size: 0.8rem; font-weight: bold;">Verificar...</span>
+</div>
+<div class="menu-opcion" onclick="toggleSeccionColores()">
+<span>🎨 Personalizar Colores</span>
+<span id="flecha-colores-menu">▼</span>
+</div>
+<div class="contenedor-ajuste-colores" id="desplegable-colores">
+<div class="bloque-color-picker">
+<span>Trabajo</span>
+<input type="color" id="picker-trabajo" onchange="guardarColorPersonalizado('trabajo', this.value)">
+</div>
+<div class="bloque-color-picker">
+<span>Vacac.</span>
+<input type="color" id="picker-vacaciones" onchange="guardarColorPersonalizado('vacaciones', this.value)">
+</div>
+<div class="bloque-color-picker">
+<span>Libre</span>
+<input type="color" id="picker-libre" onchange="guardarColorPersonalizado('libre', this.value)">
+</div>
+<div class="bloque-color-picker">
+<span>Baja M.</span>
+<input type="color" id="picker-baja" onchange="guardarColorPersonalizado('baja', this.value)">
+</div>
+</div>
+<div class="menu-seccion">Compartir Datos del Mes</div>
+<div class="menu-opcion" onclick="compartirPorWhatsApp()">🟢 Compartir por WhatsApp</div>
+<div class="menu-opcion" onclick="compartirPorCorreo()">✉️ Compartir por Correo</div>
+<div class="menu-seccion">Seguridad Anual</div>
+<div class="menu-opcion" onclick="descargarCopiaSeguridad()">💾 Guardar Copia (.json)</div>
+<div class="menu-opcion" onclick="document.getElementById('input-importar').click()">📂 Restaurar Copia (.json)</div>
+<button class="btn-cerrar-menu" onclick="toggleMenu(false)">Cerrar Menú</button>
+</div>
+<input type="file" id="input-importar" style="display:none;" accept=".json" onchange="cargarCopiaSeguridad(event)">
 
-    <!-- SELECTOR DE ROL (SIMULADOR PARA PRUEBAS) -->
-    <div class="bg-indigo-900 text-indigo-100 py-2 px-4 text-center text-xs shadow-inner">
-        <span>Vista activa: </span>
-        <button onclick="cambiarRol('empleado')" id="btn-rol-emp" class="underline font-bold mx-1 cursor-pointer text-white">Modo Empleado (Turnos y Fichaje)</button> | 
-        <button onclick="cambiarRol('jefe')" id="btn-rol-jefe" class="underline mx-1 cursor-pointer text-indigo-300">Modo Jefe (Archivos JSON en Nube)</button>
-    </div>
+<!-- MODAL CONFIRMACIÓN TURNO PARTIDO -->
+<div class="modal-overlay" id="modal-turno-overlay" onclick="cerrarModalTurno()">
+<div class="modal-content" onclick="event.stopPropagation()">
+<div class="modal-titulo" style="text-align: center;">¿Qué turno vas a registrar?</div>
+<div style="display: flex; flex-direction: column; gap: 8px; margin: 4px 0;">
+<button class="btn-turno-modal manana" onclick="confirmarFichajeTurno('m')">☀️ TURNO DE MAÑANA</button>
+<button class="btn-turno-modal tarde" onclick="confirmarFichajeTurno('t')">🌙 TURNO DE TARDE</button>
+</div>
+<div class="modal-botones" style="justify-content: center;">
+<button class="btn-modal cancelar" onclick="cerrarModalTurno()" style="width: 100%;">Cancelar</button>
+</div>
+</div>
+</div>
 
-    <!-- CONTENEDOR PRINCIPAL -->
-    <main class="max-w-6xl w-full mx-auto p-3 sm:p-6 flex-grow space-y-6">
+<!-- MODAL NOTAS -->
+<div class="modal-overlay" id="modal-nota-overlay">
+<div class="modal-content">
+<div class="modal-titulo" id="modal-nota-titulo">Nota del día</div>
+<textarea class="modal-textarea" id="modal-nota-texto" placeholder="Escribe aquí anotaciones importantes..."></textarea>
+<div class="modal-botones">
+<button class="btn-modal cancelar" onclick="cerrarModalNota()">Cancelar</button>
+<button class="btn-modal guardar" onclick="guardarNotaModal()">Guardar</button>
+</div>
+</div>
+</div>
 
-        <!-- ========================================================== -->
-        <!-- VISTA EMPLEADO: GESTIÓN DE TURNOS Y CONFIRMACIÓN           -->
-        <!-- ========================================================== -->
-        <div id="vista-empleado" class="space-y-6 fade-in">
-            
-            <!-- Barra de Identificación y Conexión BYOC -->
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-lg">JP</div>
-                    <div>
-                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Empleado Activo</span>
-                        <div class="text-sm font-bold text-slate-800" id="emp-nombre-display">Juan Pérez &bull; DNI: 48291823X</div>
-                    </div>
-                </div>
-                <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
-                    <label class="text-xs font-medium text-slate-500">Cód. Empresa:</label>
-                    <input type="text" id="input-codigo-empresa" value="EMP-2026" class="border border-slate-300 rounded-lg px-3 py-1.5 text-xs w-28 font-mono font-bold text-center focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    <button onclick="guardarVinculacion()" class="bg-slate-800 hover:bg-slate-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer transition">Vincular</button>
-                </div>
-            </div>
+<!-- MODAL AUDITORÍA -->
+<div class="modal-overlay" id="modal-audit-overlay" onclick="cerrarModalAudit()">
+<div class="modal-content" onclick="event.stopPropagation()">
+<div class="modal-titulo" id="modal-audit-titulo">Detalles del Fichaje</div>
+<div id="modal-audit-cuerpo" style="display: flex; flex-direction: column; gap: 4px;"></div>
+<div class="modal-botones" style="margin-top: 6px;">
+<button class="btn-modal cancelar" onclick="cerrarModalAudit()">Cerrar</button>
+</div>
+</div>
+</div>
 
-            <!-- Panel de Fichaje Rápido del Día -->
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-center gap-6">
-                <div class="text-center md:text-left">
-                    <span class="text-xs font-bold text-indigo-600 uppercase tracking-wider">Hoy en directo</span>
-                    <div id="reloj-digital" class="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight mt-0.5">00:00:00</div>
-                    <p class="text-xs text-slate-500 mt-1" id="fecha-actual">Cargando fecha...</p>
-                </div>
-                
-                <div class="flex flex-wrap justify-center gap-3">
-                    <button onclick="ficharAccion('ENTRADA_MANANA')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs px-4 py-3 rounded-xl shadow transition active:scale-95 cursor-pointer flex items-center gap-1.5">
-                        <span>🟢</span> Entr. Mañana
-                    </button>
-                    <button onclick="ficharAccion('SALIDA_MANANA')" class="bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs px-4 py-3 rounded-xl shadow transition active:scale-95 cursor-pointer flex items-center gap-1.5">
-                        <span>⏸️</span> Sal. Mañana
-                    </button>
-                    <button onclick="ficharAccion('ENTRADA_TARDE')" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs px-4 py-3 rounded-xl shadow transition active:scale-95 cursor-pointer flex items-center gap-1.5">
-                        <span>▶️</span> Entr. Tarde
-                    </button>
-                    <button onclick="ficharAccion('SALIDA_TARDE')" class="bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs px-4 py-3 rounded-xl shadow transition active:scale-95 cursor-pointer flex items-center gap-1.5">
-                        <span>🔴</span> Sal. Tarde
-                    </button>
-                </div>
-            </div>
+<script>
+const mesesNombres = ["ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO", "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"];
+const diasSemanaNombres = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+let fechaActual = new Date();
+let vistaActual = 'mes';
+let configuracionTurno = localStorage.getItem('config-turno') || 'continuo';
+let diaNotaSeleccionado = null;
+const coloresDefecto = { trabajo: '#d4edda', vacaciones: '#cce5ff', libre: '#fff3cd', baja: '#f8d7da' };
 
-            <!-- TABLA PRINCIPAL DE TURNOS PARTIDOS (MAÑANA / TARDE / CONFIRMACIONES) -->
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                <div class="px-5 py-4 border-b border-slate-200 flex flex-col sm:flex-row justify-between sm:items-center gap-3 bg-slate-50/80">
-                    <div>
-                        <h3 class="font-bold text-base text-slate-800">Planilla de Horarios y Confirmaciones</h3>
-                        <p class="text-xs text-slate-500">Cualquier cambio o confirmación se guarda en la nube al instante.</p>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <button onclick="generarSemanaActual()" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-medium px-3 py-1.5 rounded-lg cursor-pointer shadow-sm">
-                            🔄 Semana Actual
-                        </button>
-                        <button onclick="confirmarTodoElListado()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium px-3.5 py-1.5 rounded-lg cursor-pointer shadow-sm transition">
-                            ✓ Confirmar Todo
-                        </button>
-                    </div>
-                </div>
+/* FUNCIÓN DE AUTO-FORMATO DE HORAS AVANZADA (PUNTOS, COMAS Y NÚMEROS CONTINUOS) */
+function normalizarTextoHora(txt) {
+  if (!txt) return '';
+  let limpio = txt.trim().replace(/[,;.]/g, ':');
+  
+  if (!limpio.includes(':')) {
+    if (/^\d{3,4}$/.test(limpio)) {
+      let mPart = limpio.slice(-2);
+      let hPart = limpio.slice(0, -2);
+      limpio = `${hPart}:${mPart}`;
+    } else if (/^\d{1,2}$/.test(limpio)) {
+      let numH = parseInt(limpio, 10);
+      if (numH >= 0 && numH < 24) {
+        return `${String(numH).padStart(2, '0')}:00`;
+      }
+    }
+  }
+  
+  let partes = limpio.split(':');
+  if (partes.length === 2) {
+    let h = partes[0].trim();
+    let m = partes[1].trim();
+    if (h.length === 1 && /^\d$/.test(h)) h = '0' + h;
+    if (m.length === 1 && /^\d$/.test(m)) m = m + '0';
+    if (/^\d{2}$/.test(h) && /^\d{2}$/.test(m)) {
+      let numH = parseInt(h, 10);
+      let numM = parseInt(m, 10);
+      if (numH >= 0 && numH < 24 && numM >= 0 && numM < 60) {
+        return `${h}:${m}`;
+      }
+    }
+  }
+  return limpio;
+}
 
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse text-xs">
-                        <thead>
-                            <tr class="bg-slate-100/70 text-slate-600 border-b border-slate-200 uppercase text-[10px] tracking-wider">
-                                <th class="p-3 font-bold w-28">Fecha</th>
-                                <th class="p-3 font-bold text-center bg-emerald-50/50 border-x border-slate-200" colspan="3">Turno Mañana</th>
-                                <th class="p-3 font-bold text-center bg-blue-50/50 border-r border-slate-200" colspan="3">Turno Tarde</th>
-                                <th class="p-3 font-bold text-center">Total</th>
-                                <th class="p-3 font-bold text-center">Estado / Nube</th>
-                            </tr>
-                            <tr class="bg-slate-50 text-slate-500 border-b border-slate-200 text-[11px]">
-                                <th class="p-2">Día</th>
-                                <!-- Mañana -->
-                                <th class="p-2 text-center w-20">Entrada</th>
-                                <th class="p-2 text-center w-20">Salida</th>
-                                <th class="p-2 text-center w-24">Confirmar</th>
-                                <!-- Tarde -->
-                                <th class="p-2 text-center w-20">Entrada</th>
-                                <th class="p-2 text-center w-20">Salida</th>
-                                <th class="p-2 text-center w-24">Confirmar</th>
-                                <!-- Horas -->
-                                <th class="p-2 text-center font-bold">Horas</th>
-                                <th class="p-2 text-center">Sincronización</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabla-cuerpo-turnos" class="divide-y divide-slate-100 font-medium">
-                            <!-- Se inyecta dinámicamente mediante JavaScript -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+function esHoraValida(txt) {
+  let norm = normalizarTextoHora(txt);
+  return /^\d{2}:\d{2}$/.test(norm);
+}
 
-        </div>
+function inicializarColores() {
+  ['trabajo', 'vacaciones', 'libre', 'baja'].forEach(tipo => {
+    let col = localStorage.getItem(`color-custom-${tipo}`) || coloresDefecto[tipo];
+    document.documentElement.style.setProperty(`--color-${tipo}`, col);
+    document.getElementById(`picker-${tipo}`).value = col;
+  });
+}
+function toggleSeccionColores() {
+  const contenedor = document.getElementById('desplegable-colores');
+  const flecha = document.getElementById('flecha-colores-menu');
+  if (contenedor.style.display === 'grid') { contenedor.style.display = 'none'; flecha.textContent = '▼'; }
+  else { contenedor.style.display = 'grid'; flecha.textContent = '▲'; }
+}
+function guardarColorPersonalizado(tipo, valor) {
+  localStorage.setItem(`color-custom-${tipo}`, valor);
+  document.documentElement.style.setProperty(`--color-${tipo}`, valor);
+}
+function guardarNombre(valor) { localStorage.setItem('config-nombre', valor); }
+function guardarDni(valor) { localStorage.setItem('config-dni', valor); }
+function guardarUrlNube(valor) { localStorage.setItem('config-url-nube', valor); }
 
-        <!-- ========================================================== -->
-        <!-- VISTA JEFE / ADMINISTRADOR: BYOC Y RECEPCIÓN EN DIRECTO    -->
-        <!-- ========================================================== -->
-        <div id="vista-jefe" class="space-y-6 hidden fade-in">
-            
-            <!-- Selector BYOC (Nube Propia) -->
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div>
-                        <h3 class="font-bold text-base text-slate-800">Almacenamiento Personal del Cliente (BYOC)</h3>
-                        <p class="text-xs text-slate-500">Toda la información se deposita automáticamente en la nube que selecciones, sin intermediarios.</p>
-                    </div>
-                    <span class="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-xs font-bold self-start sm:self-auto">Modo Cliente Activo</span>
-                </div>
+/* MEJORA INTEGRADA: SINCRONIZACIÓN EN EL FONDO (BYOC / WEBHOOK) */
+async function sincronizarConNube(claveId, datos) {
+  const urlNube = localStorage.getItem('config-url-nube');
+  if (!urlNube || !navigator.onLine) return; // Si no hay URL configurada o no hay internet, sigue en local
+  try {
+    await fetch(urlNube, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        claveId: claveId,
+        empleado: localStorage.getItem('config-nombre') || 'Sin Nombre',
+        dni: localStorage.getItem('config-dni') || '',
+        timestamp: new Date().toISOString(),
+        registro: datos
+      })
+    });
+  } catch (err) {
+    console.warn("Fallo temporal al sincronizar en nube del jefe:", err);
+  }
+}
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
-                    <div class="border-2 border-indigo-500 bg-indigo-50/40 p-4 rounded-xl cursor-pointer flex flex-col justify-between">
-                        <div>
-                            <div class="text-2xl mb-1">📁</div>
-                            <h4 class="font-bold text-xs text-slate-800">Google Drive (Conectado)</h4>
-                            <p class="text-[11px] text-slate-500 mt-1">Carpeta: /TimeSync_Turnos_2026/</p>
-                        </div>
-                        <div class="mt-3 flex justify-between items-center text-xs">
-                            <span class="text-emerald-700 font-bold">● Activo</span>
-                            <span class="text-indigo-600 underline">Configurar</span>
-                        </div>
-                    </div>
-                    <div class="border border-slate-200 p-4 rounded-xl hover:border-slate-300 cursor-pointer flex flex-col justify-between bg-white">
-                        <div>
-                            <div class="text-2xl mb-1">☁️</div>
-                            <h4 class="font-bold text-xs text-slate-800">Microsoft OneDrive</h4>
-                            <p class="text-[11px] text-slate-500 mt-1">No vinculado</p>
-                        </div>
-                        <button class="text-xs text-indigo-600 font-bold mt-3 text-left">Vincular cuenta ></button>
-                    </div>
-                    <div class="border border-slate-200 p-4 rounded-xl hover:border-slate-300 cursor-pointer flex flex-col justify-between bg-white">
-                        <div>
-                            <div class="text-2xl mb-1">🖥️</div>
-                            <h4 class="font-bold text-xs text-slate-800">Servidor Propio / Webhook</h4>
-                            <p class="text-[11px] text-slate-500 mt-1">Sincronización por API REST</p>
-                        </div>
-                        <button class="text-xs text-indigo-600 font-bold mt-3 text-left">Configurar endpoint ></button>
-                    </div>
-                </div>
-            </div>
+function toggleMenu(abrir) {
+  document.getElementById('menu-overlay').style.display = abrir ? 'block' : 'none';
+  document.getElementById('menu-lateral').style.display = abrir ? 'flex' : 'none';
+  if (!abrir) { document.getElementById('desplegable-colores').style.display = 'none'; document.getElementById('flecha-colores-menu').textContent = '▼'; }
+  else { verificarPermisoGPS(true); }
+}
+function ajustarTipoTurno(valor) {
+  configuracionTurno = valor; localStorage.setItem('config-turno', valor);
+  const container = document.getElementById('app-container');
+  if(valor === 'partido') container.classList.add('vista-partido'); else container.classList.remove('vista-partido');
+  renderizarCalendario(false);
+}
 
-            <!-- Panel de Supervisión en Vivo de los Empleados -->
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50/80">
-                    <div>
-                        <h3 class="font-bold text-sm text-slate-800">Registros y Turnos Recibidos en la Nube del Jefe</h3>
-                        <p class="text-[11px] text-slate-500">Se actualiza en tiempo real según confirman o fichan los empleados</p>
-                    </div>
-                    <div class="flex gap-2">
-                        <button onclick="cargarTablaJefe()" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer shadow-sm">🔄 Refrescar</button>
-                        <button onclick="descargarTodoJson()" class="bg-slate-800 hover:bg-slate-700 text-white px-3.5 py-1.5 rounded-lg text-xs font-medium cursor-pointer shadow-sm">📥 Descargar Respaldo JSON</button>
-                    </div>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse text-xs">
-                        <thead>
-                            <tr class="bg-slate-100/70 text-slate-600 border-b border-slate-200 uppercase text-[10px]">
-                                <th class="p-3 font-bold">Fecha / Turno</th>
-                                <th class="p-3 font-bold">Empleado</th>
-                                <th class="p-3 font-bold text-center">Horario Mañana</th>
-                                <th class="p-3 font-bold text-center">Horario Tarde</th>
-                                <th class="p-3 font-bold text-center">Conf. Mañana</th>
-                                <th class="p-3 font-bold text-center">Conf. Tarde</th>
-                                <th class="p-3 font-bold text-center">Total Horas</th>
-                                <th class="p-3 font-bold text-right">Archivo Cloud</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabla-cuerpo-jefe" class="divide-y divide-slate-100">
-                            <!-- Se inyecta dinámicamente -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+function irAlMesSeleccionado(indiceMes) { fechaActual.setDate(1); fechaActual.setMonth(indiceMes); cambiarVista('mes'); }
 
-        </div>
-
-    </main>
-
-    <!-- PIE DE PÁGINA -->
-    <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-400 mt-8">
-        TimeSync Pro &bull; Sistema integral de turnos con almacenamiento independiente del cliente.
-    </footer>
-
-    <!-- ========================================================== -->
-    <!-- LÓGICA COMPLETA DE INTERFAZ, TURNOS Y SYNC INSTANTÁNEO      -->
-    <!-- ========================================================== -->
-    <script>
-        // 1. VARIABLES LABORALES Y RELOJ
-        let rolActual = 'empleado';
-        const DNI_EMPLEADO = "48291823X";
-        const NOMBRE_EMPLEADO = "Juan Pérez";
-
-        setInterval(() => {
-            const ahora = new Date();
-            const rel = document.getElementById('reloj-digital');
-            if (rel) rel.innerText = ahora.toLocaleTimeString();
-            const fec = document.getElementById('fecha-actual');
-            const opciones = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            if (fec) fec.innerText = ahora.toLocaleDateString('es-ES', opciones);
-        }, 1000);
-
-        // 2. SISTEMA DE ALMACENAMIENTO LOCAL (OFFLINE-FIRST + INSTANT SYNC)
-        function obtenerDatosTurnos() {
-            const guardado = localStorage.getItem('timesync_planilla_completa');
-            if (guardado) {
-                return JSON.parse(guardado);
-            }
-            // Si no existe, generamos la semana actual por defecto
-            return crearEstructuraSemana();
+function renderizarCalendario(autoScroll = true, comportamiento = 'smooth') {
+  const anio = fechaActual.getFullYear(); const mes = fechaActual.getMonth();
+  const lista = document.getElementById('lista-dias'); lista.innerHTML = '';
+  let totalDiasMes = new Date(anio, mes + 1, 0).getDate();
+  if(vistaActual === 'ano') {
+    document.getElementById('mes-titulo').textContent = `AÑO ${anio}`;
+    for(let m = 0; m < 12; m++) {
+      let minsMes = 0; let diasEnMes = new Date(anio, m + 1, 0).getDate();
+      for(let d = 1; d <= diasEnMes; d++) {
+        const claveId = `fichaje-${anio}-${m}-${d}`;
+        let data = JSON.parse(localStorage.getItem(claveId));
+        if(data && data.t && data.t !== '00:00') {
+          let partes = data.t.split(':'); minsMes += (parseInt(partes[0]||0, 10) * 60) + parseInt(partes[1]||0, 10);
         }
+      }
+      let filaMes = document.createElement('div'); filaMes.className = 'fila-mes-ano'; filaMes.style.background = (m === mes) ? '#fff3cd' : '#fafafa';
+      filaMes.setAttribute('onclick', `irAlMesSeleccionado(${m})`);
+      filaMes.innerHTML = `<span style="font-weight:bold; color:#333;">📅 ${mesesNombres[m]}</span><span style="color:#007d7a; font-weight:bold;">${minsATexto(minsMes)} hrs ➜</span>`;
+      lista.appendChild(filaMes);
+    }
+    calcularTotalesGenerales(); return;
+  }
+  document.getElementById('mes-titulo').textContent = `${mesesNombres[mes]} ${anio}`;
+  let diaInicio = 1, diaFin = totalDiasMes;
+  if(vistaActual === 'semana') {
+    let targetDay = fechaActual.getDate(); let targetObj = new Date(anio, mes, targetDay);
+    let currentDayOfWeek = targetObj.getDay(); let diffToMonday = currentDayOfWeek === 0 ? 6 : currentDayOfWeek - 1;
+    let diffToSunday = currentDayOfWeek === 0 ? 0 : 7 - currentDayOfWeek;
+    diaInicio = Math.max(1, targetDay - diffToMonday); diaFin = Math.min(totalDiasMes, targetDay + diffToSunday);
+  }
+  for(let i = diaInicio; i <= diaFin; i++) {
+    const claveId = `fichaje-${anio}-${mes}-${i}`;
+    let data = JSON.parse(localStorage.getItem(claveId)) || { e1:'', s1:'', e2:'', s2:'', est:'defecto', t:'00:00', nota:'', origen: {}, gps: {} };
+    let valE1 = data.e1 || ''; let valS1 = data.s1 || ''; let valE2 = data.e2 || ''; let valS2 = data.s2 || '';
+    const objetoFecha = new Date(anio, mes, i); const textoDiaSemana = diasSemanaNombres[objetoFecha.getDay()];
+    const fila = document.createElement('div'); fila.className = `fila-dia tipo-${data.est}`; fila.id = `fila-${i}`;
+    
+    let inputsHTML = (configuracionTurno === 'continuo') 
+      ? `<input type="text" class="caja-input" id="e1-${i}" placeholder="Ent" value="${valE1}" oninput="calc(${i})" onblur="autoFormatearInput(${i}, 'e1')"><input type="text" class="caja-input" id="s1-${i}" placeholder="Sal" value="${valS1}" oninput="calc(${i})" onblur="autoFormatearInput(${i}, 's1')">` 
+      : `<input type="text" class="caja-input" id="e1-${i}" placeholder="M.E" value="${valE1}" oninput="calc(${i})" onblur="autoFormatearInput(${i}, 'e1')"><input type="text" class="caja-input" id="s1-${i}" placeholder="M.S" value="${valS1}" oninput="calc(${i})" onblur="autoFormatearInput(${i}, 's1')"><input type="text" class="caja-input" id="e2-${i}" placeholder="T.E" value="${valE2}" oninput="calc(${i})" onblur="autoFormatearInput(${i}, 'e2')"><input type="text" class="caja-input" id="s2-${i}" placeholder="T.S" value="${valS2}" oninput="calc(${i})" onblur="autoFormatearInput(${i}, 's2')">`;
+    
+    let claseNota = (data.nota && data.nota.trim() !== "") ? "btn-nota-trigger con-nota" : "btn-nota-trigger";
+    let iconoNota = (data.nota && data.nota.trim() !== "") ? "📝" : "💬";
+    
+    let hayContenido = (valE1 !== '' || valS1 !== '' || valE2 !== '' || valS2 !== '');
+    let tieneManual = false;
+    if (data.origen) {
+      if (typeof data.origen === 'object') { tieneManual = Object.keys(data.origen).some(k => data.origen[k] === 'MANUAL' && data[k]); }
+      else { tieneManual = (data.origen === 'MANUAL'); }
+    }
+    let tieneGps = data.gps && Object.keys(data.gps).some(k => data.gps[k] && data[k]);
+    let smartIcono = (hayContenido && (tieneManual || tieneGps)) ? `<span style="font-size:0.75rem; color:var(--teal-header); font-weight:bold; margin-right:1px;">ℹ️</span>` : '';
 
-        function guardarDatosTurnos(datos, notificar = true) {
-            localStorage.setItem('timesync_planilla_completa', JSON.stringify(datos));
-            if (notificar) {
-                dispararSincronizacionInstantanea();
-            }
+    fila.innerHTML = `<div class="label-dia" onclick="desplazarADia(${i}, 'smooth', 'center')">${textoDiaSemana} ${i}</div><div class="bloques-inputs">${inputsHTML}<select class="selector-estado" id="est-${i}" onchange="cambiarEstado(${i})"><option value="defecto" ${data.est==='defecto'?'selected':''}>- Tipo -</option><option value="trabajo" ${data.est==='trabajo'?'selected':''}>TRABAJO</option><option value="vacaciones" ${data.est==='vacaciones'?'selected':''}>VACAC.</option><option value="libre" ${data.est==='libre'?'selected':''}>LIBRE</option><option value="baja" ${data.est==='baja'?'selected':''}>BAJA M.</option></select></div><div class="total-horas" id="t-${i}" onclick="abrirModalAudit(${i})">${smartIcono}<span class="texto-horas">${data.t}</span></div><button class="${claseNota}" id="icononota-${i}" onclick="abrirModalNota(${i})">${iconoNota}</button>`;
+    lista.appendChild(fila);
+  }
+  calcularTotalesGenerales();
+  if(autoScroll && vistaActual === 'mes') {
+    const hoy = new Date(); let diaDestino = 1; let alineacion = 'start';
+    if (anio === hoy.getFullYear() && mes === hoy.getMonth()) {
+      let currentDayOfWeek = hoy.getDay(); let diffToMonday = currentDayOfWeek === 0 ? 6 : currentDayOfWeek - 1;
+      let lunesTarget = hoy.getDate() - diffToMonday; diaDestino = Math.max(1, lunesTarget); alineacion = 'start';
+    } else {
+      alineacion = 'center';
+      for(let i = totalDiasMes; i >= 1; i--) {
+        const claveId = `fichaje-${anio}-${mes}-${i}`; let data = JSON.parse(localStorage.getItem(claveId));
+        if(data && (data.e1 || data.s1 || data.e2 || data.s2 || data.est !== 'defecto' || (data.nota && data.nota.trim() !== ''))) { diaDestino = i; break; }
+      }
+    }
+    setTimeout(() => desplazarADia(diaDestino, comportamiento, alineacion), 80);
+  }
+}
+
+function autoFormatearInput(id, campo) {
+  let el = document.getElementById(`${campo}-${id}`);
+  if (el && el.value.trim() !== '') {
+    let norm = normalizarTextoHora(el.value);
+    if (norm !== el.value) {
+      el.value = norm;
+      calc(id);
+    }
+  }
+}
+
+function abrirModalNota(dia) {
+  diaNotaSeleccionado = dia; const anio = fechaActual.getFullYear(); const mes = fechaActual.getMonth();
+  const claveId = `fichaje-${anio}-${mes}-${dia}`; let data = JSON.parse(localStorage.getItem(claveId)) || { nota: '' };
+  document.getElementById('modal-nota-titulo').textContent = `Nota del ${diasSemanaNombres[new Date(anio,mes,dia).getDay()]} ${dia} de ${mesesNombres[mes]}`;
+  document.getElementById('modal-nota-texto').value = data.nota || '';
+  document.getElementById('modal-nota-overlay').style.display = 'flex';
+}
+function cerrarModalNota() { document.getElementById('modal-nota-overlay').style.display = 'none'; diaNotaSeleccionado = null; }
+
+function guardarNotaModal() {
+  if(diaNotaSeleccionado === null) return;
+  const anio = fechaActual.getFullYear(); const mes = fechaActual.getMonth();
+  const claveId = `fichaje-${anio}-${mes}-${diaNotaSeleccionado}`;
+  let data = JSON.parse(localStorage.getItem(claveId)) || { e1:'', s1:'', e2:'', s2:'', est:'defecto', t:'00:00', nota:'', origen: {}, gps: {} };
+  let textoNota = document.getElementById('modal-nota-texto').value; data.nota = textoNota;
+  if (!data.origen || typeof data.origen !== 'object') {
+    data.origen = data.origen === 'MANUAL' ? { e1:'MANUAL', s1:'MANUAL', e2:'MANUAL', s2:'MANUAL' } : {};
+  }
+  localStorage.setItem(claveId, JSON.stringify(data));
+  sincronizarConNube(claveId, data);
+  let btnIcono = document.getElementById(`icononota-${diaNotaSeleccionado}`);
+  if(btnIcono) {
+    if(textoNota.trim() !== "") { btnIcono.className = "btn-nota-trigger con-nota"; btnIcono.textContent = "📝"; }
+    else { btnIcono.className = "btn-nota-trigger"; btnIcono.textContent = "💬"; }
+  }
+  cerrarModalNota(); renderizarCalendario(false);
+}
+
+function abrirModalAudit(dia) {
+  const anio = fechaActual.getFullYear(); const mes = fechaActual.getMonth();
+  const claveId = `fichaje-${anio}-${mes}-${dia}`;
+  let data = JSON.parse(localStorage.getItem(claveId)) || { e1:'', s1:'', e2:'', s2:'', est:'defecto', t:'00:00', nota:'', origen: {}, gps: {} };
+  
+  document.getElementById('modal-audit-titulo').textContent = `Fichaje e Info: ${dia} de ${mesesNombres[mes]}`;
+  const cuerpo = document.getElementById('modal-audit-cuerpo');
+  cuerpo.innerHTML = '';
+  
+  let bloquesInfo = [
+    { id: 'e1', label: configuracionTurno === 'partido' ? '☀️ Entrada (Mañana)' : '🕒 Entrada' },
+    { id: 's1', label: configuracionTurno === 'partido' ? '☀️ Salida (Mañana)' : '🕒 Salida' },
+    { id: 'e2', label: '🌙 Entrada (Tarde)', opcional: configuracionTurno !== 'partido' },
+    { id: 's2', label: '🌙 Salida (Tarde)', opcional: configuracionTurno !== 'partido' }
+  ];
+  
+  let htmlContenido = '';
+  let tieneAlmenosUno = false;
+  
+  bloquesInfo.forEach(b => {
+    if (b.opcional) return;
+    let horaValor = data[b.id] || '';
+    if (!horaValor) return; 
+    tieneAlmenosUno = true;
+    
+    let esManual = false;
+    if (data.origen) {
+      if (typeof data.origen === 'object') { esManual = (data.origen[b.id] === 'MANUAL'); }
+      else { esManual = (data.origen === 'MANUAL'); }
+    }
+    
+    let tipoTexto = esManual ? '⚠️ MANUAL' : '✅ AUTO';
+    let colorFondo = esManual ? '#dc3545' : '#28a745';
+    
+    let botonMapaHTML = '';
+    if (data.gps && data.gps[b.id]) {
+      botonMapaHTML = `<a href="https://www.google.com/maps?q=${data.gps[b.id]}" target="_blank" class="btn-mapa-audit">📍 Ver Mapa</a>`;
+    } else {
+      botonMapaHTML = `<span style="font-size:0.75rem; color:#888; font-style:italic;">Sin GPS</span>`;
+    }
+    
+    htmlContenido += `
+      <div class="linea-audit">
+        <span style="font-weight:bold; color:#444; width:115px; white-space:nowrap;">${b.label}:</span>
+        <span style="font-family:monospace; font-size:0.9rem; font-weight:bold; color:#111;">${horaValor}</span>
+        <span class="badge-audit" style="background-color:${colorFondo};">${tipoTexto}</span>
+        <div style="margin-left:auto; display:flex; align-items:center;">${botonMapaHTML}</div>
+      </div>
+    `;
+  });
+  
+  if (!tieneAlmenosUno) {
+    htmlContenido = `<div style="text-align:center; padding:12px; font-size:0.85rem; color:#666; font-style:italic;">No hay horas ni datos registrados para este día.</div>`;
+  } else {
+    htmlContenido += `
+      <div style="margin-top:10px; padding-top:6px; border-top:1px dashed #ccc; text-align:right; font-size:0.88rem; font-weight:bold; color:var(--teal-header);">
+        Total Calculado: ${data.t || '00:00'} hrs
+      </div>
+    `;
+  }
+  
+  cuerpo.innerHTML = htmlContenido;
+  document.getElementById('modal-audit-overlay').style.display = 'flex';
+}
+function cerrarModalAudit() { document.getElementById('modal-audit-overlay').style.display = 'none'; }
+
+function calc(id) {
+  let campos = [`e1-${id}`, `s1-${id}`, `e2-${id}`, `s2-${id}`];
+  
+  campos.forEach(cId => {
+    let el = document.getElementById(cId);
+    if (el && el.value) {
+      let valLimpia = el.value.replace(/[,;.]/g, ':');
+      if (el.value !== valLimpia) el.value = valLimpia;
+    }
+  });
+
+  let iE1 = document.getElementById(`e1-${id}`); 
+  let iS1 = document.getElementById(`s1-${id}`); 
+  let iE2 = document.getElementById(`e2-${id}`); 
+  let iS2 = document.getElementById(`s2-${id}`);
+  let mTotales = 0;
+  
+  function calcularTramo(ent, sal) {
+    let normEnt = normalizarTextoHora(ent);
+    let normSal = normalizarTextoHora(sal);
+    if(normEnt && normSal && normEnt.includes(':') && normSal.includes(':')) {
+      let e = normEnt.split(':'), s = normSal.split(':');
+      let diff = (parseInt(s[0]||0, 10)*60 + parseInt(s[1]||0, 10)) - (parseInt(e[0]||0, 10)*60 + parseInt(e[1]||0, 10));
+      return diff > 0 ? diff : 0;
+    }
+    return 0;
+  }
+  
+  let e1 = iE1 ? iE1.value : ''; let s1 = iS1 ? iS1.value : ''; mTotales += calcularTramo(e1, s1);
+  let e2 = '', s2 = '';
+  if (configuracionTurno === 'partido') { e2 = iE2 ? iE2.value : ''; s2 = iS2 ? iS2.value : ''; }
+  else {
+    const anio = fechaActual.getFullYear(); const mes = fechaActual.getMonth();
+    const claveId = `fichaje-${anio}-${mes}-${id}`; let dataAnterior = JSON.parse(localStorage.getItem(claveId));
+    if (dataAnterior) { e2 = dataAnterior.e2 || ''; s2 = dataAnterior.s2 || ''; }
+  }
+  mTotales += calcularTramo(e2, s2);
+  
+  let tTexto = mTotales > 0 ? minsATexto(mTotales) : "00:00";
+  guardarFila(id, tTexto);
+  
+  const claveId = `fichaje-${fechaActual.getFullYear()}-${fechaActual.getMonth()}-${id}`;
+  let dataActual = JSON.parse(localStorage.getItem(claveId)) || {};
+  actualizarFilaUI(id, dataActual);
+  
+  calcularTotalesGenerales();
+}
+
+function cambiarEstado(id) {
+  const elEst = document.getElementById(`est-${id}`); const fila = document.getElementById(`fila-${id}`);
+  if(elEst && fila) fila.className = `fila-dia tipo-${elEst.value}`;
+  guardarFila(id); renderizarCalendario(false);
+}
+
+function guardarFila(id, tTexto) {
+  const anio = fechaActual.getFullYear(); const mes = fechaActual.getMonth();
+  const claveId = `fichaje-${anio}-${mes}-${id}`;
+  const elE1 = document.getElementById('e1-' + id); const elS1 = document.getElementById('s1-' + id); const elE2 = document.getElementById('e2-' + id); const elS2 = document.getElementById('s2-' + id); const elEst = document.getElementById('est-' + id);
+  let dataAnterior = JSON.parse(localStorage.getItem(claveId)) || { e1:'', s1:'', e2:'', s2:'', est:'defecto', t:'00:00', nota:'', origen: {}, gps: {} };
+  
+  let origenObj = {};
+  if (dataAnterior.origen && typeof dataAnterior.origen === 'object') { origenObj = { ...dataAnterior.origen }; } 
+  else if (dataAnterior.origen === 'MANUAL') { origenObj = { e1: 'MANUAL', s1: 'MANUAL', e2: 'MANUAL', s2: 'MANUAL' }; }
+
+  const valE1 = elE1 ? normalizarTextoHora(elE1.value) : '';
+  const valS1 = elS1 ? normalizarTextoHora(elS1.value) : '';
+  const valE2 = elE2 ? normalizarTextoHora(elE2.value) : '';
+  const valS2 = elS2 ? normalizarTextoHora(elS2.value) : '';
+
+  if (elE1 && valE1 !== dataAnterior.e1) { if(valE1) origenObj.e1 = 'MANUAL'; else delete origenObj.e1; }
+  if (elS1 && valS1 !== dataAnterior.s1) { if(valS1) origenObj.s1 = 'MANUAL'; else delete origenObj.s1; }
+  if (elE2 && valE2 !== dataAnterior.e2) { if(valE2) origenObj.e2 = 'MANUAL'; else delete origenObj.e2; }
+  if (elS2 && valS2 !== dataAnterior.s2) { if(valS2) origenObj.s2 = 'MANUAL'; else delete origenObj.s2; }
+
+  if (!valE1) { delete origenObj.e1; if(dataAnterior.gps) delete dataAnterior.gps.e1; }
+  if (!valS1) { delete origenObj.s1; if(dataAnterior.gps) delete dataAnterior.gps.s1; }
+  if (!valE2) { delete origenObj.e2; if(dataAnterior.gps) delete dataAnterior.gps.e2; }
+  if (!valS2) { delete origenObj.s2; if(dataAnterior.gps) delete dataAnterior.gps.s2; }
+
+  let tFinal = tTexto || dataAnterior.t || '00:00';
+
+  const datos = { e1: valE1, s1: valS1, e2: valE2, s2: valS2, est: elEst ? elEst.value : 'defecto', t: tFinal, nota: dataAnterior.nota || '', origen: origenObj, gps: dataAnterior.gps || {} };
+  localStorage.setItem(claveId, JSON.stringify(datos));
+  sincronizarConNube(claveId, datos);
+  solicitarGpsManualSiProcede(claveId, datos, id);
+}
+
+function solicitarGpsManualSiProcede(claveId, datos, id) {
+  if (!navigator.geolocation) return;
+  let campos = ['e1', 's1', 'e2', 's2'];
+  let necesitaGps = false;
+  
+  campos.forEach(c => {
+    if (datos.origen && datos.origen[c] === 'MANUAL' && datos[c] && esHoraValida(datos[c]) && (!datos.gps || !datos.gps[c])) { necesitaGps = true; }
+  });
+  if (!necesitaGps) return;
+  
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      let dataFresh = JSON.parse(localStorage.getItem(claveId));
+      if (!dataFresh) return;
+      if (!dataFresh.gps) dataFresh.gps = {};
+      
+      let seAnadioGps = false;
+      campos.forEach(c => {
+        if (dataFresh.origen && dataFresh.origen[c] === 'MANUAL' && dataFresh[c] && esHoraValida(dataFresh[c]) && !dataFresh.gps[c]) {
+          dataFresh.gps[c] = `${position.coords.latitude.toFixed(6)},${position.coords.longitude.toFixed(6)}`;
+          seAnadioGps = true;
         }
+      });
+      if (seAnadioGps) { localStorage.setItem(claveId, JSON.stringify(dataFresh)); sincronizarConNube(claveId, dataFresh); actualizarFilaUI(id, dataFresh); }
+    },
+    (error) => { console.warn("Ubicación manual no obtenida:", error.message); },
+    { enableHighAccuracy: false, timeout: 6000 }
+  );
+}
 
-        // 3. GENERAR ESTRUCTURA DE TURNOS DE LA SEMANA ACTUAL
-        function crearEstructuraSemana() {
-            const dias = [];
-            const hoy = new Date();
-            // Empezar desde el lunes de la semana actual
-            const diaSemana = hoy.getDay() === 0 ? 7 : hoy.getDay();
-            const lunes = new Date(hoy);
-            lunes.setDate(hoy.getDate() - (diaSemana - 1));
+function actualizarFilaUI(id, data) {
+  let elTot = document.getElementById(`t-${id}`);
+  if (!elTot) return;
+  let hayContenido = ((data.e1 && data.e1 !== '') || (data.s1 && data.s1 !== '') || (data.e2 && data.e2 !== '') || (data.s2 && data.s2 !== ''));
+  let tieneManual = false;
+  if (data.origen && typeof data.origen === 'object') { tieneManual = Object.keys(data.origen).some(k => data.origen[k] === 'MANUAL' && data[k]); }
+  let tieneGps = data.gps && Object.keys(data.gps).some(k => data.gps[k] && data[k]);
+  
+  let smartIcono = (hayContenido && (tieneManual || tieneGps)) ? `<span style="font-size:0.75rem; color:var(--teal-header); font-weight:bold; margin-right:1px;">ℹ️</span>` : '';
+  elTot.innerHTML = `${smartIcono}<span class="texto-horas">${data.t || '00:00'}</span>`;
+}
 
-            for (let i = 0; i < 7; i++) {
-                const f = new Date(lunes);
-                f.setDate(lunes.getDate() + i);
-                const fechaStr = f.toISOString().split('T')[0];
-                
-                dias.push({
-                    id: "dia_" + fechaStr,
-                    fecha: fechaStr,
-                    nombreDia: f.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' }),
-                    esHoy: (fechaStr === new Date().toISOString().split('T')[0]),
-                    manana: {
-                        entrada: i < 5 ? "09:00" : "",
-                        salida: i < 5 ? "13:30" : "",
-                        confirmado: false
-                    },
-                    tarde: {
-                        entrada: i < 5 ? "15:30" : "",
-                        salida: i < 5 ? "19:00" : "",
-                        confirmado: false
-                    },
-                    sincronizado: true
-                });
-            }
-            return dias;
+/* LÓGICA DE BOTÓN ÚNICO Y CONFIRMACIÓN DE TURNO */
+function iniciarFichaje() {
+  const hoy = new Date();
+  if(fechaActual.getFullYear() !== hoy.getFullYear() || fechaActual.getMonth() !== hoy.getMonth()) {
+    alert("⚠️ Cambia al mes actual para usar el botón de fichar."); return;
+  }
+  if(vistaActual === 'ano') { alert("⚠️ Pasa a la vista de MES."); return; }
+  
+  if (configuracionTurno === 'partido') {
+    document.getElementById('modal-turno-overlay').style.display = 'flex';
+  } else {
+    ejecutarFichaje('continuo');
+  }
+}
+
+function cerrarModalTurno() {
+  document.getElementById('modal-turno-overlay').style.display = 'none';
+}
+
+function confirmarFichajeTurno(turno) {
+  cerrarModalTurno();
+  ejecutarFichaje(turno);
+}
+
+function ejecutarFichaje(modo) {
+  const hoy = new Date(); const realAnio = hoy.getFullYear(); const realMes = hoy.getMonth(); const realDia = hoy.getDate();
+  fechaActual = new Date();
+  const horaMarcada = hoy.toTimeString().substring(0, 5);
+  const claveId = `fichaje-${realAnio}-${realMes}-${realDia}`;
+  let data = JSON.parse(localStorage.getItem(claveId)) || { e1:'', s1:'', e2:'', s2:'', est:'defecto', t:'00:00', nota:'', origen: {}, gps: {} };
+  
+  let campoFichado = '';
+  if(modo === 'continuo') { 
+    if(data.e1 === "") { data.e1 = horaMarcada; data.est = 'trabajo'; campoFichado = 'e1'; } 
+    else if(data.s1 === "") { data.s1 = horaMarcada; campoFichado = 's1'; } 
+    else { alert("📝 Hoy ya está completo."); return; } 
+  }
+  else if(modo === 'm') { 
+    if(data.e1 === "") { data.e1 = horaMarcada; data.est = 'trabajo'; campoFichado = 'e1'; } 
+    else if(data.s1 === "") { data.s1 = horaMarcada; campoFichado = 's1'; } 
+    else { alert("📝 Turno de mañana completo."); return; } 
+  }
+  else if(modo === 't') { 
+    if(data.e2 === "") { data.e2 = horaMarcada; data.est = 'trabajo'; campoFichado = 'e2'; } 
+    else if(data.s2 === "") { data.s2 = horaMarcada; campoFichado = 's2'; } 
+    else { alert("📝 Turno de tarde completo."); return; } 
+  }
+
+  if (!data.gps) data.gps = {};
+
+  guardarYProcesarFichaje(claveId, data, hoy, campoFichado);
+
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        let dataFresh = JSON.parse(localStorage.getItem(claveId));
+        if (!dataFresh) return;
+        const coords = `${position.coords.latitude.toFixed(6)},${position.coords.longitude.toFixed(6)}`;
+        if (!dataFresh.gps) dataFresh.gps = {};
+        dataFresh.gps[campoFichado] = coords;
+        localStorage.setItem(claveId, JSON.stringify(dataFresh));
+        sincronizarConNube(claveId, dataFresh);
+        actualizarFilaUI(realDia, dataFresh);
+      },
+      (error) => { console.warn("GPS no disponible:", error.message); },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  }
+}
+
+function guardarYProcesarFichaje(claveId, data, hoy, campoFichado) {
+  function calcularTramoInterno(ent, sal) {
+    let normEnt = normalizarTextoHora(ent);
+    let normSal = normalizarTextoHora(sal);
+    if(normEnt && normSal && normEnt.includes(':') && normSal.includes(':')) {
+      let e = normEnt.split(':'), s = normSal.split(':');
+      let diff = (parseInt(s[0]||0, 10)*60 + parseInt(s[1]||0, 10)) - (parseInt(e[0]||0, 10)*60 + parseInt(e[1]||0, 10));
+      return diff > 0 ? diff : 0;
+    }
+    return 0;
+  }
+  let mTotales = calcularTramoInterno(data.e1, data.s1) + calcularTramoInterno(data.e2, data.s2);
+  data.t = mTotales > 0 ? minsATexto(mTotales) : "00:00"; 
+  
+  if (!data.origen || typeof data.origen !== 'object') {
+    data.origen = data.origen === 'MANUAL' ? { e1:'MANUAL', s1:'MANUAL', e2:'MANUAL', s2:'MANUAL' } : {};
+  }
+  if (campoFichado) { data.origen[campoFichado] = 'AUTOMATICO'; }
+
+  localStorage.setItem(claveId, JSON.stringify(data)); 
+  sincronizarConNube(claveId, data);
+  renderizarCalendario(false);
+  let currentDayOfWeek = hoy.getDay(); let diffToMonday = currentDayOfWeek === 0 ? 6 : currentDayOfWeek - 1;
+  let lunesTarget = hoy.getDate() - diffToMonday; let diaScroll = Math.max(1, lunesTarget); desplazarADia(diaScroll, 'smooth', 'start');
+}
+
+function desplazarADia(dia, comportamiento = 'smooth', alineacion = 'center') {
+  if(vistaActual === 'mes') { const el = document.getElementById(`fila-${dia}`); if(el) el.scrollIntoView({ behavior: comportamiento, block: alineacion }); }
+}
+function seleccionarSemana(dia) { fechaActual.setDate(dia); if(vistaActual === 'semana') renderizarCalendario(false); else { desplazarADia(dia, 'smooth', 'start'); calcularTotalesGenerales(); } }
+
+function cambiarMes(dir) {
+  fechaActual.setDate(1);
+  if(vistaActual === 'ano') fechaActual.setFullYear(fechaActual.getFullYear() + dir);
+  else fechaActual.setMonth(fechaActual.getMonth() + dir);
+  renderizarCalendario(true, 'smooth');
+}
+
+function cambiarVista(vista) {
+  vistaActual = vista; document.getElementById('v-semana').classList.remove('activo'); document.getElementById('v-mes').classList.remove('activo'); document.getElementById('v-ano').classList.remove('activo');
+  document.getElementById(`v-${vista}`).classList.add('activo'); renderizarCalendario(true, 'instant');
+}
+
+function construirTextoMes() {
+  let mesSel = fechaActual.getMonth(); let anioSel = fechaActual.getFullYear();
+  let totalDias = new Date(anioSel, mesSel + 1, 0).getDate();
+  let nombreSel = localStorage.getItem('config-nombre') || ''; let dniSel = localStorage.getItem('config-dni') || '';
+  let textoNombre = nombreSel ? ` DE ${nombreSel.toUpperCase()}` : ''; let textoDni = dniSel ? ` (DNI/NIE: ${dniSel.toUpperCase()})` : '';
+  let mensaje = `📋 FICHADO${textoNombre}${textoDni} - ${mesesNombres[mesSel]} ${anioSel}\n\n`;
+  let totalMinutosMes = 0;
+  for(let i = 1; i <= totalDias; i++) {
+    const claveId = `fichaje-${anioSel}-${mesSel}-${i}`; let data = JSON.parse(localStorage.getItem(claveId));
+    if(data) {
+      let txtHoras = '';
+      if(data.e1 || data.s1) txtHoras += `M: ${data.e1||'--:--'} a ${data.s1||'--:--'}`;
+      if(data.e2 || data.s2) txtHoras += ` | T: ${data.e2||'--:--'} a ${data.s2||'--:--'}`;
+      if(txtHoras !== '' || (data.t && data.t !== '00:00')) {
+        let tipo = data.est !== 'defecto' ? ` [${data.est.toUpperCase()}]` : '';
+        let anotacion = data.nota ? ` -> Nota: ${data.nota}` : '';
+        let tieneManual = false;
+        if (data.origen) {
+          if (typeof data.origen === 'object') { tieneManual = Object.keys(data.origen).some(k => data.origen[k] === 'MANUAL' && data[k]); }
+          else { tieneManual = (data.origen === 'MANUAL'); }
         }
-
-        function generarSemanaActual() {
-            if (confirm("¿Deseas restablecer la tabla con los turnos de la semana actual?")) {
-                const nuevos = crearEstructuraSemana();
-                guardarDatosTurnos(nuevos);
-                renderizarTablaEmpleado();
-            }
+        let manualTag = (tieneManual) ? '⚠️ ' : '';
+        let gpsTag = '';
+        if (data.gps && (data.gps.e1 || data.gps.s1 || data.gps.e2 || data.gps.s2)) {
+          let tramos = [];
+          if (data.gps.e1) tramos.push("E1"); if (data.gps.s1) tramos.push("S1"); if (data.gps.e2) tramos.push("E2"); if (data.gps.s2) tramos.push("S2");
+          gpsTag = ` 📍 GPS (${tramos.join(', ')})`;
         }
+        mensaje += `Día ${i}: ${manualTag}${data.t || '00:00'} (${txtHoras})${tipo}${gpsTag}${anotacion}\n`;
+      }
+      if(data.t && data.t !== '00:00') {
+        let partes = data.t.split(':'); totalMinutosMes += (parseInt(partes[0]||0, 10) * 60) + parseInt(partes[1]||0, 10);
+      }
+    }
+  }
+  mensaje += `\nTOTAL HORAS MENSUALES: ${minsATexto(totalMinutosMes)}`;
+  return mensaje;
+}
 
-        // 4. CÁLCULO AUTOMÁTICO DE HORAS POR DÍA
-        function calcularHorasTotales(dia) {
-            let total = 0;
-            // Cálculo Mañana
-            if (dia.manana.entrada && dia.manana.salida) {
-                total += difHoras(dia.manana.entrada, dia.manana.salida);
-            }
-            // Cálculo Tarde
-            if (dia.tarde.entrada && dia.tarde.salida) {
-                total += difHoras(dia.tarde.entrada, dia.tarde.salida);
-            }
-            return total.toFixed(2);
-        }
+function compartirPorWhatsApp() {
+  let texto = construirTextoMes(); toggleMenu(false);
+  if (navigator.share) { navigator.share({ title: 'Resumen Fichaje', text: texto }).catch(() => fallbackCopiar(texto)); }
+  else { fallbackCopiar(texto); }
+}
+function compartirPorCorreo() {
+  let texto = construirTextoMes(); toggleMenu(false);
+  let asunto = encodeURIComponent(`Resumen Fichaje - ${mesesNombres[fechaActual.getMonth()]} ${fechaActual.getFullYear()}`);
+  let cuerpo = encodeURIComponent(texto); window.location.href = `mailto:?subject=${asunto}&body=${cuerpo}`;
+}
+function fallbackCopiar(texto) {
+  const tArea = document.createElement("textarea"); tArea.value = texto; document.body.appendChild(tArea); tArea.select();
+  try { document.execCommand('copy'); alert("📋 Copiado al portapapeles. ¡Pégalo directamente en WhatsApp!"); } catch (err) { alert("⚠️ No se pudo compartir automáticamente."); }
+  document.body.removeChild(tArea);
+}
+function verificarPermisoGPS(silencioso = false) {
+  const lbl = document.getElementById('estado-gps-lbl');
+  if (!navigator.geolocation) { lbl.textContent = "No compatible"; lbl.style.color = "red"; return; }
+  if (!silencioso) lbl.textContent = "Solicitando...";
+  
+  navigator.geolocation.getCurrentPosition(
+    () => { lbl.textContent = "Permitido ✓"; lbl.style.color = "green"; },
+    (error) => {
+      if (error.code === error.PERMISSION_DENIED) { lbl.textContent = "Bloqueado ✗"; lbl.style.color = "red"; } 
+      else { lbl.textContent = "Inactivo/Sin señal"; lbl.style.color = "orange"; }
+    },
+    { timeout: 3000 }
+  );
+}
 
-        function difHoras(h1, h2) {
-            const [hE, mE] = h1.split(':').map(Number);
-            const [hS, mS] = h2.split(':').map(Number);
-            const minEnt = hE * 60 + mE;
-            const minSal = hS * 60 + mS;
-            return Math.max(0, (minSal - minEnt) / 60);
-        }
+document.getElementById('selector-turno-global').value = configuracionTurno;
+if(configuracionTurno === 'partido') document.getElementById('app-container').classList.add('vista-partido');
+let nombreUsuario = localStorage.getItem('config-nombre') || ''; document.getElementById('input-nombre-global').value = nombreUsuario;
+let dniUsuario = localStorage.getItem('config-dni') || ''; document.getElementById('input-dni-global').value = dniUsuario;
+let urlNubeGuardada = localStorage.getItem('config-url-nube') || ''; document.getElementById('input-url-nube').value = urlNubeGuardada;
+inicializarColores(); registrarUbicacionInicial(); renderizarCalendario(true, 'instant');
 
-        // 5. MOTOR DE SINCRONIZACIÓN EN LA NUBE DEL JEFE (BYOC INSTANT SYNC)
-        function actualizarBadgeEstado(estado, texto) {
-            const badge = document.getElementById('badge-estado-emp');
-            if (!badge) return;
-            
-            if (estado === 'cargando') {
-                badge.innerHTML = `🔄 <b>${texto || 'Sincronizando...'}</b>`;
-                badge.className = "bg-amber-900/40 border border-amber-700 px-3.5 py-1.5 rounded-full text-xs font-medium text-amber-300 flex items-center gap-2 shadow-inner";
-            } else if (estado === 'ok') {
-                badge.innerHTML = `☁️✓ <b>${texto || 'Guardado en Nube'}</b>`;
-                badge.className = "bg-slate-800 border border-slate-700 px-3.5 py-1.5 rounded-full text-xs font-medium text-emerald-400 flex items-center gap-2 shadow-inner";
-            } else if (estado === 'offline') {
-                badge.innerHTML = `⏳ <b>${texto || 'Pendiente de red'}</b>`;
-                badge.className = "bg-slate-800 border border-slate-700 px-3.5 py-1.5 rounded-full text-xs font-medium text-amber-400 flex items-center gap-2 shadow-inner";
-            }
-        }
+function registrarUbicacionInicial() { if (navigator.geolocation) { navigator.geolocation.getCurrentPosition(()=>{}, ()=>{}, {timeout: 1000}); } }
 
-        function dispararSincronizacionInstantanea() {
-            if (!navigator.onLine) {
-                actualizarBadgeEstado('offline', 'Guardado local (Sin red)');
-                return;
-            }
+function descargarCopiaSeguridad() {
+  let copiaDato = {};
+  for (let i = 0; i < localStorage.length; i++) { let cl = localStorage.key(i); if (cl.startsWith('fichaje-')) copiaDato[cl] = localStorage.getItem(cl); }
+  let blob = new Blob([JSON.stringify(copiaDato, null, 2)], {type: "application/json"});
+  let url = URL.createObjectURL(blob); let a = document.createElement('a'); a.href = url; a.setAttribute("download", `copia_fichajes_${fechaActual.getFullYear()}.json`); a.click(); toggleMenu(false);
+}
+function cargarCopiaSeguridad(event) {
+  const f = event.target.files[0]; if (!f) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const datos = JSON.parse(e.target.result);
+      for (let cl in datos) { if (cl.startsWith('fichaje-')) localStorage.setItem(cl, datos[cl]); }
+      renderizarCalendario(true, 'instant'); alert("✅ Copia restaurada.");
+    } catch (err) { alert("Archivo incorrecto."); }
+  };
+  reader.readAsText(f);
+}
 
-            actualizarBadgeEstado('cargando', 'Guardando en nube del jefe...');
+function calcularTotalesGenerales() {
+  const anio = fechaActual.getFullYear(); const mes = fechaActual.getMonth();
+  let totalMinutosMes = 0; let totalDias = new Date(anio, mes + 1, 0).getDate();
+  let semanasHTML = ''; let minsSemanaMismoMes = 0; let contadorSemana = 1; let diaInicioW = 1; let minsSemanaActualFocus = 0;
+  for(let i = 1; i <= totalDias; i++) {
+    const claveId = `fichaje-${anio}-${mes}-${i}`; let data = JSON.parse(localStorage.getItem(claveId));
+    let minsDia = 0;
+    if(data && data.t && data.t !== '00:00') {
+      let partes = data.t.split(':'); minsDia = (parseInt(partes[0]||0, 10) * 60) + parseInt(partes[1]||0, 10);
+      totalMinutosMes += minsDia;
+    }
+    minsSemanaMismoMes += minsDia;
+    let objF = new Date(anio, mes, i);
+    if(objF.getDay() === 0 || i === totalDias) {
+      let claseActiva = '';
+      if (fechaActual.getDate() >= diaInicioW && fechaActual.getDate() <= i) { minsSemanaActualFocus = minsSemanaMismoMes; claseActiva = ' activo'; }
+      semanasHTML += `<div class="btn-semana-mini${claseActiva}" onclick="seleccionarSemana(${diaInicioW})">Sem. ${contadorSemana}<span>${minsATexto(minsSemanaMismoMes)}</span></div>`;
+      minsSemanaMismoMes = 0; contadorSemana++; diaInicioW = i + 1;
+    }
+  }
+  if(document.getElementById('total-mes')) document.getElementById('total-mes').textContent = minsATexto(totalMinutosMes);
+  if(document.getElementById('total-semana')) document.getElementById('total-semana').textContent = minsATexto(minsSemanaActualFocus);
+  const elDesglose = document.getElementById('desglose-semanas');
+  if(elDesglose) {
+    if(vistaActual === 'mes' || vistaActual === 'semana') { elDesglose.innerHTML = semanasHTML; }
+    else { elDesglose.innerHTML = ''; }
+  }
+}
+function minsATexto(minutos) { let hrs = String(Math.floor(minutos / 60)).padStart(2, '0'); let mins = String(minutos % 60).padStart(2, '0'); return `${hrs}:${mins}`; }
 
-            // Emulación de subida instantánea del archivo JSON a Google Drive / OneDrive del cliente
-            setTimeout(() => {
-                actualizarBadgeEstado('ok', '☁️✓ Guardado en Nube');
-                // Si la vista del jefe está abierta, la refrescamos automáticamente
-                if (rolActual === 'jefe') {
-                    cargarTablaJefe();
-                }
-            }, 350);
-        }
-
-        // 6. ACCIONES Y EDITORES EN TABLA EMPLEADO
-        function cambiarHoraTramo(idDia, turno, campo, nuevaHora) {
-            const datos = obtenerDatosTurnos();
-            const dia = datos.find(d => d.id === idDia);
-            if (dia) {
-                dia[turno][campo] = nuevaHora;
-                // Si se edita la hora, se desconfirma ese tramo para requerir revisión
-                dia[turno].confirmado = false;
-                guardarDatosTurnos(datos);
-                renderizarTablaEmpleado();
-            }
-        }
-
-        function toggleConfirmacionTramo(idDia, turno) {
-            const datos = obtenerDatosTurnos();
-            const dia = datos.find(d => d.id === idDia);
-            if (dia) {
-                dia[turno].confirmado = !dia[turno].confirmado;
-                guardarDatosTurnos(datos);
-                renderizarTablaEmpleado();
-            }
-        }
-
-        function confirmarTodoElListado() {
-            const datos = obtenerDatosTurnos();
-            datos.forEach(d => {
-                if (d.manana.entrada || d.manana.salida) d.manana.confirmado = true;
-                if (d.tarde.entrada || d.tarde.salida) d.tarde.confirmado = true;
-            });
-            guardarDatosTurnos(datos);
-            renderizarTablaEmpleado();
-        }
-
-        // Botones rápidos de Fichaje en Directo para Hoy
-        function ficharAccion(tipo) {
-            const datos = obtenerDatosTurnos();
-            const hoyStr = new Date().toISOString().split('T')[0];
-            let diaHoy = datos.find(d => d.fecha === hoyStr);
-
-            // Si hoy no está en la tabla, creamos la fila
-            if (!diaHoy) {
-                diaHoy = {
-                    id: "dia_" + hoyStr,
-                    fecha: hoyStr,
-                    nombreDia: "Hoy",
-                    esHoy: true,
-                    manana: { entrada: "", salida: "", confirmado: false },
-                    tarde: { entrada: "", salida: "", confirmado: false },
-                    sincronizado: true
-                };
-                datos.unshift(diaHoy);
-            }
-
-            const ahoraHora = new Date().toTimeString().substring(0, 5); // "HH:MM"
-
-            if (tipo === 'ENTRADA_MANANA') diaHoy.manana.entrada = ahoraHora;
-            if (tipo === 'SALIDA_MANANA') diaHoy.manana.salida = ahoraHora;
-            if (tipo === 'ENTRADA_TARDE') diaHoy.tarde.entrada = ahoraHora;
-            if (tipo === 'SALIDA_TARDE') diaHoy.tarde.salida = ahoraHora;
-
-            guardarDatosTurnos(datos);
-            renderizarTablaEmpleado();
-        }
-
-        // 7. RENDERIZADO DE TABLA EMPLEADO
-        function renderizarTablaEmpleado() {
-            const tbody = document.getElementById('tabla-cuerpo-turnos');
-            if (!tbody) return;
-            const datos = obtenerDatosTurnos();
-
-            tbody.innerHTML = datos.map(dia => {
-                const hrs = calcularHorasTotales(dia);
-                const bgHoy = dia.esHoy ? "bg-amber-50/40 font-bold" : "";
-
-                return `
-                <tr class="hover:bg-slate-50 transition ${bgHoy}">
-                    <!-- Columna Día -->
-                    <td class="p-3 border-r border-slate-200">
-                        <span class="text-slate-800">${dia.nombreDia}</span>
-                        ${dia.esHoy ? '<span class="ml-1 bg-amber-500 text-white text-[9px] px-1.5 py-0.5 rounded font-bold">HOY</span>' : ''}
-                    </td>
-
-                    <!-- TURNO MAÑANA: Entrada / Salida / Botón Confirmar -->
-                    <td class="p-2 text-center">
-                        <input type="time" value="${dia.manana.entrada}" onchange="cambiarHoraTramo('${dia.id}', 'manana', 'entrada', this.value)" 
-                            class="border border-slate-200 rounded px-1.5 py-1 text-xs w-20 text-center focus:ring-1 focus:ring-indigo-500 bg-white">
-                    </td>
-                    <td class="p-2 text-center">
-                        <input type="time" value="${dia.manana.salida}" onchange="cambiarHoraTramo('${dia.id}', 'manana', 'salida', this.value)" 
-                            class="border border-slate-200 rounded px-1.5 py-1 text-xs w-20 text-center focus:ring-1 focus:ring-indigo-500 bg-white">
-                    </td>
-                    <td class="p-2 text-center border-r border-slate-200">
-                        <button onclick="toggleConfirmacionTramo('${dia.id}', 'manana')" class="px-2.5 py-1 rounded text-[11px] font-bold transition cursor-pointer ${
-                            dia.manana.confirmado 
-                            ? 'bg-emerald-600 text-white shadow-sm' 
-                            : 'bg-slate-200 hover:bg-slate-300 text-slate-700'
-                        }">
-                            ${dia.manana.confirmado ? '✓ Confirmado' : 'Confirmar'}
-                        </button>
-                    </td>
-
-                    <!-- TURNO TARDE: Entrada / Salida / Botón Confirmar -->
-                    <td class="p-2 text-center">
-                        <input type="time" value="${dia.tarde.entrada}" onchange="cambiarHoraTramo('${dia.id}', 'tarde', 'entrada', this.value)" 
-                            class="border border-slate-200 rounded px-1.5 py-1 text-xs w-20 text-center focus:ring-1 focus:ring-indigo-500 bg-white">
-                    </td>
-                    <td class="p-2 text-center">
-                        <input type="time" value="${dia.tarde.salida}" onchange="cambiarHoraTramo('${dia.id}', 'tarde', 'salida', this.value)" 
-                            class="border border-slate-200 rounded px-1.5 py-1 text-xs w-20 text-center focus:ring-1 focus:ring-indigo-500 bg-white">
-                    </td>
-                    <td class="p-2 text-center border-r border-slate-200">
-                        <button onclick="toggleConfirmacionTramo('${dia.id}', 'tarde')" class="px-2.5 py-1 rounded text-[11px] font-bold transition cursor-pointer ${
-                            dia.tarde.confirmado 
-                            ? 'bg-blue-600 text-white shadow-sm' 
-                            : 'bg-slate-200 hover:bg-slate-300 text-slate-700'
-                        }">
-                            ${dia.tarde.confirmado ? '✓ Confirmado' : 'Confirmar'}
-                        </button>
-                    </td>
-
-                    <!-- Horas Totales -->
-                    <td class="p-3 text-center font-bold text-slate-900 bg-slate-50/50">
-                        ${hrs} h
-                    </td>
-
-                    <!-- Estado Sincronización Nube -->
-                    <td class="p-3 text-center text-emerald-600 text-xs">
-                        ☁️✓ En Nube
-                    </td>
-                </tr>
-                `;
-            }).join('');
-        }
-
-        // 8. RENDERIZADO DE TABLA JEFE (SUPERVISIÓN DEL ARCHIVO JSON EN LA NUBE)
-        function cargarTablaJefe() {
-            const tbody = document.getElementById('tabla-cuerpo-jefe');
-            if (!tbody) return;
-            const datos = obtenerDatosTurnos();
-
-            tbody.innerHTML = datos.map(dia => {
-                const hrs = calcularHorasTotales(dia);
-                const confManana = dia.manana.confirmado ? '<span class="text-emerald-700 font-bold">✓ Confirmado</span>' : '<span class="text-amber-600">Pendiente</span>';
-                const confTarde = dia.tarde.confirmado ? '<span class="text-blue-700 font-bold">✓ Confirmado</span>' : '<span class="text-amber-600">Pendiente</span>';
-
-                return `
-                <tr class="hover:bg-slate-50/80">
-                    <td class="p-3 font-bold text-slate-800">${dia.nombreDia}</td>
-                    <td class="p-3 text-slate-600">${NOMBRE_EMPLEADO}</td>
-                    <td class="p-3 text-center font-mono">${dia.manana.entrada || '--'} - ${dia.manana.salida || '--'}</td>
-                    <td class="p-3 text-center font-mono">${dia.tarde.entrada || '--'} - ${dia.tarde.salida || '--'}</td>
-                    <td class="p-3 text-center">${confManana}</td>
-                    <td class="p-3 text-center">${confTarde}</td>
-                    <td class="p-3 text-center font-bold text-indigo-700">${hrs} h</td>
-                    <td class="p-3 text-right">
-                        <button onclick="verEstructuraJson('${dia.id}')" class="text-indigo-600 hover:underline text-[11px] font-semibold cursor-pointer">
-                            📄 ${dia.fecha}.json
-                        </button>
-                    </td>
-                </tr>
-                `;
-            }).join('');
-        }
-
-        function verEstructuraJson(idDia) {
-            const datos = obtenerDatosTurnos();
-            const dia = datos.find(d => d.id === idDia);
-            if (dia) {
-                const paqueteCloud = {
-                    metadata: {
-                        empresa_id: document.getElementById('input-codigo-empresa').value,
-                        empleado: NOMBRE_EMPLEADO,
-                        dni: DNI_EMPLEADO,
-                        sincronizado_en: new Date().toISOString()
-                    },
-                    registro_diario: dia
-                };
-                alert("Estructura JSON guardada en la Nube del Cliente (BYOC):\n\n" + JSON.stringify(paqueteCloud, null, 2));
-            }
-        }
-
-        function descargarTodoJson() {
-            const datos = obtenerDatosTurnos();
-            const blob = new Blob([JSON.stringify(datos, null, 2)], { type: "application/json" });
-            const enlace = document.createElement("a");
-            enlace.href = URL.createObjectURL(blob);
-            enlace.download = `Copia_Turnos_Empresa_${new Date().toISOString().split('T')[0]}.json`;
-            enlace.click();
-        }
-
-        // 9. ALTERNAR VISTAS (EMPLEADO <-> JEFE)
-        function cambiarRol(rol) {
-            rolActual = rol;
-            const vistaEmp = document.getElementById('vista-empleado');
-            const vistaJefe = document.getElementById('vista-jefe');
-            const btnEmp = document.getElementById('btn-rol-emp');
-            const btnJefe = document.getElementById('btn-rol-jefe');
-
-            if (rol === 'empleado') {
-                vistaEmp.classList.remove('hidden');
-                vistaJefe.classList.add('hidden');
-                btnEmp.classList.add('font-bold', 'text-white');
-                btnEmp.classList.remove('text-indigo-300');
-                btnJefe.classList.remove('font-bold', 'text-white');
-                btnJefe.classList.add('text-indigo-300');
-                renderizarTablaEmpleado();
-            } else {
-                vistaEmp.classList.add('hidden');
-                vistaJefe.classList.remove('hidden');
-                btnJefe.classList.add('font-bold', 'text-white');
-                btnJefe.classList.remove('text-indigo-300');
-                btnEmp.classList.remove('font-bold', 'text-white');
-                btnEmp.classList.add('text-indigo-300');
-                cargarTablaJefe();
-            }
-        }
-
-        function guardarVinculacion() {
-            const cod = document.getElementById('input-codigo-empresa').value;
-            alert("¡Aplicación sincronizada al código de nube del cliente: " + cod + "!");
-        }
-
-        // Eventos de reconexión a Internet
-        window.addEventListener('online', () => {
-            dispararSincronizacionInstantanea();
-        });
-        window.addEventListener('offline', () => {
-            actualizarBadgeEstado('offline', 'Modo Local (Sin conexión)');
-        });
-
-        // 10. INICIALIZACIÓN DE LA APP AL CARGAR
-        window.addEventListener('DOMContentLoaded', () => {
-            renderizarTablaEmpleado();
-        });
-    </script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').then(reg => { console.log('SW Ok'); }).catch(err => { console.log('SW Err', err); });
+  });
+}
+</script>
 </body>
 </html>
