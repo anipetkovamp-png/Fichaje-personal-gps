@@ -292,10 +292,11 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 </div>
 
 <script>
-// CONFIGURACIÓN DE GOOGLE OAUTH 2.0
-// Coloca aquí tu Client ID de Google Cloud Console
-const GOOGLE_CLIENT_ID = "TU_CLIENT_ID_GOOGLE.apps.googleusercontent.com";
-let tokenClient;
+// =========================================================================
+// CONFIGURACIÓN DE GOOGLE OAUTH 2.0 (IMPORTANTE: PEGA AQUÍ TU CLIENT ID REAL)
+// =========================================================================
+const GOOGLE_CLIENT_ID = "TU_CLIENT_ID_GOOGLE.apps.googleusercontent.com"; // <-- REEMPLÁZALO AQUÍ POR TU ID DE GOOGLE CLOUD
+let tokenClient = null;
 
 const mesesNombres = ["ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO", "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"];
 const diasSemanaNombres = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
@@ -306,8 +307,12 @@ let configuracionRol = localStorage.getItem('config-rol') || 'particular';
 let diaNotaSeleccionado = null;
 const coloresDefecto = { trabajo: '#d4edda', vacaciones: '#cce5ff', libre: '#fff3cd', baja: '#f8d7da' };
 
-// INICIALIZADOR GOOGLE OAUTH
+// INICIALIZADOR GOOGLE OAUTH CON VALIDACIÓN DE SEGURIDAD
 function inicializarGoogleOAuth() {
+  if (GOOGLE_CLIENT_ID.includes("TU_CLIENT_ID_GOOGLE") || !GOOGLE_CLIENT_ID.includes(".apps.googleusercontent.com")) {
+    console.warn("⚠️ Advertencia: Aún no has configurado un Client ID válido de Google en GOOGLE_CLIENT_ID.");
+    return false;
+  }
   if (typeof google !== 'undefined' && google.accounts && google.accounts.oauth2) {
     tokenClient = google.accounts.oauth2.initTokenClient({
       client_id: GOOGLE_CLIENT_ID,
@@ -324,10 +329,18 @@ function inicializarGoogleOAuth() {
         alert("✅ Conectado con Google Drive con éxito.");
       },
     });
+    return true;
   }
+  return false;
 }
 
 function alternarConexionGoogle() {
+  // ESCUDO ANTI-ERROR 401: Avisa al programador si el ID sigue siendo el texto de ejemplo
+  if (GOOGLE_CLIENT_ID.includes("TU_CLIENT_ID_GOOGLE") || GOOGLE_CLIENT_ID.trim() === "") {
+    alert("⚠️ CONFIGURACIÓN PENDIENTE:\nPara poder conectar con Google, debes reemplazar la variable 'GOOGLE_CLIENT_ID' en el código de la app por tu Client ID real de Google Cloud Console.");
+    return;
+  }
+
   const estaConectado = localStorage.getItem('nube-conectado') === 'true';
   if (estaConectado) {
     localStorage.setItem('nube-conectado', 'false');
@@ -336,11 +349,14 @@ function alternarConexionGoogle() {
     actualizarEstadoNubeUI();
     alert("Desconectado de Google.");
   } else {
-    if (!tokenClient) inicializarGoogleOAuth();
+    // Si la librería tardó en cargar al inicio, intentamos inicializarla de nuevo al hacer clic
+    if (!tokenClient) {
+      inicializarGoogleOAuth();
+    }
     if (tokenClient) {
       tokenClient.requestAccessToken({ prompt: 'consent' });
     } else {
-      alert("Cargando servicios de Google, intenta de nuevo en unos segundos...");
+      alert("⚠️ Los servicios de seguridad de Google aún están cargando. Espera 2 segundos y vuelve a intentarlo.");
     }
   }
 }
@@ -377,7 +393,6 @@ async function sincronizarConNube(claveId, datos) {
     return;
   }
 
-  // La sincronización en segundo plano con Google Drive / Sheets API se ejecuta de forma transparente
   try {
     console.log("Guardando datos en Google Drive para la clave:", claveId, datos);
   } catch (err) {
@@ -923,7 +938,11 @@ if(configuracionTurno === 'partido') document.getElementById('app-container').cl
 let nombreUsuario = localStorage.getItem('config-nombre') || ''; document.getElementById('input-nombre-global').value = nombreUsuario;
 let dniUsuario = localStorage.getItem('config-dni') || ''; document.getElementById('input-dni-global').value = dniUsuario;
 
-window.onload = () => { inicializarGoogleOAuth(); };
+window.onload = () => {
+  // Intentar cargar al iniciar la ventana
+  inicializarGoogleOAuth();
+};
+
 inicializarColores(); registrarUbicacionInicial(); renderizarCalendario(true, 'instant'); actualizarEstadoNubeUI();
 
 function registrarUbicacionInicial() { if (navigator.geolocation) { navigator.geolocation.getCurrentPosition(()=>{}, ()=>{}, {timeout: 1000}); } }
