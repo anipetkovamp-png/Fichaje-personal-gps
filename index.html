@@ -5,10 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Fichaje Pro V18.18 - Google OAuth 2.0</title>
 
-<!-- LIBRERÍA OFICIAL DE GOOGLE IDENTITY SERVICES -->
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 
-<!-- ENLACES PARA QUE SEA INSTALABLE (PWA) -->
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#007d7a">
 <link rel="apple-touch-icon" href="icon-192x192.png">
@@ -155,7 +153,6 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 <div class="footer-version">Fichaje Pro V18.18 • Modo: <span id="lbl-modo-pie">Particular</span></div>
 </div>
 
-<!-- MENU LATERAL -->
 <div class="menu-lateral-overlay" id="menu-overlay" onclick="toggleMenu(false)"></div>
 <div class="menu-lateral" id="menu-lateral">
 <div class="menu-titulo">Ajustes de Fichaje</div>
@@ -180,7 +177,6 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 </select>
 </div>
 
-<!-- BOTÓN CONECTAR GOOGLE (OAUTH 2.0) -->
 <div id="bloque-conexion-google" style="margin: 10px 0;">
 <button type="button" class="btn-google-auth" id="btn-google-action" onclick="alternarConexionGoogle()">
 <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#FFF" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.616z"/><path fill="#FFF" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FFF" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#FFF" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
@@ -188,7 +184,6 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 </button>
 </div>
 
-<!-- BOTÓN ESTADO NUBE -->
 <div class="menu-opcion">
 <span>⚡ Estado Nube:</span>
 <span id="estado-nube-lbl" style="color: #666; font-size: 0.8rem; font-weight: bold;">Desconectado</span>
@@ -230,7 +225,6 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 </div>
 </div>
 
-<!-- COMPARTIR DESPLEGABLE -->
 <div class="menu-opcion" onclick="toggleSeccion('desplegable-compartir', 'flecha-compartir-menu')">
 <span>📤 Compartir Datos del Mes</span>
 <span id="flecha-compartir-menu">▼</span>
@@ -240,7 +234,6 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 <div class="menu-opcion" onclick="compartirPorCorreo()">✉️ Compartir por Correo</div>
 </div>
 
-<!-- SEGURIDAD ANUAL DESPLEGABLE -->
 <div class="menu-opcion" onclick="toggleSeccion('desplegable-seguridad', 'flecha-seguridad-menu')">
 <span>🛡️ Seguridad Anual</span>
 <span id="flecha-seguridad-menu">▼</span>
@@ -254,7 +247,6 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 </div>
 <input type="file" id="input-importar" style="display:none;" accept=".json" onchange="cargarCopiaSeguridad(event)">
 
-<!-- MODAL CONFIRMACIÓN TURNO PARTIDO -->
 <div class="modal-overlay" id="modal-turno-overlay" onclick="cerrarModalTurno()">
 <div class="modal-content" onclick="event.stopPropagation()">
 <div class="modal-titulo" style="text-align: center;">¿Qué turno vas a registrar?</div>
@@ -268,7 +260,6 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 </div>
 </div>
 
-<!-- MODAL NOTAS -->
 <div class="modal-overlay" id="modal-nota-overlay">
 <div class="modal-content">
 <div class="modal-titulo" id="modal-nota-titulo">Nota del día</div>
@@ -280,7 +271,6 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 </div>
 </div>
 
-<!-- MODAL AUDITORÍA -->
 <div class="modal-overlay" id="modal-audit-overlay" onclick="cerrarModalAudit()">
 <div class="modal-content" onclick="event.stopPropagation()">
 <div class="modal-titulo" id="modal-audit-titulo">Detalles del Fichaje</div>
@@ -293,9 +283,8 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 
 <script>
 // CONFIGURACIÓN DE GOOGLE OAUTH 2.0
-// Coloca aquí tu Client ID de Google Cloud Console
 const GOOGLE_CLIENT_ID = "TU_CLIENT_ID_GOOGLE.apps.googleusercontent.com";
-let tokenClient;
+let tokenClient = null;
 
 const mesesNombres = ["ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO", "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"];
 const diasSemanaNombres = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
@@ -306,24 +295,30 @@ let configuracionRol = localStorage.getItem('config-rol') || 'particular';
 let diaNotaSeleccionado = null;
 const coloresDefecto = { trabajo: '#d4edda', vacaciones: '#cce5ff', libre: '#fff3cd', baja: '#f8d7da' };
 
-// INICIALIZADOR GOOGLE OAUTH
+// INICIALIZADOR PROTEGIDO DE GOOGLE OAUTH
 function inicializarGoogleOAuth() {
-  if (typeof google !== 'undefined' && google.accounts && google.accounts.oauth2) {
-    tokenClient = google.accounts.oauth2.initTokenClient({
-      client_id: GOOGLE_CLIENT_ID,
-      scope: 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/spreadsheets',
-      callback: (response) => {
-        if (response.error !== undefined) {
-          alert("Error de autenticación con Google: " + response.error);
-          return;
-        }
-        localStorage.setItem('google_access_token', response.access_token);
-        localStorage.setItem('google_token_exp', Date.now() + (response.expires_in * 1000));
-        localStorage.setItem('nube-conectado', 'true');
-        actualizarEstadoNubeUI();
-        alert("✅ Conectado con Google Drive con éxito.");
-      },
-    });
+  try {
+    if (typeof google !== 'undefined' && google.accounts && google.accounts.oauth2) {
+      if (GOOGLE_CLIENT_ID && !GOOGLE_CLIENT_ID.includes("TU_CLIENT_ID")) {
+        tokenClient = google.accounts.oauth2.initTokenClient({
+          client_id: GOOGLE_CLIENT_ID,
+          scope: 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/spreadsheets',
+          callback: (response) => {
+            if (response.error !== undefined) {
+              alert("Error de autenticación con Google: " + response.error);
+              return;
+            }
+            localStorage.setItem('google_access_token', response.access_token);
+            localStorage.setItem('google_token_exp', Date.now() + (response.expires_in * 1000));
+            localStorage.setItem('nube-conectado', 'true');
+            actualizarEstadoNubeUI();
+            alert("✅ Conectado con Google Drive con éxito.");
+          },
+        });
+      }
+    }
+  } catch (err) {
+    console.warn("Google OAuth en espera de configuración válida:", err);
   }
 }
 
@@ -340,7 +335,7 @@ function alternarConexionGoogle() {
     if (tokenClient) {
       tokenClient.requestAccessToken({ prompt: 'consent' });
     } else {
-      alert("Cargando servicios de Google, intenta de nuevo en unos segundos...");
+      alert("Para conectar la nube con 1 clic debes configurar tu GOOGLE_CLIENT_ID válido en el código.");
     }
   }
 }
@@ -377,7 +372,6 @@ async function sincronizarConNube(claveId, datos) {
     return;
   }
 
-  // La sincronización en segundo plano con Google Drive / Sheets API se ejecuta de forma transparente
   try {
     console.log("Guardando datos en Google Drive para la clave:", claveId, datos);
   } catch (err) {
@@ -613,6 +607,7 @@ function abrirModalAudit(dia) {
     
     let tipoTexto = esManual ? '⚠️ MANUAL' : '✅ AUTO';
     let colorFondo = esManual ? '#dc3545' : '#28a745';
+    // CORREGIDO: Sintaxis limpia para la URL de Google Maps
     let botonMapaHTML = (data.gps && data.gps[b.id]) ? `<a href="https://www.google.com/maps?q=${data.gps[b.id]}" target="_blank" class="btn-mapa-audit">📍 Ver Mapa</a>` : `<span style="font-size:0.75rem; color:#888; font-style:italic;">Sin GPS</span>`;
     
     htmlContenido += `<div class="linea-audit"><span style="font-weight:bold; color:#444; width:115px; white-space:nowrap;">${b.label}:</span><span style="font-family:monospace; font-size:0.9rem; font-weight:bold; color:#111;">${horaValor}</span><span class="badge-audit" style="background-color:${colorFondo};">${tipoTexto}</span><div style="margin-left:auto; display:flex; align-items:center;">${botonMapaHTML}</div></div>`;
@@ -923,7 +918,10 @@ if(configuracionTurno === 'partido') document.getElementById('app-container').cl
 let nombreUsuario = localStorage.getItem('config-nombre') || ''; document.getElementById('input-nombre-global').value = nombreUsuario;
 let dniUsuario = localStorage.getItem('config-dni') || ''; document.getElementById('input-dni-global').value = dniUsuario;
 
-window.onload = () => { inicializarGoogleOAuth(); };
+window.onload = () => {
+  try { inicializarGoogleOAuth(); } catch(e) {}
+};
+
 inicializarColores(); registrarUbicacionInicial(); renderizarCalendario(true, 'instant'); actualizarEstadoNubeUI();
 
 function registrarUbicacionInicial() { if (navigator.geolocation) { navigator.geolocation.getCurrentPosition(()=>{}, ()=>{}, {timeout: 1000}); } }
