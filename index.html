@@ -283,7 +283,7 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 
 <script>
 // CONFIGURACIÓN DE GOOGLE OAUTH 2.0
-const GOOGLE_CLIENT_ID = "TU_CLIENT_ID_GOOGLE.apps.googleusercontent.com";
+const GOOGLE_CLIENT_ID = "795980327728-7tcseoust18d3pd3ghq2gj6sq5hop76l.apps.googleusercontent.com";
 let tokenClient = null;
 
 const mesesNombres = ["ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO", "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"];
@@ -607,7 +607,6 @@ function abrirModalAudit(dia) {
     
     let tipoTexto = esManual ? '⚠️ MANUAL' : '✅ AUTO';
     let colorFondo = esManual ? '#dc3545' : '#28a745';
-    // CORREGIDO: Sintaxis limpia para la URL de Google Maps
     let botonMapaHTML = (data.gps && data.gps[b.id]) ? `<a href="https://www.google.com/maps?q=${data.gps[b.id]}" target="_blank" class="btn-mapa-audit">📍 Ver Mapa</a>` : `<span style="font-size:0.75rem; color:#888; font-style:italic;">Sin GPS</span>`;
     
     htmlContenido += `<div class="linea-audit"><span style="font-weight:bold; color:#444; width:115px; white-space:nowrap;">${b.label}:</span><span style="font-family:monospace; font-size:0.9rem; font-weight:bold; color:#111;">${horaValor}</span><span class="badge-audit" style="background-color:${colorFondo};">${tipoTexto}</span><div style="margin-left:auto; display:flex; align-items:center;">${botonMapaHTML}</div></div>`;
