@@ -359,6 +359,7 @@ function actualizarEstadoNubeUI() {
   }
 }
 
+// SUBIDA AUTOMÁTICA Y CREACIÓN/ACTUALIZACIÓN EN GOOGLE DRIVE
 async function sincronizarConNube(claveId, datos) {
   const estaConectado = localStorage.getItem('nube-conectado') === 'true';
   const token = localStorage.getItem('google_access_token');
@@ -372,10 +373,58 @@ async function sincronizarConNube(claveId, datos) {
     return;
   }
 
+  const nombreArchivo = `${claveId}.json`;
+
   try {
-    console.log("Guardando datos en Google Drive para la clave:", claveId, datos);
+    // 1. Buscar si el archivo ya existe en Google Drive
+    const searchUrl = `https://www.googleapis.com/drive/v3/files?q=name='${encodeURIComponent(nombreArchivo)}'+and+trashed=false`;
+    const searchRes = await fetch(searchUrl, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+
+    if (!searchRes.ok) {
+      if (searchRes.status === 401) {
+        localStorage.setItem('nube-conectado', 'false');
+        actualizarEstadoNubeUI();
+      }
+      return;
+    }
+
+    const searchData = await searchRes.json();
+    const archivoExistente = searchData.files && searchData.files.length > 0 ? searchData.files[0] : null;
+
+    if (archivoExistente) {
+      // 2. Si el archivo ya existe, actualizarlo (PATCH)
+      const updateUrl = `https://www.googleapis.com/upload/drive/v3/files/${archivoExistente.id}?uploadType=media`;
+      await fetch(updateUrl, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(datos, null, 2)
+      });
+      console.log(`✅ Archivo ${nombreArchivo} actualizado en Drive.`);
+    } else {
+      // 3. Si no existe, crearlo nuevo (POST multipart)
+      const createUrl = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
+      const metadata = {
+        name: nombreArchivo,
+        mimeType: 'application/json'
+      };
+      const form = new FormData();
+      form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+      form.append('file', new Blob([JSON.stringify(datos, null, 2)], { type: 'application/json' }));
+
+      await fetch(createUrl, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: form
+      });
+      console.log(`✅ Archivo ${nombreArchivo} creado en Drive.`);
+    }
   } catch (err) {
-    console.warn("Error enviando datos a Google Drive:", err);
+    console.warn("Error guardando datos en Google Drive:", err);
   }
 }
 
