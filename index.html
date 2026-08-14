@@ -172,7 +172,7 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 <span>👤 Modo / Rol:</span>
 <select id="selector-rol-global" onchange="ajustarRol(this.value)">
 <option value="particular">Particular (Local / Nube)</option>
-<option value="empleado">Empleado (Enviar a Nube)</option>
+<option value="empleado">Empleado (Nube del Jefe)</option>
 <option value="jefe">Jefe (Receptor Nube)</option>
 </select>
 </div>
@@ -359,7 +359,7 @@ function actualizarEstadoNubeUI() {
   }
 }
 
-// SUBIDA AUTOMÁTICA Y CREACIÓN/ACTUALIZACIÓN EN GOOGLE DRIVE
+// SINCRONIZACIÓN Y GUARDADO SEGURO EN GOOGLE DRIVE (PARTICULAR O EMPLEADO -> NUBE DEL JEFE)
 async function sincronizarConNube(claveId, datos) {
   const estaConectado = localStorage.getItem('nube-conectado') === 'true';
   const token = localStorage.getItem('google_access_token');
@@ -373,10 +373,14 @@ async function sincronizarConNube(claveId, datos) {
     return;
   }
 
-  const nombreArchivo = `${claveId}.json`;
+  let nombreUsuario = localStorage.getItem('config-nombre') || 'usuario';
+  let nombreArchivo = (configuracionRol === 'empleado') 
+    ? `emp_${nombreUsuario.replace(/[^a-zA-Z0-9]/g, '_')}_${claveId}.json` 
+    : `${claveId}.json`;
+
+  const contenidoJson = JSON.stringify(datos, null, 2);
 
   try {
-    // 1. Buscar si el archivo ya existe en Google Drive
     const searchUrl = `https://www.googleapis.com/drive/v3/files?q=name='${encodeURIComponent(nombreArchivo)}'+and+trashed=false`;
     const searchRes = await fetch(searchUrl, {
       headers: { 'Authorization': `Bearer ${token}` }
@@ -394,32 +398,37 @@ async function sincronizarConNube(claveId, datos) {
     const archivoExistente = searchData.files && searchData.files.length > 0 ? searchData.files[0] : null;
 
     if (archivoExistente) {
-      // 2. Si el archivo ya existe, actualizarlo (PATCH)
-      const updateUrl = `https://www.googleapis.com/upload/drive/v3/files/${archivoExistente.id}?uploadType=media`;
-      await fetch(updateUrl, {
+      await fetch(`https://www.googleapis.com/upload/drive/v3/files/${archivoExistente.id}?uploadType=media`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(datos, null, 2)
+        body: contenidoJson
       });
       console.log(`✅ Archivo ${nombreArchivo} actualizado en Drive.`);
     } else {
-      // 3. Si no existe, crearlo nuevo (POST multipart)
-      const createUrl = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
-      const metadata = {
-        name: nombreArchivo,
-        mimeType: 'application/json'
-      };
-      const form = new FormData();
-      form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
-      form.append('file', new Blob([JSON.stringify(datos, null, 2)], { type: 'application/json' }));
+      const metadata = { name: nombreArchivo, mimeType: 'application/json' };
+      const boundary = '-------314159265358979323846';
+      const delimiter = `\r\n--${boundary}\r\n`;
+      const closeDelimiter = `\r\n--${boundary}--`;
 
-      await fetch(createUrl, {
+      const multipartRequestBody =
+        delimiter +
+        'Content-Type: application/json; charset=UTF-8\r\n\r\n' +
+        JSON.stringify(metadata) +
+        delimiter +
+        'Content-Type: application/json\r\n\r\n' +
+        contenidoJson +
+        closeDelimiter;
+
+      await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` },
-        body: form
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': `multipart/related; boundary=${boundary}`
+        },
+        body: multipartRequestBody
       });
       console.log(`✅ Archivo ${nombreArchivo} creado en Drive.`);
     }
@@ -492,9 +501,80 @@ function ajustarRol(valor) {
   configuracionRol = valor;
   localStorage.setItem('config-rol', valor);
   const lblPie = document.getElementById('lbl-modo-pie');
-  if (valor === 'particular') lblPie.textContent = 'Particular';
-  else if (valor === 'empleado') lblPie.textContent = 'Empleado';
-  else if (valor === 'jefe') lblPie.textContent = 'Jefe (Nube)';
+  if (valor === 'particular') {
+    lblPie.textContent = 'Particular';
+    mostrarInterfazJefe(false);
+  } else if (valor === 'empleado') {
+    lblPie.textContent = 'Empleado';
+    mostrarInterfazJefe(false);
+  } else if (valor === 'jefe') {
+    lblPie.textContent = 'Jefe (Nube)';
+    mostrarInterfazJefe(true);
+  }
+}
+
+function mostrarInterfazJefe(activar) {
+  const lista = document.getElementById('lista-dias');
+  if (activar) {
+    lista.innerHTML = `
+      <div style="padding: 10px; display: flex; flex-direction: column; gap: 8px; height: 100%; overflow-y: auto;">
+        <h3 style="color: var(--teal-header); font-size: 0.95rem; border-bottom: 2px solid var(--teal-header); padding-bottom: 4px;">👥 Panel de Control del Jefe</h3>
+        <p style="font-size: 0.8rem; color: #555;">Visualiza y supervisa los fichajes de tus empleados sincronizados en tu cuenta de Google Drive.</p>
+        <button class="btn-modal guardar" onclick="cargarListaEmpleadosDrive()" style="width:100%; padding: 10px;">🔄 Cargar Fichajes de Empleados</button>
+        <div id="contenedor-empleados-lista" style="display: flex; flex-direction: column; gap: 6px; margin-top: 4px;"></div>
+      </div>
+    `;
+    if(document.getElementById('desglose-semanas')) document.getElementById('desglose-semanas').innerHTML = '';
+    if(document.getElementById('total-semana')) document.getElementById('total-semana').textContent = '---';
+    if(document.getElementById('total-mes')) document.getElementById('total-mes').textContent = '---';
+  } else {
+    renderizarCalendario(true, 'instant');
+  }
+}
+
+async function cargarListaEmpleadosDrive() {
+  const token = localStorage.getItem('google_access_token');
+  if (!token) {
+    alert("⚠️ Debes conectar primero con tu cuenta de Google Drive en el menú lateral.");
+    return;
+  }
+  const contenedor = document.getElementById('contenedor-empleados-lista');
+  contenedor.innerHTML = `<div style="text-align:center; padding:12px; font-size:0.8rem; color:#666;">Buscando archivos de empleados en Drive...</div>`;
+
+  try {
+    const res = await fetch(`https://www.googleapis.com/drive/v3/files?q=name contains 'emp_' and mimeType='application/json' and trashed=false`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const data = await res.json();
+
+    if (data.files && data.files.length > 0) {
+      let html = `<p style="font-size:0.82rem; font-weight:bold; color:green; margin-bottom: 4px;">📁 ${data.files.length} registros encontrados:</p>`;
+      data.files.forEach(file => {
+        html += `<div style="background: #fafafa; border: 1px solid #ccc; padding: 6px 8px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; font-size: 0.78rem;">
+          <span style="font-weight: bold; color: #333;">${file.name}</span>
+          <button class="btn-modal guardar" style="padding: 3px 8px; font-size: 0.72rem;" onclick="descargarYLeerArchivoEmpleado('${file.id}', '${file.name}')">Ver Datos</button>
+        </div>`;
+      });
+      contenedor.innerHTML = html;
+    } else {
+      contenedor.innerHTML = `<p style="font-size:0.82rem; color:#888; font-style:italic; text-align:center; padding:10px;">No se encontraron fichajes de empleados en tu Drive.</p>`;
+    }
+  } catch (err) {
+    contenedor.innerHTML = `<p style="font-size:0.82rem; color:red; text-align:center;">Error al conectar con Google Drive.</p>`;
+  }
+}
+
+async function descargarYLeerArchivoEmpleado(fileId, fileName) {
+  const token = localStorage.getItem('google_access_token');
+  try {
+    const res = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const jsonData = await res.json();
+    alert(`📄 Datos de ${fileName}:\n\nTotal Horas: ${jsonData.t || '00:00'}\nEntrada: ${jsonData.e1 || '--:--'} | Salida: ${jsonData.s1 || '--:--'}\nEstado: ${jsonData.est}`);
+  } catch (err) {
+    alert("Error al descargar el contenido del archivo.");
+  }
 }
 
 function toggleMenu(abrir) {
@@ -510,12 +590,13 @@ function ajustarTipoTurno(valor) {
   configuracionTurno = valor; localStorage.setItem('config-turno', valor);
   const container = document.getElementById('app-container');
   if(valor === 'partido') container.classList.add('vista-partido'); else container.classList.remove('vista-partido');
-  renderizarCalendario(false);
+  if(configuracionRol !== 'jefe') renderizarCalendario(false);
 }
 
 function irAlMesSeleccionado(indiceMes) { fechaActual.setDate(1); fechaActual.setMonth(indiceMes); cambiarVista('mes'); }
 
 function renderizarCalendario(autoScroll = true, comportamiento = 'smooth') {
+  if (configuracionRol === 'jefe') return;
   const anio = fechaActual.getFullYear(); const mes = fechaActual.getMonth();
   const lista = document.getElementById('lista-dias'); lista.innerHTML = '';
   let totalDiasMes = new Date(anio, mes + 1, 0).getDate();
@@ -790,6 +871,10 @@ function actualizarFilaUI(id, data) {
 }
 
 function iniciarFichaje() {
+  if (configuracionRol === 'jefe') {
+    alert("⚠️ El perfil de Jefe supervisa fichajes, no registra jornadas locales.");
+    return;
+  }
   const hoy = new Date();
   if(fechaActual.getFullYear() !== hoy.getFullYear() || fechaActual.getMonth() !== hoy.getMonth()) {
     alert("⚠️ Cambia al mes actual para usar el botón de fichar."); return;
@@ -874,11 +959,12 @@ function guardarYProcesarFichaje(claveId, data, hoy, campoFichado) {
 }
 
 function desplazarADia(dia, comportamiento = 'smooth', alineacion = 'center') {
-  if(vistaActual === 'mes') { const el = document.getElementById(`fila-${dia}`); if(el) el.scrollIntoView({ behavior: comportamiento, block: alineacion }); }
+  if(vistaActual === 'mes' && configuracionRol !== 'jefe') { const el = document.getElementById(`fila-${dia}`); if(el) el.scrollIntoView({ behavior: comportamiento, block: alineacion }); }
 }
 function seleccionarSemana(dia) { fechaActual.setDate(dia); if(vistaActual === 'semana') renderizarCalendario(false); else { desplazarADia(dia, 'smooth', 'start'); calcularTotalesGenerales(); } }
 
 function cambiarMes(dir) {
+  if (configuracionRol === 'jefe') return;
   fechaActual.setDate(1);
   if(vistaActual === 'ano') fechaActual.setFullYear(fechaActual.getFullYear() + dir);
   else fechaActual.setMonth(fechaActual.getMonth() + dir);
@@ -886,6 +972,7 @@ function cambiarMes(dir) {
 }
 
 function cambiarVista(vista) {
+  if (configuracionRol === 'jefe') return;
   vistaActual = vista; document.getElementById('v-semana').classList.remove('activo'); document.getElementById('v-mes').classList.remove('activo'); document.getElementById('v-ano').classList.remove('activo');
   document.getElementById(`v-${vista}`).classList.add('activo'); renderizarCalendario(true, 'instant');
 }
@@ -970,7 +1057,9 @@ window.onload = () => {
   try { inicializarGoogleOAuth(); } catch(e) {}
 };
 
-inicializarColores(); registrarUbicacionInicial(); renderizarCalendario(true, 'instant'); actualizarEstadoNubeUI();
+inicializarColores(); registrarUbicacionInicial(); 
+if (configuracionRol !== 'jefe') { renderizarCalendario(true, 'instant'); }
+actualizarEstadoNubeUI();
 
 function registrarUbicacionInicial() { if (navigator.geolocation) { navigator.geolocation.getCurrentPosition(()=>{}, ()=>{}, {timeout: 1000}); } }
 
@@ -987,13 +1076,15 @@ function cargarCopiaSeguridad(event) {
     try {
       const datos = JSON.parse(e.target.result);
       for (let cl in datos) { if (cl.startsWith('fichaje-')) localStorage.setItem(cl, datos[cl]); }
-      renderizarCalendario(true, 'instant'); alert("✅ Copia restaurada.");
+      if (configuracionRol !== 'jefe') renderizarCalendario(true, 'instant'); 
+      alert("✅ Copia restaurada.");
     } catch (err) { alert("Archivo incorrecto."); }
   };
   reader.readAsText(f);
 }
 
 function calcularTotalesGenerales() {
+  if (configuracionRol === 'jefe') return;
   const anio = fechaActual.getFullYear(); const mes = fechaActual.getMonth();
   let totalMinutosMes = 0; let totalDias = new Date(anio, mes + 1, 0).getDate();
   let semanasHTML = ''; let minsSemanaMismoMes = 0; let contadorSemana = 1; let diaInicioW = 1; let minsSemanaActualFocus = 0;
