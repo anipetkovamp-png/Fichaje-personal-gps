@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -365,7 +364,7 @@ function actualizarEstadoNubeUI() {
   }
 }
 
-// SINCRONIZACIÓN Y GUARDADO SEGURO EN GOOGLE DRIVE (CORREGIDA CODIFICACIÓN URL)
+// SINCRONIZACIÓN Y GUARDADO SEGURO EN GOOGLE DRIVE
 async function sincronizarConNube(claveId, datos) {
   const estaConectado = localStorage.getItem('nube-conectado') === 'true';
   const token = localStorage.getItem('google_access_token');
@@ -468,7 +467,7 @@ function normalizarTextoHora(txt) {
     if (/^\d{3,4}$/.test(limpio)) {
       let mPart = limpio.slice(-2);
       let hPart = limpio.slice(0, -2);
-      limpio = `${hPart}:${mPart}`;
+      limpio = `${hPart.padStart(2, '0')}:${mPart}`;
     } else if (/^\d{1,2}$/.test(limpio)) {
       let numH = parseInt(limpio, 10);
       if (numH >= 0 && numH < 24) return `${String(numH).padStart(2, '0')}:00`;
@@ -556,7 +555,6 @@ function mostrarInterfazJefe(activar) {
   }
 }
 
-// BÚSQUEDA CORREGIDA EN GOOGLE DRIVE PARA EL JEFE
 async function cargarListaEmpleadosDrive() {
   const token = localStorage.getItem('google_access_token');
   if (!token) {
@@ -717,6 +715,10 @@ function autoFormatearInput(id, campo) {
     let norm = normalizarTextoHora(el.value);
     if (norm !== el.value) { el.value = norm; calc(id); }
   }
+  // Ejecutar verificación y solicitud de GPS solo tras salir del foco (blur)
+  const claveId = `fichaje-${fechaActual.getFullYear()}-${fechaActual.getMonth()}-${id}`;
+  let dataFresh = JSON.parse(localStorage.getItem(claveId));
+  if (dataFresh) { solicitarGpsManualSiProcede(claveId, dataFresh, id); }
 }
 
 function abrirModalNota(dia) {
@@ -870,7 +872,6 @@ function guardarFila(id, tTexto) {
   const datos = { e1: valE1, s1: valS1, e2: valE2, s2: valS2, est: elEst ? elEst.value : 'defecto', t: tFinal, nota: dataAnterior.nota || '', origen: origenObj, gps: dataAnterior.gps || {} };
   localStorage.setItem(claveId, JSON.stringify(datos));
   sincronizarConNube(claveId, datos);
-  solicitarGpsManualSiProcede(claveId, datos, id);
 }
 
 function solicitarGpsManualSiProcede(claveId, datos, id) {
