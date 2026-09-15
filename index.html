@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -189,6 +190,11 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 <span id="estado-nube-lbl" style="color: #666; font-size: 0.8rem; font-weight: bold;">Desconectado</span>
 </div>
 
+<div class="menu-opcion" onclick="sincronizarMesCompleto()">
+<span>☁️ Sincronizar Mes a Nube</span>
+<span style="font-size: 0.75rem; color: var(--teal-header);">Subir Todo</span>
+</div>
+
 <div class="menu-opcion">
 <span>⚙️ Tipo de Turno:</span>
 <select id="selector-turno-global" onchange="ajustarTipoTurno(this.value)">
@@ -335,7 +341,7 @@ function alternarConexionGoogle() {
     if (tokenClient) {
       tokenClient.requestAccessToken({ prompt: 'consent' });
     } else {
-      alert("Para conectar la nube con 1 clic debes configurar tu GOOGLE_CLIENT_ID válido en el código.");
+      alert("Para conectar la nube debes revisar la configuración de GOOGLE_CLIENT_ID.");
     }
   }
 }
@@ -359,7 +365,7 @@ function actualizarEstadoNubeUI() {
   }
 }
 
-// SINCRONIZACIÓN Y GUARDADO SEGURO EN GOOGLE DRIVE (PARTICULAR O EMPLEADO -> NUBE DEL JEFE)
+// SINCRONIZACIÓN Y GUARDADO SEGURO EN GOOGLE DRIVE (CORREGIDA CODIFICACIÓN URL)
 async function sincronizarConNube(claveId, datos) {
   const estaConectado = localStorage.getItem('nube-conectado') === 'true';
   const token = localStorage.getItem('google_access_token');
@@ -373,15 +379,17 @@ async function sincronizarConNube(claveId, datos) {
     return;
   }
 
-  let nombreUsuario = localStorage.getItem('config-nombre') || 'usuario';
+  let nombreRaw = (localStorage.getItem('config-nombre') || 'empleado').trim();
+  let nombreLimpio = nombreRaw.replace(/[^a-zA-Z0-9]/g, '_');
   let nombreArchivo = (configuracionRol === 'empleado') 
-    ? `emp_${nombreUsuario.replace(/[^a-zA-Z0-9]/g, '_')}_${claveId}.json` 
+    ? `emp_${nombreLimpio}_${claveId}.json` 
     : `${claveId}.json`;
 
   const contenidoJson = JSON.stringify(datos, null, 2);
 
   try {
-    const searchUrl = `https://www.googleapis.com/drive/v3/files?q=name='${encodeURIComponent(nombreArchivo)}'+and+trashed=false`;
+    const query = `name = '${nombreArchivo}' and trashed = false`;
+    const searchUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}&fields=files(id,name)`;
     const searchRes = await fetch(searchUrl, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
@@ -435,6 +443,22 @@ async function sincronizarConNube(claveId, datos) {
   } catch (err) {
     console.warn("Error guardando datos en Google Drive:", err);
   }
+}
+
+async function sincronizarMesCompleto() {
+  const anio = fechaActual.getFullYear(); 
+  const mes = fechaActual.getMonth();
+  let totalDias = new Date(anio, mes + 1, 0).getDate();
+  let contador = 0;
+  for(let i = 1; i <= totalDias; i++) {
+    const claveId = `fichaje-${anio}-${mes}-${i}`;
+    let data = JSON.parse(localStorage.getItem(claveId));
+    if (data && (data.e1 || data.s1 || data.e2 || data.s2 || data.est !== 'defecto' || data.nota)) {
+      await sincronizarConNube(claveId, data);
+      contador++;
+    }
+  }
+  alert(`☁️ Sincronizados ${contador} días del mes a Google Drive.`);
 }
 
 function normalizarTextoHora(txt) {
@@ -532,6 +556,7 @@ function mostrarInterfazJefe(activar) {
   }
 }
 
+// BÚSQUEDA CORREGIDA EN GOOGLE DRIVE PARA EL JEFE
 async function cargarListaEmpleadosDrive() {
   const token = localStorage.getItem('google_access_token');
   if (!token) {
@@ -542,25 +567,34 @@ async function cargarListaEmpleadosDrive() {
   contenedor.innerHTML = `<div style="text-align:center; padding:12px; font-size:0.8rem; color:#666;">Buscando archivos de empleados en Drive...</div>`;
 
   try {
-    const res = await fetch(`https://www.googleapis.com/drive/v3/files?q=name contains 'emp_' and mimeType='application/json' and trashed=false`, {
+    const query = "name contains 'emp_' and trashed = false";
+    const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}&fields=files(id,name,modifiedTime)`;
+    
+    const res = await fetch(url, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
+    
+    if (!res.ok) {
+      throw new Error(`HTTP Error ${res.status}`);
+    }
+    
     const data = await res.json();
 
     if (data.files && data.files.length > 0) {
-      let html = `<p style="font-size:0.82rem; font-weight:bold; color:green; margin-bottom: 4px;">📁 ${data.files.length} registros encontrados:</p>`;
+      let html = `<p style="font-size:0.82rem; font-weight:bold; color:green; margin-bottom: 4px;">📁 ${data.files.length} fichajes encontrados:</p>`;
       data.files.forEach(file => {
+        let nombreLegible = file.name.replace('.json', '').replace('emp_', '').replace(/_/g, ' ');
         html += `<div style="background: #fafafa; border: 1px solid #ccc; padding: 6px 8px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; font-size: 0.78rem;">
-          <span style="font-weight: bold; color: #333;">${file.name}</span>
-          <button class="btn-modal guardar" style="padding: 3px 8px; font-size: 0.72rem;" onclick="descargarYLeerArchivoEmpleado('${file.id}', '${file.name}')">Ver Datos</button>
+          <span style="font-weight: bold; color: #333;">${nombreLegible}</span>
+          <button class="btn-modal guardar" style="padding: 3px 8px; font-size: 0.72rem;" onclick="descargarYLeerArchivoEmpleado('${file.id}', '${nombreLegible}')">Ver Datos</button>
         </div>`;
       });
       contenedor.innerHTML = html;
     } else {
-      contenedor.innerHTML = `<p style="font-size:0.82rem; color:#888; font-style:italic; text-align:center; padding:10px;">No se encontraron fichajes de empleados en tu Drive.</p>`;
+      contenedor.innerHTML = `<p style="font-size:0.82rem; color:#888; font-style:italic; text-align:center; padding:10px;">No se encontraron fichajes de empleados en tu Drive. Asegúrate de pulsar "Sincronizar Mes a Nube" desde el móvil del empleado.</p>`;
     }
   } catch (err) {
-    contenedor.innerHTML = `<p style="font-size:0.82rem; color:red; text-align:center;">Error al conectar con Google Drive.</p>`;
+    contenedor.innerHTML = `<p style="font-size:0.82rem; color:red; text-align:center;">Error al conectar con Google Drive (${err.message}).</p>`;
   }
 }
 
@@ -571,7 +605,15 @@ async function descargarYLeerArchivoEmpleado(fileId, fileName) {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     const jsonData = await res.json();
-    alert(`📄 Datos de ${fileName}:\n\nTotal Horas: ${jsonData.t || '00:00'}\nEntrada: ${jsonData.e1 || '--:--'} | Salida: ${jsonData.s1 || '--:--'}\nEstado: ${jsonData.est}`);
+    
+    let det = `📄 FICHAJE DE: ${fileName.toUpperCase()}\n\n`;
+    det += `⏱️ Total Horas: ${jsonData.t || '00:00'} hrs\n`;
+    det += `📌 Estado: ${(jsonData.est || 'defecto').toUpperCase()}\n`;
+    det += `☀️ Mañana: Ent: ${jsonData.e1 || '--:--'} | Sal: ${jsonData.s1 || '--:--'}\n`;
+    det += `🌙 Tarde:  Ent: ${jsonData.e2 || '--:--'} | Sal: ${jsonData.s2 || '--:--'}\n`;
+    if(jsonData.nota) det += `📝 Nota: ${jsonData.nota}\n`;
+    
+    alert(det);
   } catch (err) {
     alert("Error al descargar el contenido del archivo.");
   }
