@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Fichaje Pro V18.18 - Google OAuth 2.0</title>
+<title>Fichaje Pro V18.20 - GPS Optimizado</title>
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 
@@ -12,7 +12,6 @@
 <link rel="apple-touch-icon" href="icon-192x192.png">
 
 <style>
-/* CONTROL ESTRICTO DE MEDIDAS Y SIMETRÍA */
 * { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
 --bg-app: #f7f6dd;
@@ -36,7 +35,6 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 .panel-totales span { color: var(--teal-header); font-size: 0.95rem; }
 
 .zona-accion-superior { display: flex; flex-direction: column; background: white; padding: 8px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); gap: 8px; width: 100%; flex-shrink: 0; }
-
 .bloque-fichar-superior { display: flex; flex-direction: row; gap: 8px; width: 100%; justify-content: center; flex-shrink: 0; }
 .btn-fichar-principal { background-color: #ffaa3b; border: 1px solid #333; border-radius: 6px; padding: 11px 8px; font-size: 0.95rem; font-weight: bold; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.12); line-height: 1.1; width: 100%; display: flex; align-items: center; justify-content: center; text-align: center; min-height: 46px; transition: transform 0.1s; }
 .btn-fichar-principal:active { background-color: #e59530; transform: scale(0.98); }
@@ -62,8 +60,7 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 .total-horas { width: 76px; display: flex; align-items: center; justify-content: flex-end; font-size: 0.78rem; color: #333; font-weight: bold; flex-shrink: 0; gap: 2px; cursor: pointer; padding: 2px 0; }
 .texto-horas { width: 42px; text-align: right; font-family: monospace; font-size: 0.85rem; display: inline-block; }
 
-.ad-container { width: 100%; min-height: 44px; background-color: #f0ebd8; border-radius: 6px; display: flex; justify-content: center; align-items: center; border: 1px dashed #ccc; color: #888; font-size: 0.75rem; flex-shrink: 0; }
-
+.ad-container { width: 100%; height: 50px; min-height: 50px; max-height: 50px; background-color: #f0ebd8; border-radius: 6px; display: flex; justify-content: center; align-items: center; border: 1px dashed #ccc; color: #888; font-size: 0.75rem; flex-shrink: 0; overflow: hidden; position: relative; }
 .footer-version { text-align: center; font-size: 0.72rem; font-weight: bold; color: #666; padding: 2px 0; flex-shrink: 0; width: 100%; }
 
 .btn-nota-trigger { font-size: 1.05rem; cursor: pointer; padding: 2px; background: none; border: none; filter: grayscale(1); transition: transform 0.1s; flex-shrink: 0; }
@@ -93,11 +90,9 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 .menu-opcion-input span { font-size: 0.85rem; font-weight: bold; color: #444; flex: 0 0 88px; white-space: nowrap; }
 .menu-opcion-input input { flex: 1; padding: 5px; font-weight: bold; border-radius: 4px; border: 1px solid #999; font-size: 0.82rem; }
 
-/* BOTÓN DE GOOGLE OAUTH */
 .btn-google-auth { width: 100%; background: #4285f4; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.88rem; box-shadow: 0 2px 4px rgba(0,0,0,0.15); transition: background 0.2s; }
 .btn-google-auth:active { background: #3367d6; }
 
-/* DESPLEGABLES / ACORDEONES DEL MENÚ */
 .contenedor-desplegable-grupo { display: none; flex-direction: column; background-color: #fafafa; border-bottom: 1px solid #eee; }
 .contenedor-ajuste-colores { display: none; grid-template-columns: 1fr 1fr; gap: 6px; padding: 8px 6px; background-color: #fafafa; border-bottom: 1px solid #eee; }
 .bloque-color-picker { display: flex; align-items: center; justify-content: space-between; background: #eef0f2; padding: 5px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; }
@@ -150,7 +145,7 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 </div>
 <div class="calendario-lista" id="lista-dias"></div>
 <div id="ad-banner" class="ad-container">Espacio para anuncio AdMob</div>
-<div class="footer-version">Fichaje Pro V18.18 • Modo: <span id="lbl-modo-pie">Particular</span></div>
+<div class="footer-version">Fichaje Pro V18.20 • Modo: <span id="lbl-modo-pie">Particular</span></div>
 </div>
 
 <div class="menu-lateral-overlay" id="menu-overlay" onclick="toggleMenu(false)"></div>
@@ -189,11 +184,6 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 <span id="estado-nube-lbl" style="color: #666; font-size: 0.8rem; font-weight: bold;">Desconectado</span>
 </div>
 
-<div class="menu-opcion" onclick="sincronizarMesCompleto()">
-<span>☁️ Sincronizar Mes a Nube</span>
-<span style="font-size: 0.75rem; color: var(--teal-header);">Subir Todo</span>
-</div>
-
 <div class="menu-opcion">
 <span>⚙️ Tipo de Turno:</span>
 <select id="selector-turno-global" onchange="ajustarTipoTurno(this.value)">
@@ -212,22 +202,10 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 <span id="flecha-colores-menu">▼</span>
 </div>
 <div class="contenedor-ajuste-colores" id="desplegable-colores">
-<div class="bloque-color-picker">
-<span>Trabajo</span>
-<input type="color" id="picker-trabajo" onchange="guardarColorPersonalizado('trabajo', this.value)">
-</div>
-<div class="bloque-color-picker">
-<span>Vacac.</span>
-<input type="color" id="picker-vacaciones" onchange="guardarColorPersonalizado('vacaciones', this.value)">
-</div>
-<div class="bloque-color-picker">
-<span>Libre</span>
-<input type="color" id="picker-libre" onchange="guardarColorPersonalizado('libre', this.value)">
-</div>
-<div class="bloque-color-picker">
-<span>Baja M.</span>
-<input type="color" id="picker-baja" onchange="guardarColorPersonalizado('baja', this.value)">
-</div>
+<div class="bloque-color-picker"><span>Trabajo</span><input type="color" id="picker-trabajo" onchange="guardarColorPersonalizado('trabajo', this.value)"></div>
+<div class="bloque-color-picker"><span>Vacac.</span><input type="color" id="picker-vacaciones" onchange="guardarColorPersonalizado('vacaciones', this.value)"></div>
+<div class="bloque-color-picker"><span>Libre</span><input type="color" id="picker-libre" onchange="guardarColorPersonalizado('libre', this.value)"></div>
+<div class="bloque-color-picker"><span>Baja M.</span><input type="color" id="picker-baja" onchange="guardarColorPersonalizado('baja', this.value)"></div>
 </div>
 
 <div class="menu-opcion" onclick="toggleSeccion('desplegable-compartir', 'flecha-compartir-menu')">
@@ -287,7 +265,6 @@ body { font-family: sans-serif; background-color: var(--bg-app); padding: 8px 6p
 </div>
 
 <script>
-// CONFIGURACIÓN DE GOOGLE OAUTH 2.0
 const GOOGLE_CLIENT_ID = "795980327728-7tcseoust18d3pd3ghq2gj6sq5hop76l.apps.googleusercontent.com";
 let tokenClient = null;
 
@@ -300,7 +277,36 @@ let configuracionRol = localStorage.getItem('config-rol') || 'particular';
 let diaNotaSeleccionado = null;
 const coloresDefecto = { trabajo: '#d4edda', vacaciones: '#cce5ff', libre: '#fff3cd', baja: '#f8d7da' };
 
-// INICIALIZADOR PROTEGIDO DE GOOGLE OAUTH
+// GPS ROBUSTO MEJORADO (CON TENTATIVA EXTENDIDA DE TIMEOUT)
+function obtenerUbicacionRobusta(callbackExito, callbackError) {
+  if (!navigator.geolocation) {
+    if (callbackError) callbackError(new Error("Geolocalización no soportada"));
+    return;
+  }
+  
+  if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+    console.warn("Advertencia: La geolocalización en web requiere obligatoriamente un entorno HTTPS seguro.");
+  }
+
+  // Primer intento: Alta precisión con 10s de espera
+  navigator.geolocation.getCurrentPosition(
+    (pos) => callbackExito(pos),
+    (err) => {
+      console.warn("GPS alta precisión lento, intentando respaldo por red...", err.message);
+      // Segundo intento: Baja precisión (Wi-Fi/Redes móviles) con 10s de espera
+      navigator.geolocation.getCurrentPosition(
+        (pos) => callbackExito(pos),
+        (err2) => {
+          console.warn("GPS estándar falló:", err2.message);
+          if (callbackError) callbackError(err2);
+        },
+        { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }
+      );
+    },
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+  );
+}
+
 function inicializarGoogleOAuth() {
   try {
     if (typeof google !== 'undefined' && google.accounts && google.accounts.oauth2) {
@@ -323,7 +329,7 @@ function inicializarGoogleOAuth() {
       }
     }
   } catch (err) {
-    console.warn("Google OAuth en espera de configuración válida:", err);
+    console.warn("Google OAuth en espera:", err);
   }
 }
 
@@ -340,7 +346,7 @@ function alternarConexionGoogle() {
     if (tokenClient) {
       tokenClient.requestAccessToken({ prompt: 'consent' });
     } else {
-      alert("Para conectar la nube debes revisar la configuración de GOOGLE_CLIENT_ID.");
+      alert("Configura tu GOOGLE_CLIENT_ID válido para conectar con Google.");
     }
   }
 }
@@ -364,100 +370,49 @@ function actualizarEstadoNubeUI() {
   }
 }
 
-// SINCRONIZACIÓN Y GUARDADO SEGURO EN GOOGLE DRIVE
 async function sincronizarConNube(claveId, datos) {
   const estaConectado = localStorage.getItem('nube-conectado') === 'true';
   const token = localStorage.getItem('google_access_token');
   const exp = localStorage.getItem('google_token_exp');
 
-  if (!estaConectado || !token || Date.now() > parseInt(exp || 0, 10)) {
-    if (estaConectado && Date.now() > parseInt(exp || 0, 10)) {
-      localStorage.setItem('nube-conectado', 'false');
-      actualizarEstadoNubeUI();
-    }
-    return;
-  }
+  if (!estaConectado || !token || Date.now() > parseInt(exp || 0, 10)) return;
 
-  let nombreRaw = (localStorage.getItem('config-nombre') || 'empleado').trim();
-  let nombreLimpio = nombreRaw.replace(/[^a-zA-Z0-9]/g, '_');
+  let nombreUsuario = localStorage.getItem('config-nombre') || 'usuario';
   let nombreArchivo = (configuracionRol === 'empleado') 
-    ? `emp_${nombreLimpio}_${claveId}.json` 
+    ? `emp_${nombreUsuario.replace(/[^a-zA-Z0-9]/g, '_')}_${claveId}.json` 
     : `${claveId}.json`;
 
   const contenidoJson = JSON.stringify(datos, null, 2);
 
   try {
-    const query = `name = '${nombreArchivo}' and trashed = false`;
-    const searchUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}&fields=files(id,name)`;
-    const searchRes = await fetch(searchUrl, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-
-    if (!searchRes.ok) {
-      if (searchRes.status === 401) {
-        localStorage.setItem('nube-conectado', 'false');
-        actualizarEstadoNubeUI();
-      }
-      return;
-    }
-
+    const searchUrl = `https://www.googleapis.com/drive/v3/files?q=name='${encodeURIComponent(nombreArchivo)}'+and+trashed=false`;
+    const searchRes = await fetch(searchUrl, { headers: { 'Authorization': `Bearer ${token}` } });
+    if (!searchRes.ok) return;
     const searchData = await searchRes.json();
     const archivoExistente = searchData.files && searchData.files.length > 0 ? searchData.files[0] : null;
 
     if (archivoExistente) {
       await fetch(`https://www.googleapis.com/upload/drive/v3/files/${archivoExistente.id}?uploadType=media`, {
         method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: contenidoJson
       });
-      console.log(`✅ Archivo ${nombreArchivo} actualizado en Drive.`);
     } else {
       const metadata = { name: nombreArchivo, mimeType: 'application/json' };
       const boundary = '-------314159265358979323846';
       const delimiter = `\r\n--${boundary}\r\n`;
       const closeDelimiter = `\r\n--${boundary}--`;
-
-      const multipartRequestBody =
-        delimiter +
-        'Content-Type: application/json; charset=UTF-8\r\n\r\n' +
-        JSON.stringify(metadata) +
-        delimiter +
-        'Content-Type: application/json\r\n\r\n' +
-        contenidoJson +
-        closeDelimiter;
+      const multipartRequestBody = delimiter + 'Content-Type: application/json; charset=UTF-8\r\n\r\n' + JSON.stringify(metadata) + delimiter + 'Content-Type: application/json\r\n\r\n' + contenidoJson + closeDelimiter;
 
       await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': `multipart/related; boundary=${boundary}`
-        },
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': `multipart/related; boundary=${boundary}` },
         body: multipartRequestBody
       });
-      console.log(`✅ Archivo ${nombreArchivo} creado en Drive.`);
     }
   } catch (err) {
-    console.warn("Error guardando datos en Google Drive:", err);
+    console.warn("Error al guardar en Google Drive:", err);
   }
-}
-
-async function sincronizarMesCompleto() {
-  const anio = fechaActual.getFullYear(); 
-  const mes = fechaActual.getMonth();
-  let totalDias = new Date(anio, mes + 1, 0).getDate();
-  let contador = 0;
-  for(let i = 1; i <= totalDias; i++) {
-    const claveId = `fichaje-${anio}-${mes}-${i}`;
-    let data = JSON.parse(localStorage.getItem(claveId));
-    if (data && (data.e1 || data.s1 || data.e2 || data.s2 || data.est !== 'defecto' || data.nota)) {
-      await sincronizarConNube(claveId, data);
-      contador++;
-    }
-  }
-  alert(`☁️ Sincronizados ${contador} días del mes a Google Drive.`);
 }
 
 function normalizarTextoHora(txt) {
@@ -465,9 +420,8 @@ function normalizarTextoHora(txt) {
   let limpio = txt.trim().replace(/[,;.]/g, ':');
   if (!limpio.includes(':')) {
     if (/^\d{3,4}$/.test(limpio)) {
-      let mPart = limpio.slice(-2);
-      let hPart = limpio.slice(0, -2);
-      limpio = `${hPart.padStart(2, '0')}:${mPart}`;
+      let mPart = limpio.slice(-2); let hPart = limpio.slice(0, -2);
+      limpio = `${hPart}:${mPart}`;
     } else if (/^\d{1,2}$/.test(limpio)) {
       let numH = parseInt(limpio, 10);
       if (numH >= 0 && numH < 24) return `${String(numH).padStart(2, '0')}:00`;
@@ -476,8 +430,8 @@ function normalizarTextoHora(txt) {
   let partes = limpio.split(':');
   if (partes.length === 2) {
     let h = partes[0].trim(), m = partes[1].trim();
-    if (h.length === 1 && /^\d$/.test(h)) h = '0' + h;
-    if (m.length === 1 && /^\d$/.test(m)) m = m + '0';
+    if (h.length === 1) h = '0' + h;
+    if (m.length === 1) m = m + '0';
     if (/^\d{2}$/.test(h) && /^\d{2}$/.test(m)) {
       let numH = parseInt(h, 10), numM = parseInt(m, 10);
       if (numH >= 0 && numH < 24 && numM >= 0 && numM < 60) return `${h}:${m}`;
@@ -486,10 +440,7 @@ function normalizarTextoHora(txt) {
   return limpio;
 }
 
-function esHoraValida(txt) {
-  let norm = normalizarTextoHora(txt);
-  return /^\d{2}:\d{2}$/.test(norm);
-}
+function esHoraValida(txt) { return /^\d{2}:\d{2}$/.test(normalizarTextoHora(txt)); }
 
 function inicializarColores() {
   ['trabajo', 'vacaciones', 'libre', 'baja'].forEach(tipo => {
@@ -503,37 +454,21 @@ function inicializarColores() {
 function toggleSeccion(idContenedor, idFlecha) {
   const cont = document.getElementById(idContenedor);
   const flecha = document.getElementById(idFlecha);
-  let visible = (cont.style.display === 'flex' || cont.style.display === 'grid' || cont.style.display === 'block');
-  if (visible) {
-    cont.style.display = 'none';
-    if(flecha) flecha.textContent = '▼';
-  } else {
-    cont.style.display = (idContenedor === 'desplegable-colores') ? 'grid' : 'flex';
-    if(flecha) flecha.textContent = '▲';
-  }
+  let visible = (cont.style.display === 'flex' || cont.style.display === 'grid');
+  cont.style.display = visible ? 'none' : (idContenedor === 'desplegable-colores' ? 'grid' : 'flex');
+  if(flecha) flecha.textContent = visible ? '▼' : '▲';
 }
 
-function guardarColorPersonalizado(tipo, valor) {
-  localStorage.setItem(`color-custom-${tipo}`, valor);
-  document.documentElement.style.setProperty(`--color-${tipo}`, valor);
-}
+function guardarColorPersonalizado(tipo, valor) { localStorage.setItem(`color-custom-${tipo}`, valor); document.documentElement.style.setProperty(`--color-${tipo}`, valor); }
 function guardarNombre(valor) { localStorage.setItem('config-nombre', valor); }
 function guardarDni(valor) { localStorage.setItem('config-dni', valor); }
 
 function ajustarRol(valor) {
-  configuracionRol = valor;
-  localStorage.setItem('config-rol', valor);
+  configuracionRol = valor; localStorage.setItem('config-rol', valor);
   const lblPie = document.getElementById('lbl-modo-pie');
-  if (valor === 'particular') {
-    lblPie.textContent = 'Particular';
-    mostrarInterfazJefe(false);
-  } else if (valor === 'empleado') {
-    lblPie.textContent = 'Empleado';
-    mostrarInterfazJefe(false);
-  } else if (valor === 'jefe') {
-    lblPie.textContent = 'Jefe (Nube)';
-    mostrarInterfazJefe(true);
-  }
+  if (valor === 'particular') { lblPie.textContent = 'Particular'; mostrarInterfazJefe(false); }
+  else if (valor === 'empleado') { lblPie.textContent = 'Empleado'; mostrarInterfazJefe(false); }
+  else if (valor === 'jefe') { lblPie.textContent = 'Jefe (Nube)'; mostrarInterfazJefe(true); }
 }
 
 function mostrarInterfazJefe(activar) {
@@ -542,14 +477,14 @@ function mostrarInterfazJefe(activar) {
     lista.innerHTML = `
       <div style="padding: 10px; display: flex; flex-direction: column; gap: 8px; height: 100%; overflow-y: auto;">
         <h3 style="color: var(--teal-header); font-size: 0.95rem; border-bottom: 2px solid var(--teal-header); padding-bottom: 4px;">👥 Panel de Control del Jefe</h3>
-        <p style="font-size: 0.8rem; color: #555;">Visualiza y supervisa los fichajes de tus empleados sincronizados en tu cuenta de Google Drive.</p>
+        <p style="font-size: 0.8rem; color: #555;">Visualiza y supervisa los fichajes de tus empleados sincronizados en tu cuenta.</p>
         <button class="btn-modal guardar" onclick="cargarListaEmpleadosDrive()" style="width:100%; padding: 10px;">🔄 Cargar Fichajes de Empleados</button>
         <div id="contenedor-empleados-lista" style="display: flex; flex-direction: column; gap: 6px; margin-top: 4px;"></div>
       </div>
     `;
-    if(document.getElementById('desglose-semanas')) document.getElementById('desglose-semanas').innerHTML = '';
-    if(document.getElementById('total-semana')) document.getElementById('total-semana').textContent = '---';
-    if(document.getElementById('total-mes')) document.getElementById('total-mes').textContent = '---';
+    document.getElementById('desglose-semanas').innerHTML = '';
+    document.getElementById('total-semana').textContent = '---';
+    document.getElementById('total-mes').textContent = '---';
   } else {
     renderizarCalendario(true, 'instant');
   }
@@ -557,73 +492,40 @@ function mostrarInterfazJefe(activar) {
 
 async function cargarListaEmpleadosDrive() {
   const token = localStorage.getItem('google_access_token');
-  if (!token) {
-    alert("⚠️ Debes conectar primero con tu cuenta de Google Drive en el menú lateral.");
-    return;
-  }
+  if (!token) { alert("⚠️ Conecta primero con tu cuenta de Google Drive."); return; }
   const contenedor = document.getElementById('contenedor-empleados-lista');
-  contenedor.innerHTML = `<div style="text-align:center; padding:12px; font-size:0.8rem; color:#666;">Buscando archivos de empleados en Drive...</div>`;
-
+  contenedor.innerHTML = `<div style="text-align:center; padding:12px; font-size:0.8rem; color:#666;">Buscando fichajes...</div>`;
   try {
-    const query = "name contains 'emp_' and trashed = false";
-    const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}&fields=files(id,name,modifiedTime)`;
-    
-    const res = await fetch(url, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    
-    if (!res.ok) {
-      throw new Error(`HTTP Error ${res.status}`);
-    }
-    
+    const res = await fetch(`https://www.googleapis.com/drive/v3/files?q=name contains 'emp_' and mimeType='application/json' and trashed=false`, { headers: { 'Authorization': `Bearer ${token}` } });
     const data = await res.json();
-
     if (data.files && data.files.length > 0) {
-      let html = `<p style="font-size:0.82rem; font-weight:bold; color:green; margin-bottom: 4px;">📁 ${data.files.length} fichajes encontrados:</p>`;
+      let html = `<p style="font-size:0.82rem; font-weight:bold; color:green; margin-bottom: 4px;">📁 ${data.files.length} registros:</p>`;
       data.files.forEach(file => {
-        let nombreLegible = file.name.replace('.json', '').replace('emp_', '').replace(/_/g, ' ');
         html += `<div style="background: #fafafa; border: 1px solid #ccc; padding: 6px 8px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; font-size: 0.78rem;">
-          <span style="font-weight: bold; color: #333;">${nombreLegible}</span>
-          <button class="btn-modal guardar" style="padding: 3px 8px; font-size: 0.72rem;" onclick="descargarYLeerArchivoEmpleado('${file.id}', '${nombreLegible}')">Ver Datos</button>
+          <span style="font-weight: bold; color: #333;">${file.name}</span>
+          <button class="btn-modal guardar" style="padding: 3px 8px; font-size: 0.72rem;" onclick="descargarYLeerArchivoEmpleado('${file.id}', '${file.name}')">Ver</button>
         </div>`;
       });
       contenedor.innerHTML = html;
     } else {
-      contenedor.innerHTML = `<p style="font-size:0.82rem; color:#888; font-style:italic; text-align:center; padding:10px;">No se encontraron fichajes de empleados en tu Drive. Asegúrate de pulsar "Sincronizar Mes a Nube" desde el móvil del empleado.</p>`;
+      contenedor.innerHTML = `<p style="font-size:0.82rem; color:#888; text-align:center; padding:10px;">No se encontraron fichajes de empleados.</p>`;
     }
-  } catch (err) {
-    contenedor.innerHTML = `<p style="font-size:0.82rem; color:red; text-align:center;">Error al conectar con Google Drive (${err.message}).</p>`;
-  }
+  } catch (err) { contenedor.innerHTML = `<p style="font-size:0.82rem; color:red; text-align:center;">Error de conexión con Drive.</p>`; }
 }
 
 async function descargarYLeerArchivoEmpleado(fileId, fileName) {
   const token = localStorage.getItem('google_access_token');
   try {
-    const res = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
+    const res = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, { headers: { 'Authorization': `Bearer ${token}` } });
     const jsonData = await res.json();
-    
-    let det = `📄 FICHAJE DE: ${fileName.toUpperCase()}\n\n`;
-    det += `⏱️ Total Horas: ${jsonData.t || '00:00'} hrs\n`;
-    det += `📌 Estado: ${(jsonData.est || 'defecto').toUpperCase()}\n`;
-    det += `☀️ Mañana: Ent: ${jsonData.e1 || '--:--'} | Sal: ${jsonData.s1 || '--:--'}\n`;
-    det += `🌙 Tarde:  Ent: ${jsonData.e2 || '--:--'} | Sal: ${jsonData.s2 || '--:--'}\n`;
-    if(jsonData.nota) det += `📝 Nota: ${jsonData.nota}\n`;
-    
-    alert(det);
-  } catch (err) {
-    alert("Error al descargar el contenido del archivo.");
-  }
+    alert(`📄 Datos de ${fileName}:\n\nTotal: ${jsonData.t || '00:00'}\nEntrada: ${jsonData.e1 || '--:--'} | Salida: ${jsonData.s1 || '--:--'}`);
+  } catch (err) { alert("Error al leer el archivo."); }
 }
 
 function toggleMenu(abrir) {
   document.getElementById('menu-overlay').style.display = abrir ? 'block' : 'none';
   document.getElementById('menu-lateral').style.display = abrir ? 'flex' : 'none';
-  if (abrir) {
-    actualizarEstadoNubeUI();
-    verificarPermisoGPS(true);
-  }
+  if (abrir) { actualizarEstadoNubeUI(); verificarPermisoGPS(true); }
 }
 
 function ajustarTipoTurno(valor) {
@@ -679,15 +581,9 @@ function renderizarCalendario(autoScroll = true, comportamiento = 'smooth') {
     
     let claseNota = (data.nota && data.nota.trim() !== "") ? "btn-nota-trigger con-nota" : "btn-nota-trigger";
     let iconoNota = (data.nota && data.nota.trim() !== "") ? "📝" : "💬";
-    
     let hayContenido = (valE1 !== '' || valS1 !== '' || valE2 !== '' || valS2 !== '');
-    let tieneManual = false;
-    if (data.origen) {
-      if (typeof data.origen === 'object') { tieneManual = Object.keys(data.origen).some(k => data.origen[k] === 'MANUAL' && data[k]); }
-      else { tieneManual = (data.origen === 'MANUAL'); }
-    }
-    let tieneGps = data.gps && Object.keys(data.gps).some(k => data.gps[k] && data[k]);
-    let smartIcono = (hayContenido && (tieneManual || tieneGps)) ? `<span style="font-size:0.75rem; color:var(--teal-header); font-weight:bold; margin-right:1px;">ℹ️</span>` : '';
+    let tieneManual = data.origen && typeof data.origen === 'object' && Object.keys(data.origen).some(k => data.origen[k] === 'MANUAL' && data[k]);
+    let smartIcono = (hayContenido && (tieneManual || (data.gps && Object.keys(data.gps).length > 0))) ? `<span style="font-size:0.75rem; color:var(--teal-header); font-weight:bold; margin-right:1px;">ℹ️</span>` : '';
 
     fila.innerHTML = `<div class="label-dia" onclick="desplazarADia(${i}, 'smooth', 'center')">${textoDiaSemana} ${i}</div><div class="bloques-inputs">${inputsHTML}<select class="selector-estado" id="est-${i}" onchange="cambiarEstado(${i})"><option value="defecto" ${data.est==='defecto'?'selected':''}>- Tipo -</option><option value="trabajo" ${data.est==='trabajo'?'selected':''}>TRABAJO</option><option value="vacaciones" ${data.est==='vacaciones'?'selected':''}>VACAC.</option><option value="libre" ${data.est==='libre'?'selected':''}>LIBRE</option><option value="baja" ${data.est==='baja'?'selected':''}>BAJA M.</option></select></div><div class="total-horas" id="t-${i}" onclick="abrirModalAudit(${i})">${smartIcono}<span class="texto-horas">${data.t}</span></div><button class="${claseNota}" id="icononota-${i}" onclick="abrirModalNota(${i})">${iconoNota}</button>`;
     lista.appendChild(fila);
@@ -697,12 +593,12 @@ function renderizarCalendario(autoScroll = true, comportamiento = 'smooth') {
     const hoy = new Date(); let diaDestino = 1; let alineacion = 'start';
     if (anio === hoy.getFullYear() && mes === hoy.getMonth()) {
       let currentDayOfWeek = hoy.getDay(); let diffToMonday = currentDayOfWeek === 0 ? 6 : currentDayOfWeek - 1;
-      let lunesTarget = hoy.getDate() - diffToMonday; diaDestino = Math.max(1, lunesTarget); alineacion = 'start';
+      let lunesTarget = hoy.getDate() - diffToMonday; diaDestino = Math.max(1, lunesTarget);
     } else {
       alineacion = 'center';
       for(let i = totalDiasMes; i >= 1; i--) {
         const claveId = `fichaje-${anio}-${mes}-${i}`; let data = JSON.parse(localStorage.getItem(claveId));
-        if(data && (data.e1 || data.s1 || data.e2 || data.s2 || data.est !== 'defecto' || (data.nota && data.nota.trim() !== ''))) { diaDestino = i; break; }
+        if(data && (data.e1 || data.s1 || data.est !== 'defecto')) { diaDestino = i; break; }
       }
     }
     setTimeout(() => desplazarADia(diaDestino, comportamiento, alineacion), 80);
@@ -715,16 +611,12 @@ function autoFormatearInput(id, campo) {
     let norm = normalizarTextoHora(el.value);
     if (norm !== el.value) { el.value = norm; calc(id); }
   }
-  // Ejecutar verificación y solicitud de GPS solo tras salir del foco (blur)
-  const claveId = `fichaje-${fechaActual.getFullYear()}-${fechaActual.getMonth()}-${id}`;
-  let dataFresh = JSON.parse(localStorage.getItem(claveId));
-  if (dataFresh) { solicitarGpsManualSiProcede(claveId, dataFresh, id); }
 }
 
 function abrirModalNota(dia) {
   diaNotaSeleccionado = dia; const anio = fechaActual.getFullYear(); const mes = fechaActual.getMonth();
   const claveId = `fichaje-${anio}-${mes}-${dia}`; let data = JSON.parse(localStorage.getItem(claveId)) || { nota: '' };
-  document.getElementById('modal-nota-titulo').textContent = `Nota del ${diasSemanaNombres[new Date(anio,mes,dia).getDay()]} ${dia} de ${mesesNombres[mes]}`;
+  document.getElementById('modal-nota-titulo').textContent = `Nota del ${dia} de ${mesesNombres[mes]}`;
   document.getElementById('modal-nota-texto').value = data.nota || '';
   document.getElementById('modal-nota-overlay').style.display = 'flex';
 }
@@ -735,17 +627,9 @@ function guardarNotaModal() {
   const anio = fechaActual.getFullYear(); const mes = fechaActual.getMonth();
   const claveId = `fichaje-${anio}-${mes}-${diaNotaSeleccionado}`;
   let data = JSON.parse(localStorage.getItem(claveId)) || { e1:'', s1:'', e2:'', s2:'', est:'defecto', t:'00:00', nota:'', origen: {}, gps: {} };
-  let textoNota = document.getElementById('modal-nota-texto').value; data.nota = textoNota;
-  if (!data.origen || typeof data.origen !== 'object') {
-    data.origen = data.origen === 'MANUAL' ? { e1:'MANUAL', s1:'MANUAL', e2:'MANUAL', s2:'MANUAL' } : {};
-  }
+  data.nota = document.getElementById('modal-nota-texto').value;
   localStorage.setItem(claveId, JSON.stringify(data));
   sincronizarConNube(claveId, data);
-  let btnIcono = document.getElementById(`icononota-${diaNotaSeleccionado}`);
-  if(btnIcono) {
-    if(textoNota.trim() !== "") { btnIcono.className = "btn-nota-trigger con-nota"; btnIcono.textContent = "📝"; }
-    else { btnIcono.className = "btn-nota-trigger"; btnIcono.textContent = "💬"; }
-  }
   cerrarModalNota(); renderizarCalendario(false);
 }
 
@@ -753,267 +637,126 @@ function abrirModalAudit(dia) {
   const anio = fechaActual.getFullYear(); const mes = fechaActual.getMonth();
   const claveId = `fichaje-${anio}-${mes}-${dia}`;
   let data = JSON.parse(localStorage.getItem(claveId)) || { e1:'', s1:'', e2:'', s2:'', est:'defecto', t:'00:00', nota:'', origen: {}, gps: {} };
+  document.getElementById('modal-audit-titulo').textContent = `Detalles: ${dia} de ${mesesNombres[mes]}`;
+  const cuerpo = document.getElementById('modal-audit-cuerpo'); cuerpo.innerHTML = '';
   
-  document.getElementById('modal-audit-titulo').textContent = `Fichaje e Info: ${dia} de ${mesesNombres[mes]}`;
-  const cuerpo = document.getElementById('modal-audit-cuerpo');
-  cuerpo.innerHTML = '';
-  
-  let bloquesInfo = [
-    { id: 'e1', label: configuracionTurno === 'partido' ? '☀️ Entrada (Mañana)' : '🕒 Entrada' },
-    { id: 's1', label: configuracionTurno === 'partido' ? '☀️ Salida (Mañana)' : '🕒 Salida' },
-    { id: 'e2', label: '🌙 Entrada (Tarde)', opcional: configuracionTurno !== 'partido' },
-    { id: 's2', label: '🌙 Salida (Tarde)', opcional: configuracionTurno !== 'partido' }
-  ];
-  
-  let htmlContenido = ''; let tieneAlmenosUno = false;
-  
-  bloquesInfo.forEach(b => {
-    if (b.opcional) return;
-    let horaValor = data[b.id] || '';
-    if (!horaValor) return; 
-    tieneAlmenosUno = true;
-    
-    let esManual = false;
-    if (data.origen) {
-      if (typeof data.origen === 'object') { esManual = (data.origen[b.id] === 'MANUAL'); }
-      else { esManual = (data.origen === 'MANUAL'); }
-    }
-    
-    let tipoTexto = esManual ? '⚠️ MANUAL' : '✅ AUTO';
-    let colorFondo = esManual ? '#dc3545' : '#28a745';
-    let botonMapaHTML = (data.gps && data.gps[b.id]) ? `<a href="https://www.google.com/maps?q=${data.gps[b.id]}" target="_blank" class="btn-mapa-audit">📍 Ver Mapa</a>` : `<span style="font-size:0.75rem; color:#888; font-style:italic;">Sin GPS</span>`;
-    
-    htmlContenido += `<div class="linea-audit"><span style="font-weight:bold; color:#444; width:115px; white-space:nowrap;">${b.label}:</span><span style="font-family:monospace; font-size:0.9rem; font-weight:bold; color:#111;">${horaValor}</span><span class="badge-audit" style="background-color:${colorFondo};">${tipoTexto}</span><div style="margin-left:auto; display:flex; align-items:center;">${botonMapaHTML}</div></div>`;
+  let bloques = [{ id: 'e1', label: 'Entrada' }, { id: 's1', label: 'Salida' }];
+  let html = ''; let tiene = false;
+  bloques.forEach(b => {
+    if (!data[b.id]) return;
+    tiene = true;
+    let esManual = data.origen && data.origen[b.id] === 'MANUAL';
+    let mapa = data.gps && data.gps[b.id] ? `<a href="https://www.google.com/maps?q=${data.gps[b.id]}" target="_blank" class="btn-mapa-audit">📍 Mapa</a>` : 'Sin GPS';
+    html += `<div class="linea-audit"><span>${b.label}: <b>${data[b.id]}</b></span><span class="badge-audit" style="background:${esManual?'#dc3545':'#28a745'}">${esManual?'MANUAL':'AUTO'}</span>${mapa}</div>`;
   });
-  
-  if (!tieneAlmenosUno) { htmlContenido = `<div style="text-align:center; padding:12px; font-size:0.85rem; color:#666; font-style:italic;">No hay horas registradas para este día.</div>`; }
-  else { htmlContenido += `<div style="margin-top:10px; padding-top:6px; border-top:1px dashed #ccc; text-align:right; font-size:0.88rem; font-weight:bold; color:var(--teal-header);">Total Calculado: ${data.t || '00:00'} hrs</div>`; }
-  
-  cuerpo.innerHTML = htmlContenido;
+  if (!tiene) html = `<div style="text-align:center; padding:10px; color:#666;">Sin horas registradas.</div>`;
+  cuerpo.innerHTML = html;
   document.getElementById('modal-audit-overlay').style.display = 'flex';
 }
 function cerrarModalAudit() { document.getElementById('modal-audit-overlay').style.display = 'none'; }
 
 function calc(id) {
-  let campos = [`e1-${id}`, `s1-${id}`, `e2-${id}`, `s2-${id}`];
-  campos.forEach(cId => {
-    let el = document.getElementById(cId);
-    if (el && el.value) {
-      let valLimpia = el.value.replace(/[,;.]/g, ':');
-      if (el.value !== valLimpia) el.value = valLimpia;
-    }
-  });
-
-  let iE1 = document.getElementById(`e1-${id}`); let iS1 = document.getElementById(`s1-${id}`); 
-  let iE2 = document.getElementById(`e2-${id}`); let iS2 = document.getElementById(`s2-${id}`);
+  let iE1 = document.getElementById(`e1-${id}`), iS1 = document.getElementById(`s1-${id}`);
   let mTotales = 0;
-  
-  function calcularTramo(ent, sal) {
-    let normEnt = normalizarTextoHora(ent); let normSal = normalizarTextoHora(sal);
-    if(normEnt && normSal && normEnt.includes(':') && normSal.includes(':')) {
-      let e = normEnt.split(':'), s = normSal.split(':');
-      let diff = (parseInt(s[0]||0, 10)*60 + parseInt(s[1]||0, 10)) - (parseInt(e[0]||0, 10)*60 + parseInt(e[1]||0, 10));
+  function tramo(e, s) {
+    let ne = normalizarTextoHora(e), ns = normalizarTextoHora(s);
+    if(ne && ns && ne.includes(':') && ns.includes(':')) {
+      let partsE = ne.split(':'), partsS = ns.split(':');
+      let diff = (parseInt(partsS[0],10)*60 + parseInt(partsS[1],10)) - (parseInt(partsE[0],10)*60 + parseInt(partsE[1],10));
       return diff > 0 ? diff : 0;
     }
     return 0;
   }
-  
-  let e1 = iE1 ? iE1.value : ''; let s1 = iS1 ? iS1.value : ''; mTotales += calcularTramo(e1, s1);
-  let e2 = '', s2 = '';
-  if (configuracionTurno === 'partido') { e2 = iE2 ? iE2.value : ''; s2 = iS2 ? iS2.value : ''; }
-  else {
-    const anio = fechaActual.getFullYear(); const mes = fechaActual.getMonth();
-    const claveId = `fichaje-${anio}-${mes}-${id}`; let dataAnterior = JSON.parse(localStorage.getItem(claveId));
-    if (dataAnterior) { e2 = dataAnterior.e2 || ''; s2 = dataAnterior.s2 || ''; }
-  }
-  mTotales += calcularTramo(e2, s2);
-  
+  mTotales += tramo(iE1 ? iE1.value : '', iS1 ? iS1.value : '');
   let tTexto = mTotales > 0 ? minsATexto(mTotales) : "00:00";
   guardarFila(id, tTexto);
-  
-  const claveId = `fichaje-${fechaActual.getFullYear()}-${fechaActual.getMonth()}-${id}`;
-  let dataActual = JSON.parse(localStorage.getItem(claveId)) || {};
-  actualizarFilaUI(id, dataActual);
-  calcularTotalesGenerales();
 }
 
 function cambiarEstado(id) {
-  const elEst = document.getElementById(`est-${id}`); const fila = document.getElementById(`fila-${id}`);
+  const elEst = document.getElementById(`est-${id}`), fila = document.getElementById(`fila-${id}`);
   if(elEst && fila) fila.className = `fila-dia tipo-${elEst.value}`;
   guardarFila(id); renderizarCalendario(false);
 }
 
 function guardarFila(id, tTexto) {
-  const anio = fechaActual.getFullYear(); const mes = fechaActual.getMonth();
+  const anio = fechaActual.getFullYear(), mes = fechaActual.getMonth();
   const claveId = `fichaje-${anio}-${mes}-${id}`;
-  const elE1 = document.getElementById('e1-' + id); const elS1 = document.getElementById('s1-' + id); const elE2 = document.getElementById('e2-' + id); const elS2 = document.getElementById('s2-' + id); const elEst = document.getElementById('est-' + id);
-  let dataAnterior = JSON.parse(localStorage.getItem(claveId)) || { e1:'', s1:'', e2:'', s2:'', est:'defecto', t:'00:00', nota:'', origen: {}, gps: {} };
+  const elE1 = document.getElementById('e1-' + id), elS1 = document.getElementById('s1-' + id), elEst = document.getElementById('est-' + id);
+  let prev = JSON.parse(localStorage.getItem(claveId)) || { e1:'', s1:'', est:'defecto', t:'00:00', nota:'', origen: {}, gps: {} };
   
-  let origenObj = {};
-  if (dataAnterior.origen && typeof dataAnterior.origen === 'object') { origenObj = { ...dataAnterior.origen }; } 
-  else if (dataAnterior.origen === 'MANUAL') { origenObj = { e1: 'MANUAL', s1: 'MANUAL', e2: 'MANUAL', s2: 'MANUAL' }; }
+  let valE1 = elE1 ? normalizarTextoHora(elE1.value) : '';
+  let valS1 = elS1 ? normalizarTextoHora(elS1.value) : '';
+  let origenObj = prev.origen || {};
+  if (elE1 && valE1 !== prev.e1) { if(valE1) origenObj.e1 = 'MANUAL'; else delete origenObj.e1; }
+  if (elS1 && valS1 !== prev.s1) { if(valS1) origenObj.s1 = 'MANUAL'; else delete origenObj.s1; }
 
-  const valE1 = elE1 ? normalizarTextoHora(elE1.value) : '';
-  const valS1 = elS1 ? normalizarTextoHora(elS1.value) : '';
-  const valE2 = elE2 ? normalizarTextoHora(elE2.value) : '';
-  const valS2 = elS2 ? normalizarTextoHora(elS2.value) : '';
-
-  if (elE1 && valE1 !== dataAnterior.e1) { if(valE1) origenObj.e1 = 'MANUAL'; else delete origenObj.e1; }
-  if (elS1 && valS1 !== dataAnterior.s1) { if(valS1) origenObj.s1 = 'MANUAL'; else delete origenObj.s1; }
-  if (elE2 && valE2 !== dataAnterior.e2) { if(valE2) origenObj.e2 = 'MANUAL'; else delete origenObj.e2; }
-  if (elS2 && valS2 !== dataAnterior.s2) { if(valS2) origenObj.s2 = 'MANUAL'; else delete origenObj.s2; }
-
-  if (!valE1) { delete origenObj.e1; if(dataAnterior.gps) delete dataAnterior.gps.e1; }
-  if (!valS1) { delete origenObj.s1; if(dataAnterior.gps) delete dataAnterior.gps.s1; }
-  if (!valE2) { delete origenObj.e2; if(dataAnterior.gps) delete dataAnterior.gps.e2; }
-  if (!valS2) { delete origenObj.s2; if(dataAnterior.gps) delete dataAnterior.gps.s2; }
-
-  let tFinal = tTexto || dataAnterior.t || '00:00';
-  const datos = { e1: valE1, s1: valS1, e2: valE2, s2: valS2, est: elEst ? elEst.value : 'defecto', t: tFinal, nota: dataAnterior.nota || '', origen: origenObj, gps: dataAnterior.gps || {} };
+  let datos = { e1: valE1, s1: valS1, est: elEst ? elEst.value : 'defecto', t: tTexto || prev.t || '00:00', nota: prev.nota || '', origen: origenObj, gps: prev.gps || {} };
   localStorage.setItem(claveId, JSON.stringify(datos));
   sincronizarConNube(claveId, datos);
 }
 
-function solicitarGpsManualSiProcede(claveId, datos, id) {
-  if (!navigator.geolocation) return;
-  let campos = ['e1', 's1', 'e2', 's2'];
-  let necesitaGps = false;
-  campos.forEach(c => {
-    if (datos.origen && datos.origen[c] === 'MANUAL' && datos[c] && esHoraValida(datos[c]) && (!datos.gps || !datos.gps[c])) { necesitaGps = true; }
-  });
-  if (!necesitaGps) return;
-  
-  navigator.geolocation.getCurrentPosition(
-    (position) => {
-      let dataFresh = JSON.parse(localStorage.getItem(claveId));
-      if (!dataFresh) return;
-      if (!dataFresh.gps) dataFresh.gps = {};
-      let seAnadioGps = false;
-      campos.forEach(c => {
-        if (dataFresh.origen && dataFresh.origen[c] === 'MANUAL' && dataFresh[c] && esHoraValida(dataFresh[c]) && !dataFresh.gps[c]) {
-          dataFresh.gps[c] = `${position.coords.latitude.toFixed(6)},${position.coords.longitude.toFixed(6)}`;
-          seAnadioGps = true;
-        }
-      });
-      if (seAnadioGps) { localStorage.setItem(claveId, JSON.stringify(dataFresh)); sincronizarConNube(claveId, dataFresh); actualizarFilaUI(id, dataFresh); }
-    },
-    (error) => { console.warn("Ubicación manual no obtenida:", error.message); },
-    { enableHighAccuracy: false, timeout: 6000 }
-  );
-}
-
-function actualizarFilaUI(id, data) {
-  let elTot = document.getElementById(`t-${id}`);
-  if (!elTot) return;
-  let hayContenido = ((data.e1 && data.e1 !== '') || (data.s1 && data.s1 !== '') || (data.e2 && data.e2 !== '') || (data.s2 && data.s2 !== ''));
-  let tieneManual = false;
-  if (data.origen && typeof data.origen === 'object') { tieneManual = Object.keys(data.origen).some(k => data.origen[k] === 'MANUAL' && data[k]); }
-  let tieneGps = data.gps && Object.keys(data.gps).some(k => data.gps[k] && data[k]);
-  let smartIcono = (hayContenido && (tieneManual || tieneGps)) ? `<span style="font-size:0.75rem; color:var(--teal-header); font-weight:bold; margin-right:1px;">ℹ️</span>` : '';
-  elTot.innerHTML = `${smartIcono}<span class="texto-horas">${data.t || '00:00'}</span>`;
-}
-
 function iniciarFichaje() {
-  if (configuracionRol === 'jefe') {
-    alert("⚠️ El perfil de Jefe supervisa fichajes, no registra jornadas locales.");
-    return;
-  }
+  if (configuracionRol === 'jefe') { alert("El rol de Jefe no registra fichajes locales."); return; }
   const hoy = new Date();
   if(fechaActual.getFullYear() !== hoy.getFullYear() || fechaActual.getMonth() !== hoy.getMonth()) {
-    alert("⚠️ Cambia al mes actual para usar el botón de fichar."); return;
+    alert("Cambia al mes actual para fichar."); return;
   }
-  if(vistaActual === 'ano') { alert("⚠️ Pasa a la vista de MES."); return; }
   
-  if (configuracionTurno === 'partido') { document.getElementById('modal-turno-overlay').style.display = 'flex'; }
-  else { ejecutarFichaje('continuo'); }
+  if (confirm("¿Autorizas a Fichaje Pro a utilizar la ubicación GPS para validar este registro de forma segura?")) {
+    ejecutarFichajeDirecto();
+  }
 }
 
-function cerrarModalTurno() { document.getElementById('modal-turno-overlay').style.display = 'none'; }
-function confirmarFichajeTurno(turno) { cerrarModalTurno(); ejecutarFichaje(turno); }
-
-function ejecutarFichaje(modo) {
+function ejecutarFichajeDirecto() {
   const hoy = new Date(); const realAnio = hoy.getFullYear(); const realMes = hoy.getMonth(); const realDia = hoy.getDate();
   fechaActual = new Date();
   const horaMarcada = hoy.toTimeString().substring(0, 5);
   const claveId = `fichaje-${realAnio}-${realMes}-${realDia}`;
-  let data = JSON.parse(localStorage.getItem(claveId)) || { e1:'', s1:'', e2:'', s2:'', est:'defecto', t:'00:00', nota:'', origen: {}, gps: {} };
+  let data = JSON.parse(localStorage.getItem(claveId)) || { e1:'', s1:'', est:'defecto', t:'00:00', nota:'', origen: {}, gps: {} };
   
   let campoFichado = '';
-  if(modo === 'continuo') { 
-    if(data.e1 === "") { data.e1 = horaMarcada; data.est = 'trabajo'; campoFichado = 'e1'; } 
-    else if(data.s1 === "") { data.s1 = horaMarcada; campoFichado = 's1'; } 
-    else { alert("📝 Hoy ya está completo."); return; } 
-  }
-  else if(modo === 'm') { 
-    if(data.e1 === "") { data.e1 = horaMarcada; data.est = 'trabajo'; campoFichado = 'e1'; } 
-    else if(data.s1 === "") { data.s1 = horaMarcada; campoFichado = 's1'; } 
-    else { alert("📝 Turno de mañana completo."); return; } 
-  }
-  else if(modo === 't') { 
-    if(data.e2 === "") { data.e2 = horaMarcada; data.est = 'trabajo'; campoFichado = 'e2'; } 
-    else if(data.s2 === "") { data.s2 = horaMarcada; campoFichado = 's2'; } 
-    else { alert("📝 Turno de tarde completo."); return; } 
-  }
+  if(data.e1 === "") { data.e1 = horaMarcada; data.est = 'trabajo'; campoFichado = 'e1'; } 
+  else if(data.s1 === "") { data.s1 = horaMarcada; campoFichado = 's1'; } 
+  else { alert("Jornada de hoy completada."); return; }
 
   if (!data.gps) data.gps = {};
-  guardarYProcesarFichaje(claveId, data, hoy, campoFichado);
-
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        let dataFresh = JSON.parse(localStorage.getItem(claveId));
-        if (!dataFresh) return;
-        const coords = `${position.coords.latitude.toFixed(6)},${position.coords.longitude.toFixed(6)}`;
-        if (!dataFresh.gps) dataFresh.gps = {};
-        dataFresh.gps[campoFichado] = coords;
-        localStorage.setItem(claveId, JSON.stringify(dataFresh));
-        sincronizarConNube(claveId, dataFresh);
-        actualizarFilaUI(realDia, dataFresh);
-      },
-      (error) => { console.warn("GPS no disponible:", error.message); },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-    );
-  }
-}
-
-function guardarYProcesarFichaje(claveId, data, hoy, campoFichado) {
+  
   function calcularTramoInterno(ent, sal) {
-    let normEnt = normalizarTextoHora(ent); let normSal = normalizarTextoHora(sal);
-    if(normEnt && normSal && normEnt.includes(':') && normSal.includes(':')) {
-      let e = normEnt.split(':'), s = normSal.split(':');
-      let diff = (parseInt(s[0]||0, 10)*60 + parseInt(s[1]||0, 10)) - (parseInt(e[0]||0, 10)*60 + parseInt(e[1]||0, 10));
+    let ne = normalizarTextoHora(ent), ns = normalizarTextoHora(sal);
+    if(ne && ns) {
+      let e = ne.split(':'), s = ns.split(':');
+      let diff = (parseInt(s[0],10)*60 + parseInt(s[1],10)) - (parseInt(e[0],10)*60 + parseInt(e[1],10));
       return diff > 0 ? diff : 0;
     }
     return 0;
   }
-  let mTotales = calcularTramoInterno(data.e1, data.s1) + calcularTramoInterno(data.e2, data.s2);
-  data.t = mTotales > 0 ? minsATexto(mTotales) : "00:00"; 
-  
-  if (!data.origen || typeof data.origen !== 'object') {
-    data.origen = data.origen === 'MANUAL' ? { e1:'MANUAL', s1:'MANUAL', e2:'MANUAL', s2:'MANUAL' } : {};
-  }
-  if (campoFichado) { data.origen[campoFichado] = 'AUTOMATICO'; }
+  data.t = minsATexto(calcularTramoInterno(data.e1, data.s1));
+  if (!data.origen) data.origen = {};
+  data.origen[campoFichado] = 'AUTOMATICO';
 
-  localStorage.setItem(claveId, JSON.stringify(data)); 
+  localStorage.setItem(claveId, JSON.stringify(data));
   sincronizarConNube(claveId, data);
   renderizarCalendario(false);
-  let currentDayOfWeek = hoy.getDay(); let diffToMonday = currentDayOfWeek === 0 ? 6 : currentDayOfWeek - 1;
-  let lunesTarget = hoy.getDate() - diffToMonday; let diaScroll = Math.max(1, lunesTarget); desplazarADia(diaScroll, 'smooth', 'start');
+
+  obtenerUbicacionRobusta(
+    (pos) => {
+      let fresh = JSON.parse(localStorage.getItem(claveId));
+      if (fresh) {
+        if (!fresh.gps) fresh.gps = {};
+        fresh.gps[campoFichado] = `${pos.coords.latitude.toFixed(6)},${pos.coords.longitude.toFixed(6)}`;
+        localStorage.setItem(claveId, JSON.stringify(fresh));
+        sincronizarConNube(claveId, fresh);
+      }
+    },
+    (err) => { console.warn("GPS no disponible en este momento:", err.message); }
+  );
 }
 
-function desplazarADia(dia, comportamiento = 'smooth', alineacion = 'center') {
-  if(vistaActual === 'mes' && configuracionRol !== 'jefe') { const el = document.getElementById(`fila-${dia}`); if(el) el.scrollIntoView({ behavior: comportamiento, block: alineacion }); }
+function desplazarADia(dia, comp, alin) {
+  if(vistaActual === 'mes' && configuracionRol !== 'jefe') { const el = document.getElementById(`fila-${dia}`); if(el) el.scrollIntoView({ behavior: comp, block: alin }); }
 }
-function seleccionarSemana(dia) { fechaActual.setDate(dia); if(vistaActual === 'semana') renderizarCalendario(false); else { desplazarADia(dia, 'smooth', 'start'); calcularTotalesGenerales(); } }
-
-function cambiarMes(dir) {
-  if (configuracionRol === 'jefe') return;
-  fechaActual.setDate(1);
-  if(vistaActual === 'ano') fechaActual.setFullYear(fechaActual.getFullYear() + dir);
-  else fechaActual.setMonth(fechaActual.getMonth() + dir);
-  renderizarCalendario(true, 'smooth');
-}
-
+function seleccionarSemana(dia) { fechaActual.setDate(dia); renderizarCalendario(false); }
+function cambiarMes(dir) { if (configuracionRol === 'jefe') return; fechaActual.setDate(1); fechaActual.setMonth(fechaActual.getMonth() + dir); renderizarCalendario(true, 'smooth'); }
 function cambiarVista(vista) {
   if (configuracionRol === 'jefe') return;
   vistaActual = vista; document.getElementById('v-semana').classList.remove('activo'); document.getElementById('v-mes').classList.remove('activo'); document.getElementById('v-ano').classList.remove('activo');
@@ -1021,147 +764,92 @@ function cambiarVista(vista) {
 }
 
 function construirTextoMes() {
-  let mesSel = fechaActual.getMonth(); let anioSel = fechaActual.getFullYear();
-  let totalDias = new Date(anioSel, mesSel + 1, 0).getDate();
-  let nombreSel = localStorage.getItem('config-nombre') || ''; let dniSel = localStorage.getItem('config-dni') || '';
-  let textoNombre = nombreSel ? ` DE ${nombreSel.toUpperCase()}` : ''; let textoDni = dniSel ? ` (DNI/NIE: ${dniSel.toUpperCase()})` : '';
-  let mensaje = `📋 FICHADO${textoNombre}${textoDni} - ${mesesNombres[mesSel]} ${anioSel}\n\n`;
-  let totalMinutosMes = 0;
+  let mesSel = fechaActual.getMonth(), anioSel = fechaActual.getFullYear(), totalDias = new Date(anioSel, mesSel + 1, 0).getDate();
+  let nombre = localStorage.getItem('config-nombre') || '', dni = localStorage.getItem('config-dni') || '';
+  let mensaje = `📋 FICHADO - ${nombre} (${dni}) - ${mesesNombres[mesSel]} ${anioSel}\n\n`;
+  let totalMins = 0;
   for(let i = 1; i <= totalDias; i++) {
-    const claveId = `fichaje-${anioSel}-${mesSel}-${i}`; let data = JSON.parse(localStorage.getItem(claveId));
-    if(data) {
-      let txtHoras = '';
-      if(data.e1 || data.s1) txtHoras += `M: ${data.e1||'--:--'} a ${data.s1||'--:--'}`;
-      if(data.e2 || data.s2) txtHoras += ` | T: ${data.e2||'--:--'} a ${data.s2||'--:--'}`;
-      if(txtHoras !== '' || (data.t && data.t !== '00:00')) {
-        let tipo = data.est !== 'defecto' ? ` [${data.est.toUpperCase()}]` : '';
-        let anotacion = data.nota ? ` -> Nota: ${data.nota}` : '';
-        let tieneManual = false;
-        if (data.origen) {
-          if (typeof data.origen === 'object') { tieneManual = Object.keys(data.origen).some(k => data.origen[k] === 'MANUAL' && data[k]); }
-          else { tieneManual = (data.origen === 'MANUAL'); }
-        }
-        let manualTag = (tieneManual) ? '⚠️ ' : '';
-        let gpsTag = '';
-        if (data.gps && (data.gps.e1 || data.gps.s1 || data.gps.e2 || data.gps.s2)) {
-          let tramos = [];
-          if (data.gps.e1) tramos.push("E1"); if (data.gps.s1) tramos.push("S1"); if (data.gps.e2) tramos.push("E2"); if (data.gps.s2) tramos.push("S2");
-          gpsTag = ` 📍 GPS (${tramos.join(', ')})`;
-        }
-        mensaje += `Día ${i}: ${manualTag}${data.t || '00:00'} (${txtHoras})${tipo}${gpsTag}${anotacion}\n`;
-      }
-      if(data.t && data.t !== '00:00') {
-        let partes = data.t.split(':'); totalMinutosMes += (parseInt(partes[0]||0, 10) * 60) + parseInt(partes[1]||0, 10);
-      }
+    let data = JSON.parse(localStorage.getItem(`fichaje-${anioSel}-${mesSel}-${i}`));
+    if(data && (data.e1 || data.s1)) {
+      mensaje += `Día ${i}: ${data.t || '00:00'} (Entrada: ${data.e1} | Salida: ${data.s1})\n`;
+      let p = data.t.split(':'); totalMins += parseInt(p[0],10)*60 + parseInt(p[1],10);
     }
   }
-  mensaje += `\nTOTAL HORAS MENSUALES: ${minsATexto(totalMinutosMes)}`;
+  mensaje += `\nTOTAL HORAS: ${minsATexto(totalMins)}`;
   return mensaje;
 }
 
-function compartirPorWhatsApp() {
-  let texto = construirTextoMes(); toggleMenu(false);
-  if (navigator.share) { navigator.share({ title: 'Resumen Fichaje', text: texto }).catch(() => fallbackCopiar(texto)); }
-  else { fallbackCopiar(texto); }
-}
-function compartirPorCorreo() {
-  let texto = construirTextoMes(); toggleMenu(false);
-  let asunto = encodeURIComponent(`Resumen Fichaje - ${mesesNombres[fechaActual.getMonth()]} ${fechaActual.getFullYear()}`);
-  let cuerpo = encodeURIComponent(texto); window.location.href = `mailto:?subject=${asunto}&body=${cuerpo}`;
-}
-function fallbackCopiar(texto) {
-  const tArea = document.createElement("textarea"); tArea.value = texto; document.body.appendChild(tArea); tArea.select();
-  try { document.execCommand('copy'); alert("📋 Copiado al portapapeles. ¡Pégalo directamente en WhatsApp!"); } catch (err) { alert("⚠️ No se pudo compartir automáticamente."); }
-  document.body.removeChild(tArea);
-}
+function compartirPorWhatsApp() { let t = construirTextoMes(); toggleMenu(false); if(navigator.share) navigator.share({text: t}).catch(() => fallbackCopiar(t)); else fallbackCopiar(t); }
+function compartirPorCorreo() { let t = construirTextoMes(); toggleMenu(false); window.location.href = `mailto:?subject=Resumen Fichaje&body=${encodeURIComponent(t)}`; }
+function fallbackCopiar(t) { navigator.clipboard.writeText(t); alert("Copiado al portapapeles."); }
 
 function verificarPermisoGPS(silencioso = false) {
   const lbl = document.getElementById('estado-gps-lbl');
   if (!navigator.geolocation) { lbl.textContent = "No compatible"; lbl.style.color = "red"; return; }
-  if (!silencioso) lbl.textContent = "Solicitando...";
-  navigator.geolocation.getCurrentPosition(
-    () => { lbl.textContent = "Permitido ✓"; lbl.style.color = "green"; },
-    (error) => {
-      if (error.code === error.PERMISSION_DENIED) { lbl.textContent = "Bloqueado ✗"; lbl.style.color = "red"; } 
-      else { lbl.textContent = "Inactivo/Sin señal"; lbl.style.color = "orange"; }
-    },
-    { timeout: 3000 }
+  if (!silencioso) lbl.textContent = "Verificando...";
+  obtenerUbicacionRobusta(
+    () => { lbl.textContent = "Activado ✓"; lbl.style.color = "green"; },
+    (err) => { lbl.textContent = err.code === 1 ? "Bloqueado ✗" : "Inactivo"; lbl.style.color = "orange"; }
   );
 }
 
-document.getElementById('selector-turno-global').value = configuracionTurno;
-document.getElementById('selector-rol-global').value = configuracionRol;
-ajustarRol(configuracionRol);
-if(configuracionTurno === 'partido') document.getElementById('app-container').classList.add('vista-partido');
-let nombreUsuario = localStorage.getItem('config-nombre') || ''; document.getElementById('input-nombre-global').value = nombreUsuario;
-let dniUsuario = localStorage.getItem('config-dni') || ''; document.getElementById('input-dni-global').value = dniUsuario;
-
-window.onload = () => {
-  try { inicializarGoogleOAuth(); } catch(e) {}
-};
-
-inicializarColores(); registrarUbicacionInicial(); 
-if (configuracionRol !== 'jefe') { renderizarCalendario(true, 'instant'); }
-actualizarEstadoNubeUI();
-
-function registrarUbicacionInicial() { if (navigator.geolocation) { navigator.geolocation.getCurrentPosition(()=>{}, ()=>{}, {timeout: 1000}); } }
-
 function descargarCopiaSeguridad() {
-  let copiaDato = {};
-  for (let i = 0; i < localStorage.length; i++) { let cl = localStorage.key(i); if (cl.startsWith('fichaje-')) copiaDato[cl] = localStorage.getItem(cl); }
-  let blob = new Blob([JSON.stringify(copiaDato, null, 2)], {type: "application/json"});
-  let url = URL.createObjectURL(blob); let a = document.createElement('a'); a.href = url; a.setAttribute("download", `copia_fichajes_${fechaActual.getFullYear()}.json`); a.click(); toggleMenu(false);
+  let copia = {};
+  for (let i = 0; i < localStorage.length; i++) { let k = localStorage.key(i); if (k.startsWith('fichaje-')) copia[k] = localStorage.getItem(k); }
+  let blob = new Blob([JSON.stringify(copia, null, 2)], {type: "application/json"});
+  let url = URL.createObjectURL(blob); let a = document.createElement('a'); a.href = url; a.download = `copia_fichajes.json`; a.click(); toggleMenu(false);
 }
-function cargarCopiaSeguridad(event) {
-  const f = event.target.files[0]; if (!f) return;
-  const reader = new FileReader();
-  reader.onload = function(e) {
+function cargarCopiaSeguridad(e) {
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = function(evt) {
     try {
-      const datos = JSON.parse(e.target.result);
-      for (let cl in datos) { if (cl.startsWith('fichaje-')) localStorage.setItem(cl, datos[cl]); }
-      if (configuracionRol !== 'jefe') renderizarCalendario(true, 'instant'); 
-      alert("✅ Copia restaurada.");
-    } catch (err) { alert("Archivo incorrecto."); }
+      let datos = JSON.parse(evt.target.result);
+      for (let k in datos) { if (k.startsWith('fichaje-')) localStorage.setItem(k, datos[k]); }
+      if (configuracionRol !== 'jefe') renderizarCalendario(true, 'instant');
+      alert("Copia restaurada con éxito.");
+    } catch(err) { alert("Archivo no válido."); }
   };
-  reader.readAsText(f);
+  r.readAsText(f);
 }
 
 function calcularTotalesGenerales() {
   if (configuracionRol === 'jefe') return;
-  const anio = fechaActual.getFullYear(); const mes = fechaActual.getMonth();
-  let totalMinutosMes = 0; let totalDias = new Date(anio, mes + 1, 0).getDate();
-  let semanasHTML = ''; let minsSemanaMismoMes = 0; let contadorSemana = 1; let diaInicioW = 1; let minsSemanaActualFocus = 0;
+  const anio = fechaActual.getFullYear(), mes = fechaActual.getMonth(), totalDias = new Date(anio, mes + 1, 0).getDate();
+  let totalMin = 0, semHTML = '', minSem = 0, semCont = 1, diaInicioW = 1, minSemFocus = 0;
   for(let i = 1; i <= totalDias; i++) {
-    const claveId = `fichaje-${anio}-${mes}-${i}`; let data = JSON.parse(localStorage.getItem(claveId));
-    let minsDia = 0;
+    let data = JSON.parse(localStorage.getItem(`fichaje-${anio}-${mes}-${i}`));
+    let minD = 0;
     if(data && data.t && data.t !== '00:00') {
-      let partes = data.t.split(':'); minsDia = (parseInt(partes[0]||0, 10) * 60) + parseInt(partes[1]||0, 10);
-      totalMinutosMes += minsDia;
+      let p = data.t.split(':'); minD = parseInt(p[0],10)*60 + parseInt(p[1],10);
+      totalMin += minD;
     }
-    minsSemanaMismoMes += minsDia;
+    minSem += minD;
     let objF = new Date(anio, mes, i);
     if(objF.getDay() === 0 || i === totalDias) {
-      let claseActiva = '';
-      if (fechaActual.getDate() >= diaInicioW && fechaActual.getDate() <= i) { minsSemanaActualFocus = minsSemanaMismoMes; claseActiva = ' activo'; }
-      semanasHTML += `<div class="btn-semana-mini${claseActiva}" onclick="seleccionarSemana(${diaInicioW})">Sem. ${contadorSemana}<span>${minsATexto(minsSemanaMismoMes)}</span></div>`;
-      minsSemanaMismoMes = 0; contadorSemana++; diaInicioW = i + 1;
+      let activa = '';
+      if (fechaActual.getDate() >= diaInicioW && fechaActual.getDate() <= i) { minSemFocus = minSem; activa = ' activo'; }
+      semHTML += `<div class="btn-semana-mini${activa}" onclick="seleccionarSemana(${diaInicioW})">Sem. ${semCont}<span>${minsATexto(minSem)}</span></div>`;
+      minSem = 0; semCont++; diaInicioW = i + 1;
     }
   }
-  if(document.getElementById('total-mes')) document.getElementById('total-mes').textContent = minsATexto(totalMinutosMes);
-  if(document.getElementById('total-semana')) document.getElementById('total-semana').textContent = minsATexto(minsSemanaActualFocus);
-  const elDesglose = document.getElementById('desglose-semanas');
-  if(elDesglose) {
-    if(vistaActual === 'mes' || vistaActual === 'semana') { elDesglose.innerHTML = semanasHTML; }
-    else { elDesglose.innerHTML = ''; }
-  }
+  document.getElementById('total-mes').textContent = minsATexto(totalMin);
+  document.getElementById('total-semana').textContent = minsATexto(minSemFocus);
+  const desglose = document.getElementById('desglose-semanas');
+  if(desglose && (vistaActual === 'mes' || vistaActual === 'semana')) desglose.innerHTML = semHTML;
 }
-function minsATexto(minutos) { let hrs = String(Math.floor(minutos / 60)).padStart(2, '0'); let mins = String(minutos % 60).padStart(2, '0'); return `${hrs}:${mins}`; }
+function minsATexto(m) { return `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`; }
 
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').then(reg => { console.log('SW Ok'); }).catch(err => { console.log('SW Err', err); });
-  });
-}
+document.getElementById('selector-turno-global').value = configuracionTurno;
+document.getElementById('selector-rol-global').value = configuracionRol;
+ajustarRol(configuracionRol);
+document.getElementById('input-nombre-global').value = localStorage.getItem('config-nombre') || '';
+document.getElementById('input-dni-global').value = localStorage.getItem('config-dni') || '';
+
+window.onload = () => { try { inicializarGoogleOAuth(); } catch(e) {} };
+inicializarColores();
+if (configuracionRol !== 'jefe') renderizarCalendario(true, 'instant');
+actualizarEstadoNubeUI();
 </script>
 </body>
 </html>
